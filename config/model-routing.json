@@ -1,0 +1,20 @@
+{
+  "version": "2026-03-brand-new",
+  "router_model": "openai-lightweight",
+  "default_execution_model": "claude-sonnet",
+  "escalation_model": "claude-opus",
+  "routing_rules": [
+    "Use the low-cost router for classification, normalization, and complexity pre-checks.",
+    "Use Claude Sonnet for all standard specialist-agent execution.",
+    "Use Claude Opus only for explicit escalation or high-complexity synthesis.",
+    "Record model_used on every output and run log.",
+    "Enforce per-run and per-day token caps."
+  ],
+  "agent_defaults": {
+    "performance-agent": "claude-sonnet",
+    "crm-lifecycle-agent": "claude-sonnet",
+    "reputation-agent": "claude-sonnet",
+    "marketing-ops-agent": "claude-sonnet",
+    "cross-channel-brief-agent": "claude-sonnet"
+  }
+}

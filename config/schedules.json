@@ -1,0 +1,25 @@
+{
+  "timezone": "Europe/Skopje",
+  "phase_1_daily": [
+    {
+      "agent": "performance-agent",
+      "time": "06:00"
+    },
+    {
+      "agent": "crm-lifecycle-agent",
+      "time": "06:30"
+    },
+    {
+      "agent": "reputation-agent",
+      "time": "07:00"
+    },
+    {
+      "agent": "marketing-ops-agent",
+      "time": "07:15"
+    },
+    {
+      "agent": "cross-channel-brief-agent",
+      "time": "07:30"
+    }
+  ]
+}

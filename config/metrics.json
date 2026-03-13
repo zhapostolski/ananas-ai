@@ -1,0 +1,46 @@
+{
+  "groups": {
+    "profit_revenue": [
+      "net_revenue",
+      "contribution_margin_pct",
+      "poas",
+      "return_rate",
+      "new_vs_returning_revenue_split"
+    ],
+    "acquisition": [
+      "spend",
+      "roas",
+      "blended_roas",
+      "cac",
+      "cpc",
+      "cvr",
+      "new_customers"
+    ],
+    "crm": [
+      "cart_abandonment",
+      "cart_recovery",
+      "email_revenue",
+      "active_subscribers",
+      "churn"
+    ],
+    "organic": [
+      "indexed_pages",
+      "organic_sessions",
+      "organic_conversion_rate",
+      "top_keyword_positions",
+      "listing_health"
+    ],
+    "reputation": [
+      "trustpilot_score",
+      "review_count",
+      "response_rate",
+      "sentiment"
+    ],
+    "system": [
+      "tokens_used",
+      "estimated_cost",
+      "agent_uptime",
+      "delivery_success_rate"
+    ]
+  }
+}

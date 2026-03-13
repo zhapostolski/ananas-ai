@@ -1,0 +1,13 @@
+flowchart TD
+    U[Users] --> D[ai.ananas.mk]
+    D --> P[Next.js Portal on AWS]
+    P --> I[Microsoft Entra ID + Middleware]
+    I --> R[GraphQL / Read API]
+    R --> DB[(PostgreSQL)]
+    RT[Runtime on AWS EC2] --> DB
+    MR[Model Routing Layer] --> RT
+    AG[Specialist Agents] --> MR
+    MCP[MCP Integrations] --> AG
+    SYS[Marketing / Business / Internal Systems] --> MCP
+    RT --> OUT[Portal / Teams / Email Outputs]
+    RT --> REL[CloudWatch / S3 / Secrets Manager]

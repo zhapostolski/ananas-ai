@@ -1,0 +1,30 @@
+{
+  "project_name": "Ananas AI Platform",
+  "domain": "ai.ananas.mk",
+  "phase": "brand-new baseline",
+  "department_scope": "marketing-first",
+  "portal_stack": [
+    "Next.js",
+    "TypeScript",
+    "React Query",
+    "GraphQL",
+    "Storybook"
+  ],
+  "runtime_stack": [
+    "Python",
+    "AWS EC2",
+    "PostgreSQL",
+    "Teams integration",
+    "MCP-style connectors"
+  ],
+  "primary_interfaces": [
+    "portal",
+    "teams-channels",
+    "teams-bot"
+  ],
+  "model_policy": {
+    "router": "openai-lightweight",
+    "default_execution": "claude-sonnet",
+    "escalation": "claude-opus"
+  }
+}

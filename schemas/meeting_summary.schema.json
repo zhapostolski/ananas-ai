@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": ["meeting_title", "date", "participants", "topics", "decisions", "actions"],
+  "properties": {
+    "meeting_title": {"type": "string"},
+    "date": {"type": "string"},
+    "participants": {"type": "array", "items": {"type": "string"}},
+    "topics": {"type": "array", "items": {"type": "string"}},
+    "decisions": {"type": "array", "items": {"type": "string"}},
+    "actions": {"type": "array", "items": {"type": "object"}}
+  }
+}

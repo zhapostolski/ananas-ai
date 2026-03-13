@@ -1,0 +1,60 @@
+{
+  "phase_1": {
+    "performance": [
+      "google-ads",
+      "meta-ads",
+      "tiktok-ads",
+      "linkedin-ads",
+      "x-ads-planned",
+      "ga4",
+      "search-console"
+    ],
+    "crm": [
+      "crm-platform",
+      "email-platform"
+    ],
+    "reputation": [
+      "trustpilot",
+      "google-business"
+    ],
+    "internal_work": [
+      "teams-channels",
+      "teams-bot",
+      "outlook-email",
+      "jira",
+      "confluence",
+      "sharepoint"
+    ],
+    "business_data": [
+      "orders",
+      "returns",
+      "revenue",
+      "margin",
+      "categories",
+      "coupon-usage"
+    ]
+  },
+  "phase_2": {
+    "competitor_intelligence": [
+      "seo-tooling",
+      "serp-data",
+      "social-listening",
+      "marketplace-monitoring"
+    ],
+    "lead_gen_outreach": [
+      "prospecting-datasets",
+      "contact-enrichment",
+      "outreach-sequences"
+    ],
+    "video_rendering": [
+      "rendering-engine",
+      "template-system",
+      "asset-library"
+    ],
+    "self_learning_memory": [
+      "curated-memory-store",
+      "evaluation-archive",
+      "example-library"
+    ]
+  }
+}

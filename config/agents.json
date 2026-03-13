@@ -1,0 +1,74 @@
+{
+  "version": "2026-03-brand-new",
+  "phase_1_agents": [
+    {
+      "name": "performance-agent",
+      "module": "performance",
+      "default_model": "claude-sonnet",
+      "escalation_model": "claude-opus",
+      "schedule": "06:00",
+      "outputs": [
+        "portal",
+        "teams:#marketing-performance"
+      ]
+    },
+    {
+      "name": "crm-lifecycle-agent",
+      "module": "crm-lifecycle",
+      "default_model": "claude-sonnet",
+      "escalation_model": "claude-opus",
+      "schedule": "06:30",
+      "outputs": [
+        "portal",
+        "teams:#marketing-crm"
+      ]
+    },
+    {
+      "name": "reputation-agent",
+      "module": "reputation",
+      "default_model": "claude-sonnet",
+      "escalation_model": "claude-opus",
+      "schedule": "07:00",
+      "outputs": [
+        "portal",
+        "teams:#marketing-reputation"
+      ]
+    },
+    {
+      "name": "marketing-ops-agent",
+      "module": "marketing-ops",
+      "default_model": "claude-sonnet",
+      "escalation_model": "claude-opus",
+      "schedule": "07:15",
+      "outputs": [
+        "portal",
+        "teams:#marketing-ops"
+      ]
+    },
+    {
+      "name": "cross-channel-brief-agent",
+      "module": "cross-channel-brief",
+      "default_model": "claude-sonnet",
+      "escalation_model": "claude-opus",
+      "schedule": "07:30",
+      "outputs": [
+        "portal",
+        "teams:#marketing-summary",
+        "teams:#executive-summary",
+        "email:executive"
+      ]
+    }
+  ],
+  "phase_2_agents": [
+    "organic-merchandising-agent",
+    "knowledge-retrieval-agent",
+    "meeting-intelligence-agent",
+    "competitor-intelligence-agent",
+    "lead-gen-outreach-agent",
+    "content-memory-agent",
+    "scoring-evaluation-agent",
+    "video-rendering-agent",
+    "search-shopping-agent",
+    "paid-social-agent"
+  ]
+}
