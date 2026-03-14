@@ -256,8 +256,7 @@ def run_brief() -> int:
         f"Live run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
     )
     analysis = data.get("analysis", data.get("headline", "Brief ready."))
-    post_message("#marketing-summary", "Daily Marketing Brief", analysis)
-    post_message("#executive-summary", "Executive Summary", analysis)
+    post_message("#ai-marketing", "Daily Marketing Brief", analysis)
     send_brief("Daily Marketing Brief", analysis)
     logger.info(
         "Completed cross-channel-brief-agent (%d tokens, $%.4f)",

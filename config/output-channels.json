@@ -5,42 +5,42 @@
 
   "teams_channels": {
     "marketing-performance": {
-      "channel": "#marketing-performance",
+      "channel": "#ai-marketing",
       "display_title": "Performance Summary",
       "agent": "performance-agent",
       "webhook_env_var": "TEAMS_WEBHOOK_PERFORMANCE",
       "fallback_to_default": true
     },
     "marketing-crm": {
-      "channel": "#marketing-crm",
+      "channel": "#ai-marketing",
       "display_title": "CRM & Lifecycle Summary",
       "agent": "crm-lifecycle-agent",
       "webhook_env_var": "TEAMS_WEBHOOK_CRM",
       "fallback_to_default": true
     },
     "marketing-reputation": {
-      "channel": "#marketing-reputation",
+      "channel": "#ai-marketing",
       "display_title": "Reputation Summary",
       "agent": "reputation-agent",
       "webhook_env_var": "TEAMS_WEBHOOK_REPUTATION",
       "fallback_to_default": true
     },
     "marketing-ops": {
-      "channel": "#marketing-ops",
+      "channel": "#ai-marketing",
       "display_title": "Marketing Ops Summary",
       "agent": "marketing-ops-agent",
       "webhook_env_var": "TEAMS_WEBHOOK_OPS",
       "fallback_to_default": true
     },
     "marketing-summary": {
-      "channel": "#marketing-summary",
+      "channel": "#ai-marketing",
       "display_title": "Daily Marketing Brief",
       "agent": "cross-channel-brief-agent",
       "webhook_env_var": "TEAMS_WEBHOOK_SUMMARY",
       "fallback_to_default": true
     },
     "executive-summary": {
-      "channel": "#executive-summary",
+      "channel": "#ai-marketing",
       "display_title": "Executive Summary",
       "agent": "cross-channel-brief-agent",
       "webhook_env_var": "TEAMS_WEBHOOK_EXECUTIVE",
