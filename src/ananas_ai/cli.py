@@ -12,11 +12,21 @@ from ananas_ai.agents.competitor_intelligence import CompetitorIntelligenceAgent
 from ananas_ai.agents.crm_lifecycle import CRMLifecycleAgent
 from ananas_ai.agents.cross_channel_brief import CrossChannelBriefAgent
 from ananas_ai.agents.customer_segmentation import CustomerSegmentationAgent
+from ananas_ai.agents.demand_forecasting import DemandForecastingAgent
+from ananas_ai.agents.employer_branding import EmployerBrandingAgent
+from ananas_ai.agents.influencer_partnership import InfluencerPartnershipAgent
+from ananas_ai.agents.knowledge_retrieval import KnowledgeRetrievalAgent
+from ananas_ai.agents.listing_content_quality import ListingContentQualityAgent
 from ananas_ai.agents.marketing_ops import MarketingOpsAgent
+from ananas_ai.agents.meeting_intelligence import MeetingIntelligenceAgent
+from ananas_ai.agents.organic_merchandising import OrganicMerchandisingAgent
 from ananas_ai.agents.performance import PerformanceAgent
 from ananas_ai.agents.product_feed import ProductFeedAgent
 from ananas_ai.agents.promo_simulator import PromoSimulatorAgent
 from ananas_ai.agents.reputation import ReputationAgent
+from ananas_ai.agents.search_merchandising import SearchMerchandisingAgent
+from ananas_ai.agents.supplier_intelligence import SupplierIntelligenceAgent
+from ananas_ai.agents.traditional_media_correlation import TraditionalMediaCorrelationAgent
 from ananas_ai.config import load_agent_channels, load_settings
 from ananas_ai.email_delivery import send_brief
 from ananas_ai.logging_config import get_logger
@@ -70,6 +80,16 @@ AGENT_MAP = {
     "customer-segmentation-agent": CustomerSegmentationAgent,
     "category-growth-agent": CategoryGrowthAgent,
     "competitor-intelligence-agent": CompetitorIntelligenceAgent,
+    "demand-forecasting-agent": DemandForecastingAgent,
+    "supplier-intelligence-agent": SupplierIntelligenceAgent,
+    "organic-merchandising-agent": OrganicMerchandisingAgent,
+    "search-merchandising-agent": SearchMerchandisingAgent,
+    "listing-content-quality-agent": ListingContentQualityAgent,
+    "influencer-partnership-agent": InfluencerPartnershipAgent,
+    "traditional-media-correlation-agent": TraditionalMediaCorrelationAgent,
+    "employer-branding-agent": EmployerBrandingAgent,
+    "meeting-intelligence-agent": MeetingIntelligenceAgent,
+    "knowledge-retrieval-agent": KnowledgeRetrievalAgent,
 }
 
 
@@ -89,6 +109,16 @@ def _agent_channels() -> dict[str, tuple[str, str]]:
             "customer-segmentation-agent": ("#ai-marketing", "Customer Segmentation"),
             "category-growth-agent": ("#ai-marketing", "Category Growth"),
             "competitor-intelligence-agent": ("#ai-marketing", "Competitor Intelligence"),
+            "demand-forecasting-agent": ("#ai-marketing", "Demand Forecast"),
+            "supplier-intelligence-agent": ("#ai-marketing", "Supplier Intelligence"),
+            "organic-merchandising-agent": ("#ai-marketing", "Organic & Merchandising"),
+            "search-merchandising-agent": ("#ai-marketing", "Search Merchandising"),
+            "listing-content-quality-agent": ("#ai-marketing", "Listing Content Quality"),
+            "influencer-partnership-agent": ("#ai-marketing", "Influencer & Partnerships"),
+            "traditional-media-correlation-agent": ("#ai-marketing", "Traditional Media"),
+            "employer-branding-agent": ("#ai-marketing", "Employer Branding"),
+            "meeting-intelligence-agent": ("#ai-marketing", "Meeting Intelligence"),
+            "knowledge-retrieval-agent": ("#ai-marketing", "Knowledge Retrieval"),
         }
 
 

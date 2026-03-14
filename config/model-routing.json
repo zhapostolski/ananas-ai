@@ -101,6 +101,56 @@
       "execution_model": "default",
       "escalation_model": "escalation",
       "phase": "phase-2"
+    },
+    "organic-merchandising-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "search-merchandising-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "listing-content-quality-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "influencer-partnership-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "traditional-media-correlation-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "employer-branding-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "escalation_trigger": "complexity=high",
+      "phase": "phase-2"
+    },
+    "meeting-intelligence-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "escalation_trigger": "complexity=high",
+      "phase": "phase-2"
+    },
+    "knowledge-retrieval-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
     }
   },
 
