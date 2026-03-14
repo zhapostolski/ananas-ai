@@ -1,5 +1,6 @@
 {
   "version": "v1",
+  "project_name": "Ananas AI Platform",
   "domain": "ai.ananas.mk",
   "portal_repo": "ananas-ai-portal",
   "runtime_repo": "ananas-ai-runtime",

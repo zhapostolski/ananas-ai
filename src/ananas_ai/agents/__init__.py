@@ -1,5 +1,5 @@
-from ananas_ai.agents.performance import PerformanceAgent
-from ananas_ai.agents.crm_lifecycle import CRMLifecycleAgent
-from ananas_ai.agents.reputation import ReputationAgent
-from ananas_ai.agents.marketing_ops import MarketingOpsAgent
-from ananas_ai.agents.cross_channel_brief import CrossChannelBriefAgent
+from ananas_ai.agents.crm_lifecycle import CRMLifecycleAgent as CRMLifecycleAgent
+from ananas_ai.agents.cross_channel_brief import CrossChannelBriefAgent as CrossChannelBriefAgent
+from ananas_ai.agents.marketing_ops import MarketingOpsAgent as MarketingOpsAgent
+from ananas_ai.agents.performance import PerformanceAgent as PerformanceAgent
+from ananas_ai.agents.reputation import ReputationAgent as ReputationAgent

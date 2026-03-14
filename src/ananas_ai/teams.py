@@ -1,6 +1,8 @@
 from __future__ import annotations
-from pathlib import Path
+
 from datetime import datetime, timezone
+from pathlib import Path
+
 
 def post_message(channel: str, title: str, body: str) -> dict:
     out_dir = Path(__file__).resolve().parents[2] / "examples" / "sample_outputs"

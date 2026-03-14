@@ -1,5 +1,7 @@
 import unittest
+
 from ananas_ai.config import load_settings
+
 
 class ConfigTests(unittest.TestCase):
     def test_load_settings(self):

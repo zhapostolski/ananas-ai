@@ -1,0 +1,54 @@
+name: Deploy to EC2
+
+# Triggers on version tags: git tag v0.2.0 && git push origin v0.2.0
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+# TODO: Add these secrets in GitHub → Settings → Secrets and variables → Actions:
+#   EC2_HOST          — public IP or hostname of the EC2 instance
+#   EC2_USER          — SSH user (typically ubuntu or ec2-user)
+#   EC2_SSH_KEY       — private key content (the .pem file contents)
+#   EC2_DEPLOY_PATH   — absolute path on EC2, e.g. /home/ubuntu/ananas-ai
+
+jobs:
+  deploy:
+    name: Deploy ${{ github.ref_name }} to EC2
+    runs-on: ubuntu-latest
+
+    # CI must pass before deploy runs
+    needs: []  # TODO: add 'quality' and 'test' once CI job IDs align
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            cd ${{ secrets.EC2_DEPLOY_PATH }}
+            git fetch origin
+            git checkout ${{ github.ref_name }}
+            source .venv/bin/activate
+            pip install -e . --quiet
+            python scripts/validate_pack.py
+            echo "Deploy of ${{ github.ref_name }} complete"
+          EOF
+
+      - name: Notify Teams on success
+        if: success()
+        run: |
+          echo "TODO: post deploy success notification to #marketing-ops via Graph API"
+
+      - name: Notify Teams on failure
+        if: failure()
+        run: |
+          echo "TODO: post deploy failure alert to #marketing-ops via Graph API"

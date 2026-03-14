@@ -13,7 +13,6 @@ import argparse
 import base64
 import logging
 import os
-import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -50,8 +49,10 @@ MEDIA_TYPE = {
 
 # ── file readers ───────────────────────────────────────────────────────────────
 
+
 def read_pdf(path: Path) -> str:
     from pypdf import PdfReader
+
     reader = PdfReader(path)
     pages = [p.extract_text() or "" for p in reader.pages]
     return "\n\n".join(pages)
@@ -59,12 +60,14 @@ def read_pdf(path: Path) -> str:
 
 def read_docx(path: Path) -> str:
     from docx import Document
+
     doc = Document(path)
     return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
 
 
 def read_xlsx(path: Path) -> str:
     from openpyxl import load_workbook
+
     wb = load_workbook(path, read_only=True, data_only=True)
     rows = []
     for sheet in wb.worksheets:
@@ -140,7 +143,8 @@ def call_claude(file_path: Path, extracted: dict) -> str:
     # count existing processed sources
     sources_text = SOURCES.read_text(encoding="utf-8")
     import re
-    processed_count = len(re.findall(r"^\| ", sources_text, re.MULTILINE))
+
+    _processed_count = len(re.findall(r"^\| ", sources_text, re.MULTILINE))
 
     user_content = [
         {
@@ -154,19 +158,23 @@ def call_claude(file_path: Path, extracted: dict) -> str:
     ]
 
     if extracted["type"] == "image":
-        user_content.append({
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": extracted["media_type"],
-                "data": extracted["content"],
-            },
-        })
+        user_content.append(
+            {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": extracted["media_type"],
+                    "data": extracted["content"],
+                },
+            }
+        )
     else:
-        user_content.append({
-            "type": "text",
-            "text": f"Source content:\n\n{extracted['content'][:40000]}",  # cap at 40k chars
-        })
+        user_content.append(
+            {
+                "type": "text",
+                "text": f"Source content:\n\n{extracted['content'][:40000]}",  # cap at 40k chars
+            }
+        )
 
     log.info(f"Calling Claude for: {file_path.name}")
     response = client.messages.create(
@@ -180,6 +188,7 @@ def call_claude(file_path: Path, extracted: dict) -> str:
 
 
 # ── file processing ────────────────────────────────────────────────────────────
+
 
 def mark_processed(file_path: Path) -> None:
     PROCESSED_DIR.mkdir(exist_ok=True)
@@ -217,7 +226,7 @@ def process_file(file_path: Path) -> None:
         extracted = extract_content(file_path)
         updated_overview = call_claude(file_path, extracted)
         OVERVIEW.write_text(updated_overview, encoding="utf-8")
-        log.info(f"ananas-overview.md updated.")
+        log.info("ananas-overview.md updated.")
         update_sources_log(file_path)
         mark_processed(file_path)
         log.info(f"Done: {file_path.name}")
@@ -228,10 +237,7 @@ def process_file(file_path: Path) -> None:
 
 def process_pending() -> int:
     """Process all files currently in raw/ (excluding hidden files and subdirs)."""
-    files = [
-        f for f in RAW_DIR.iterdir()
-        if f.is_file() and not f.name.startswith(".")
-    ]
+    files = [f for f in RAW_DIR.iterdir() if f.is_file() and not f.name.startswith(".")]
     if not files:
         log.info("No pending files in raw/.")
         return 0
@@ -241,6 +247,7 @@ def process_pending() -> int:
 
 
 # ── watchdog handler ───────────────────────────────────────────────────────────
+
 
 class RawFolderHandler(FileSystemEventHandler):
     def on_created(self, event):
@@ -266,6 +273,7 @@ class RawFolderHandler(FileSystemEventHandler):
 
 
 # ── entrypoint ─────────────────────────────────────────────────────────────────
+
 
 def main():
     parser = argparse.ArgumentParser(description="Watch context/ananas/raw/ for new files.")
