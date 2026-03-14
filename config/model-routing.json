@@ -83,6 +83,24 @@
       "execution_model": "default",
       "escalation_model": "escalation",
       "phase": "phase-2"
+    },
+    "product-feed-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "customer-segmentation-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "competitor-intelligence-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
     }
   },
 

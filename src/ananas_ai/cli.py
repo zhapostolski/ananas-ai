@@ -7,10 +7,15 @@ from datetime import date
 
 import boto3
 
+from ananas_ai.agents.category_growth import CategoryGrowthAgent
+from ananas_ai.agents.competitor_intelligence import CompetitorIntelligenceAgent
 from ananas_ai.agents.crm_lifecycle import CRMLifecycleAgent
 from ananas_ai.agents.cross_channel_brief import CrossChannelBriefAgent
+from ananas_ai.agents.customer_segmentation import CustomerSegmentationAgent
 from ananas_ai.agents.marketing_ops import MarketingOpsAgent
 from ananas_ai.agents.performance import PerformanceAgent
+from ananas_ai.agents.product_feed import ProductFeedAgent
+from ananas_ai.agents.promo_simulator import PromoSimulatorAgent
 from ananas_ai.agents.reputation import ReputationAgent
 from ananas_ai.config import load_agent_channels, load_settings
 from ananas_ai.email_delivery import send_brief
@@ -53,11 +58,18 @@ def _publish_heartbeat() -> None:
 
 
 AGENT_MAP = {
+    # Phase 1
     "performance-agent": PerformanceAgent,
     "crm-lifecycle-agent": CRMLifecycleAgent,
     "reputation-agent": ReputationAgent,
     "marketing-ops-agent": MarketingOpsAgent,
     "cross-channel-brief-agent": CrossChannelBriefAgent,
+    # Phase 2
+    "product-feed-agent": ProductFeedAgent,
+    "promo-simulator-agent": PromoSimulatorAgent,
+    "customer-segmentation-agent": CustomerSegmentationAgent,
+    "category-growth-agent": CategoryGrowthAgent,
+    "competitor-intelligence-agent": CompetitorIntelligenceAgent,
 }
 
 
@@ -72,6 +84,11 @@ def _agent_channels() -> dict[str, tuple[str, str]]:
             "crm-lifecycle-agent": ("#marketing-crm", "CRM & Lifecycle Summary"),
             "reputation-agent": ("#marketing-reputation", "Reputation Summary"),
             "marketing-ops-agent": ("#marketing-ops", "Marketing Ops Summary"),
+            "product-feed-agent": ("#ai-marketing", "Product Feed Health"),
+            "promo-simulator-agent": ("#ai-marketing", "Promo Simulation"),
+            "customer-segmentation-agent": ("#ai-marketing", "Customer Segmentation"),
+            "category-growth-agent": ("#ai-marketing", "Category Growth"),
+            "competitor-intelligence-agent": ("#ai-marketing", "Competitor Intelligence"),
         }
 
 
