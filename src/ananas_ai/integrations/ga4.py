@@ -20,7 +20,10 @@ class GA4Integration(BaseIntegration):
     name = "ga4"
 
     def is_configured(self) -> bool:
-        return bool(os.environ.get("GA4_PROPERTY_ID"))
+        if not os.environ.get("GA4_PROPERTY_ID"):
+            return False
+        creds_path = os.environ.get("GA4_CREDENTIALS")
+        return not (creds_path and not os.path.exists(creds_path))
 
     def fetch(self, date_from: str, date_to: str) -> dict:
         from google.analytics.data_v1beta import BetaAnalyticsDataClient

@@ -20,7 +20,10 @@ class SearchConsoleIntegration(BaseIntegration):
     name = "search-console"
 
     def is_configured(self) -> bool:
-        return bool(os.environ.get("SEARCH_CONSOLE_SITE_URL"))
+        if not os.environ.get("SEARCH_CONSOLE_SITE_URL"):
+            return False
+        creds_path = os.environ.get("GA4_CREDENTIALS")
+        return not (creds_path and not os.path.exists(creds_path))
 
     def _service(self):
         from google.oauth2 import service_account  # type: ignore[import]
