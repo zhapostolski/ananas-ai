@@ -1,0 +1,36 @@
+# ── Ananas AI Platform — Terraform variables example ─────────────────────────
+# Copy this file to terraform.tfvars and fill in your actual values.
+# terraform.tfvars is gitignored and must never be committed.
+
+# AWS region — Frankfurt is closest to North Macedonia
+aws_region = "eu-central-1"
+
+environment = "production"
+
+# EC2 instance size — t3.xlarge (4 vCPU / 16 GB) is the Phase 1 default
+instance_type      = "t3.xlarge"
+ebs_volume_size_gb = 100
+
+# Restrict SSH to your office/home IP only — never open to 0.0.0.0/0
+# Format: ["x.x.x.x/32"] for single IP, multiple entries allowed
+allowed_ssh_cidrs = ["YOUR_PUBLIC_IP/32"]
+
+# The EC2 Key Pair must exist in your AWS account before terraform apply
+# Create with: aws ec2 create-key-pair --key-name ananas-ai-key --query KeyMaterial --output text > ~/.ssh/ananas-ai-key.pem
+key_pair_name = "ananas-ai-key"
+
+# GitHub repo to clone on EC2 first boot (owner/repo)
+github_repo = "OWNER/ananas-ai"
+
+# Portal domain (Phase 2 — not used in Phase 1 EC2 setup)
+domain_name = "ai.ananas.mk"
+
+# Email for CloudWatch alarm notifications — leave empty to disable
+alert_email = "your@email.com"
+
+# PostgreSQL settings (EC2 local instance)
+db_name = "ananas_ai"
+db_user = "ananas_ai"
+
+# Days to keep nightly database backups in S3
+s3_backup_retention_days = 30

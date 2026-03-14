@@ -26,5 +26,16 @@ Thumbs.db
 # Generated outputs
 examples/sample_outputs/*.md
 
+# Terraform state and secrets
+*.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Test coverage artifacts
+.coverage
+coverage.xml
+
 # Archives
 *.zip

@@ -63,14 +63,21 @@ def run_agent(agent_name: str) -> int:
     channel, title = AGENT_CHANNELS[agent_name]
 
     logger.info("Running %s", agent_name)
-    data = agent.sample_summary()
+    # Use run() if the agent supports live data, otherwise fall back to sample_summary()
+    run_type = "live"
+    if hasattr(agent, "run"):
+        data = agent.run(today, today)
+    else:
+        data = agent.sample_summary()
+        run_type = "sample"
+
     payload = agent.build_payload(data, today, today)
     errors = validate_agent_output(payload)
 
     if errors:
         log_agent_run(
             agent_name,
-            "sample",
+            run_type,
             payload.get("model_used", "unknown"),
             "error",
             error_message="; ".join(errors),
@@ -79,8 +86,8 @@ def run_agent(agent_name: str) -> int:
         raise SystemExit("Validation failed: " + "; ".join(errors))
 
     insert_agent_output(payload)
-    log_agent_run(agent_name, "sample", payload.get("model_used", "unknown"), "ok")
-    upsert_health(agent_name, "ok", "Sample run successful")
+    log_agent_run(agent_name, run_type, payload.get("model_used", "unknown"), "ok")
+    upsert_health(agent_name, "ok", f"{run_type.capitalize()} run successful")
     post_message(channel, title, payload["data"]["headline"])
     logger.info("Completed %s", agent_name)
     return 0
