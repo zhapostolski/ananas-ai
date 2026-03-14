@@ -7,12 +7,13 @@ terraform {
     }
   }
 
-  # Uncomment to store state in S3 (recommended for team use)
-  # backend "s3" {
-  #   bucket = "ananas-ai-terraform-state"
-  #   key    = "production/terraform.tfstate"
-  #   region = "eu-central-1"
-  # }
+  backend "s3" {
+    bucket         = "ananas-ai-terraform-state"
+    key            = "production/terraform.tfstate"
+    region         = "eu-central-1"
+    encrypt        = true
+    dynamodb_table = "ananas-ai-terraform-locks"
+  }
 }
 
 provider "aws" {
