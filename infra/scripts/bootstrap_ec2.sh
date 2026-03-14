@@ -126,24 +126,25 @@ CRON_FILE="/etc/cron.d/ananas-ai"
 cat > "$CRON_FILE" << 'CRONEOF'
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+ANANAS_ROOT=/home/ubuntu/ananas-ai
 
 # Ananas AI Phase 1 agent schedule (UTC)
-# MKD is UTC+1 (winter) / UTC+2 (summer) — adjust times seasonally
+# MKD is UTC+1 (winter) / UTC+2 (summer) -- adjust times seasonally
 
-# Performance Agent — 06:00 MKD → 05:00 UTC
-0 5 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python -m ananas_ai.cli run-agent performance-agent >> /var/log/ananas-agents.log 2>&1
+# Performance Agent -- 06:00 MKD -> 05:00 UTC
+0 5 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python3 -m ananas_ai.cli run-agent performance-agent >> /var/log/ananas-agents.log 2>&1
 
-# CRM & Lifecycle Agent — 06:30 MKD → 05:30 UTC
-30 5 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python -m ananas_ai.cli run-agent crm-lifecycle-agent >> /var/log/ananas-agents.log 2>&1
+# CRM & Lifecycle Agent -- 06:30 MKD -> 05:30 UTC
+30 5 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python3 -m ananas_ai.cli run-agent crm-lifecycle-agent >> /var/log/ananas-agents.log 2>&1
 
-# Reputation Agent — 07:00 MKD → 06:00 UTC
-0 6 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python -m ananas_ai.cli run-agent reputation-agent >> /var/log/ananas-agents.log 2>&1
+# Reputation Agent -- 07:00 MKD -> 06:00 UTC
+0 6 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python3 -m ananas_ai.cli run-agent reputation-agent >> /var/log/ananas-agents.log 2>&1
 
-# Marketing Ops Agent — 07:15 MKD → 06:15 UTC
-15 6 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python -m ananas_ai.cli run-agent marketing-ops-agent >> /var/log/ananas-agents.log 2>&1
+# Marketing Ops Agent -- 07:15 MKD -> 06:15 UTC
+15 6 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python3 -m ananas_ai.cli run-agent marketing-ops-agent >> /var/log/ananas-agents.log 2>&1
 
-# Cross-Channel Brief — 07:30 MKD → 06:30 UTC
-30 6 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python -m ananas_ai.cli run-brief >> /var/log/ananas-agents.log 2>&1
+# Cross-Channel Brief -- 07:30 MKD -> 06:30 UTC
+30 6 * * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python3 -m ananas_ai.cli run-brief >> /var/log/ananas-agents.log 2>&1
 
 # Nightly DB backup to S3 — 02:00 UTC
 0 2 * * * ubuntu /home/ubuntu/ananas-ai/infra/scripts/backup_db.sh >> /var/log/ananas-backup.log 2>&1
