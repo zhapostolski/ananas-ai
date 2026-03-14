@@ -3,10 +3,10 @@
 Required env vars:
   GA4_CREDENTIALS        -- path to Google service account JSON (shared with GA4)
   GBP_ACCOUNT_ID         -- Google Business Profile account ID (e.g. accounts/123456789)
-  GBP_LOCATION_ID        -- Location ID (e.g. locations/987654321)
+  GBP_LOCATION_ID        -- Location numeric ID (e.g. 987654321, without "locations/" prefix)
 
-The service account must be granted access to the Google Business Profile
-in the Google Business Profile dashboard (business.google.com).
+The service account must be added as a Manager in business.google.com for the
+location. Uses the current mybusinessreviews v1 API (mybusiness v4 is deprecated).
 """
 
 from __future__ import annotations
@@ -17,6 +17,10 @@ from ananas_ai.integrations.base import BaseIntegration
 from ananas_ai.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+_REVIEWS_DISCOVERY = (
+    "https://mybusinessreviews.googleapis.com/$discovery/rest?version=v1"
+)
 
 
 class GoogleBusinessIntegration(BaseIntegration):
@@ -37,22 +41,25 @@ class GoogleBusinessIntegration(BaseIntegration):
         from googleapiclient.discovery import build  # type: ignore[import]
 
         creds_path = os.environ["GA4_CREDENTIALS"]
-        account_id = os.environ["GBP_ACCOUNT_ID"]
-        location_id = os.environ["GBP_LOCATION_ID"]
+        location_id = os.environ["GBP_LOCATION_ID"].lstrip("locations/")
 
         scopes = ["https://www.googleapis.com/auth/business.manage"]
         credentials = service_account.Credentials.from_service_account_file(
             creds_path, scopes=scopes
         )
 
-        service = build("mybusiness", "v4", credentials=credentials, cache_discovery=False)
+        service = build(
+            "mybusinessreviews",
+            "v1",
+            credentials=credentials,
+            discoveryServiceUrl=_REVIEWS_DISCOVERY,
+            cache_discovery=False,
+        )
 
-        location_name = f"{account_id}/{location_id}"
+        location_name = f"locations/{location_id}"
 
-        # Fetch reviews
         reviews_resp = (
-            service.accounts()
-            .locations()
+            service.locations()
             .reviews()
             .list(parent=location_name, pageSize=50)
             .execute()
