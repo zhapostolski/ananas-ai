@@ -17,7 +17,7 @@ def project_root() -> Path:
 def load_json(rel_path: str) -> dict[str, Any]:
     path = project_root() / rel_path
     with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        return json.load(f)  # type: ignore[no-any-return]
 
 
 @dataclass(frozen=True)

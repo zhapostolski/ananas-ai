@@ -55,7 +55,7 @@ def insert_agent_output(payload: dict) -> int:
             ),
         )
         conn.commit()
-        return int(cur.lastrowid)
+        return int(cur.lastrowid or 0)
     finally:
         conn.close()
 

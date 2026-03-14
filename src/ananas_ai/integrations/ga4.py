@@ -54,7 +54,7 @@ class GA4Integration(BaseIntegration):
             ],
         )
         overview = client.run_report(overview_req)
-        row = overview.rows[0].metric_values if overview.rows else [None] * 5
+        row = overview.rows[0].metric_values if overview.rows else [None] * 5  # type: ignore[list-item]
 
         def val(r, i, cast=float):
             try:

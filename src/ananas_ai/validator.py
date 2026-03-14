@@ -5,9 +5,9 @@ import json
 from .config import project_root
 
 
-def _load_schema(name: str) -> dict:
+def _load_schema(name: str) -> dict:  # type: ignore[return]
     path = project_root() / "schemas" / name
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
 
 
 def validate_required_fields(payload: dict, schema_name: str) -> list[str]:

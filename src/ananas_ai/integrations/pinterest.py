@@ -40,7 +40,7 @@ class PinterestAdsIntegration(BaseIntegration):
             timeout=30,
         )
         resp.raise_for_status()
-        return resp.json()
+        return resp.json()  # type: ignore[no-any-return]
 
     def fetch(self, date_from: str, date_to: str) -> dict:
         account_id = os.environ["PINTEREST_AD_ACCOUNT_ID"]

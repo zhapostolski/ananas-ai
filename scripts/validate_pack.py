@@ -9,7 +9,7 @@ required_files = [
     ".claude/settings.json",
     "docs/project-summary.md",
     "docs/architecture/architecture-v1.md",
-    "docs/budgets/budget-v1.md",
+    "docs/budget/budget.md",
     "docs/roadmap/phase-1-roadmap.md",
     "config/agents.json",
     "config/model-routing.json",
