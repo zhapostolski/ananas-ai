@@ -15,12 +15,26 @@ PYTHON_VERSION="3.12"
 
 # ── System packages ───────────────────────────────────────────────────────────
 apt-get update -y
+apt-get install -y software-properties-common
+
+# Python 3.12 requires deadsnakes PPA on Ubuntu 22.04
+add-apt-repository ppa:deadsnakes/ppa -y
+apt-get update -y
 apt-get install -y \
     python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python3-pip \
     postgresql postgresql-contrib \
     git curl jq unzip \
-    amazon-cloudwatch-agent \
     awscli
+
+# CloudWatch agent — not in standard Ubuntu repos, install from AWS S3
+curl -sO https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+dpkg -i amazon-cloudwatch-agent.deb
+rm -f amazon-cloudwatch-agent.deb
+
+# SSM agent — enables GitHub Actions deploy without SSH port exposure
+snap install amazon-ssm-agent --classic
+systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
+systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
 
 # ── PostgreSQL ────────────────────────────────────────────────────────────────
 systemctl enable postgresql
