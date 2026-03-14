@@ -25,6 +25,7 @@ Thumbs.db
 
 # Generated outputs
 examples/sample_outputs/*.md
+examples/sample_outputs/*.json
 
 # Terraform state and secrets
 *.tfvars

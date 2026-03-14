@@ -1,0 +1,60 @@
+{
+  "version": "v1",
+  "last_updated": "2026-03-14",
+  "notes": "Teams channel and email output configuration for all agents. Set TEAMS_WEBHOOK_URL env var for a single default webhook, or add per-channel webhook_url overrides below.",
+
+  "teams_channels": {
+    "marketing-performance": {
+      "channel": "#marketing-performance",
+      "display_title": "Performance Summary",
+      "agent": "performance-agent",
+      "webhook_env_var": "TEAMS_WEBHOOK_PERFORMANCE",
+      "fallback_to_default": true
+    },
+    "marketing-crm": {
+      "channel": "#marketing-crm",
+      "display_title": "CRM & Lifecycle Summary",
+      "agent": "crm-lifecycle-agent",
+      "webhook_env_var": "TEAMS_WEBHOOK_CRM",
+      "fallback_to_default": true
+    },
+    "marketing-reputation": {
+      "channel": "#marketing-reputation",
+      "display_title": "Reputation Summary",
+      "agent": "reputation-agent",
+      "webhook_env_var": "TEAMS_WEBHOOK_REPUTATION",
+      "fallback_to_default": true
+    },
+    "marketing-ops": {
+      "channel": "#marketing-ops",
+      "display_title": "Marketing Ops Summary",
+      "agent": "marketing-ops-agent",
+      "webhook_env_var": "TEAMS_WEBHOOK_OPS",
+      "fallback_to_default": true
+    },
+    "marketing-summary": {
+      "channel": "#marketing-summary",
+      "display_title": "Daily Marketing Brief",
+      "agent": "cross-channel-brief-agent",
+      "webhook_env_var": "TEAMS_WEBHOOK_SUMMARY",
+      "fallback_to_default": true
+    },
+    "executive-summary": {
+      "channel": "#executive-summary",
+      "display_title": "Executive Summary",
+      "agent": "cross-channel-brief-agent",
+      "webhook_env_var": "TEAMS_WEBHOOK_EXECUTIVE",
+      "fallback_to_default": true
+    }
+  },
+
+  "email": {
+    "daily_brief": {
+      "to": "denis@ananas.mk",
+      "subject_template": "Daily Marketing Brief — {date}",
+      "from_env_var": "OUTLOOK_FROM_ADDRESS",
+      "to_env_var": "OUTLOOK_TO_ADDRESS",
+      "agent": "cross-channel-brief-agent"
+    }
+  }
+}

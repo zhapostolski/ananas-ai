@@ -211,22 +211,30 @@
       "metrics": {
         "app_installs_daily": {
           "formula": "new_installs per day",
+          "owner": "product",
+          "refresh": "daily",
           "source": "firebase-or-adjust",
           "phase": "phase-2"
         },
         "app_dau_mau": {
           "formula": "daily_active_users / monthly_active_users",
+          "owner": "product",
+          "refresh": "daily",
           "source": "firebase-or-adjust",
           "target": ">25%",
           "phase": "phase-2"
         },
         "push_opt_in_rate": {
           "formula": "users_who_opted_in / total_app_installs * 100",
+          "owner": "product",
+          "refresh": "weekly",
           "source": "firebase-or-adjust",
           "phase": "phase-2"
         },
         "app_vs_web_conversion": {
           "formula": "app_cvr / web_cvr",
+          "owner": "product",
+          "refresh": "daily",
           "source": "ga4 + firebase",
           "phase": "phase-2"
         }
@@ -310,14 +318,20 @@
       "metrics": {
         "promo_expected_gmv_lift": {
           "formula": "baseline_gmv * expected_uplift_pct",
+          "owner": "commercial",
+          "refresh": "per_promo",
           "note": "Estimated before promo launch"
         },
         "promo_margin_impact": {
           "formula": "promo_gmv_lift * (1 - discount_pct) - promo_costs",
+          "owner": "finance",
+          "refresh": "per_promo",
           "note": "Estimated margin after discount"
         },
         "promo_break_even_volume": {
           "formula": "promo_costs / (contribution_margin_per_order * expected_uplift)",
+          "owner": "finance",
+          "refresh": "per_promo",
           "note": "Minimum volume for promo to break even"
         }
       }

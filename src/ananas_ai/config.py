@@ -28,6 +28,7 @@ class Settings:
     schedules: dict[str, Any]
     integrations: dict[str, Any]
     metrics: dict[str, Any]
+    output_channels: dict[str, Any]
 
 
 def load_settings() -> Settings:
@@ -38,4 +39,16 @@ def load_settings() -> Settings:
         schedules=load_json("config/schedules.json"),
         integrations=load_json("config/integrations-matrix.json"),
         metrics=load_json("config/metrics.json"),
+        output_channels=load_json("config/output-channels.json"),
     )
+
+
+def load_agent_channels() -> dict[str, tuple[str, str]]:
+    """Return {agent_name: (channel, display_title)} from output-channels.json."""
+    channels = load_json("config/output-channels.json")
+    result: dict[str, tuple[str, str]] = {}
+    for _key, cfg in channels.get("teams_channels", {}).items():
+        agent = cfg.get("agent")
+        if agent:
+            result[agent] = (cfg["channel"], cfg["display_title"])
+    return result

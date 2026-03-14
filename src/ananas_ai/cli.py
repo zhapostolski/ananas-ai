@@ -8,7 +8,7 @@ from ananas_ai.agents.cross_channel_brief import CrossChannelBriefAgent
 from ananas_ai.agents.marketing_ops import MarketingOpsAgent
 from ananas_ai.agents.performance import PerformanceAgent
 from ananas_ai.agents.reputation import ReputationAgent
-from ananas_ai.config import load_settings
+from ananas_ai.config import load_agent_channels, load_settings
 from ananas_ai.logging_config import get_logger
 from ananas_ai.persistence import (
     bootstrap,
@@ -31,12 +31,19 @@ AGENT_MAP = {
     "cross-channel-brief-agent": CrossChannelBriefAgent,
 }
 
-AGENT_CHANNELS = {
-    "performance-agent": ("#marketing-performance", "Performance Summary"),
-    "crm-lifecycle-agent": ("#marketing-crm", "CRM & Lifecycle Summary"),
-    "reputation-agent": ("#marketing-reputation", "Reputation Summary"),
-    "marketing-ops-agent": ("#marketing-ops", "Marketing Ops Summary"),
-}
+
+def _agent_channels() -> dict[str, tuple[str, str]]:
+    """Load agent → (channel, title) mapping from config/output-channels.json."""
+    try:
+        return load_agent_channels()
+    except Exception:
+        # Fallback so CLI never hard-breaks if config is temporarily unavailable
+        return {
+            "performance-agent": ("#marketing-performance", "Performance Summary"),
+            "crm-lifecycle-agent": ("#marketing-crm", "CRM & Lifecycle Summary"),
+            "reputation-agent": ("#marketing-reputation", "Reputation Summary"),
+            "marketing-ops-agent": ("#marketing-ops", "Marketing Ops Summary"),
+        }
 
 
 def _daily_cap() -> int:
@@ -78,7 +85,8 @@ def doctor() -> int:
 def run_agent(agent_name: str) -> int:
     if agent_name not in AGENT_MAP:
         raise SystemExit(f"Unknown agent: {agent_name}")
-    if agent_name not in AGENT_CHANNELS:
+    agent_channels = _agent_channels()
+    if agent_name not in agent_channels:
         raise SystemExit("Use run-brief for the cross-channel brief.")
 
     bootstrap()
@@ -88,7 +96,7 @@ def run_agent(agent_name: str) -> int:
 
     agent = AGENT_MAP[agent_name]()
     today = str(date.today())
-    channel, title = AGENT_CHANNELS[agent_name]
+    channel, title = agent_channels[agent_name]
 
     logger.info("Running %s", agent_name)
     data = agent.run(today, today)
@@ -198,8 +206,10 @@ def run_brief() -> int:
                 "ok",
                 f"{run_type.capitalize()} run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
             )
-            channel, title = AGENT_CHANNELS[agent_name]
-            post_message(channel, title, data.get("analysis", data.get("headline", "")))
+            ch_cfg = _agent_channels()
+            if agent_name in ch_cfg:
+                ch, ch_title = ch_cfg[agent_name]
+                post_message(ch, ch_title, data.get("analysis", data.get("headline", "")))
         specialist_payloads.append(pl)
 
     logger.info("Running cross-channel-brief-agent")

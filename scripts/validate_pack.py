@@ -16,6 +16,7 @@ required_files = [
     "config/schedules.json",
     "config/integrations-matrix.json",
     "config/metrics.json",
+    "config/output-channels.json",
     "diagrams/source/architecture-v1.mmd",
 ]
 
@@ -25,6 +26,7 @@ json_files = [
     "config/schedules.json",
     "config/integrations-matrix.json",
     "config/metrics.json",
+    "config/output-channels.json",
     "config/output-schema-summary.json",
     "config/project-overview.json",
     ".claude/settings.json",
@@ -60,6 +62,18 @@ if agents.exists() and schedules.exists():
 subagents = list((ROOT / ".claude/agents").glob("*.md"))
 if len(subagents) < 5:
     errors.append("Expected at least 5 project subagents")
+
+metrics_path = ROOT / "config/metrics.json"
+if metrics_path.exists():
+    metrics_data = json.loads(metrics_path.read_text(encoding="utf-8"))
+    required_metric_fields = {"formula", "owner", "refresh"}
+    for group_name, group in metrics_data.get("groups", {}).items():
+        for metric_name, metric in group.get("metrics", {}).items():
+            missing = required_metric_fields - set(metric.keys())
+            if missing:
+                errors.append(
+                    f"metrics.json: {group_name}/{metric_name} missing fields: {sorted(missing)}"
+                )
 
 if errors:
     print("VALIDATION FAILED")
