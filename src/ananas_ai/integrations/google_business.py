@@ -18,9 +18,7 @@ from ananas_ai.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-_REVIEWS_DISCOVERY = (
-    "https://mybusinessreviews.googleapis.com/$discovery/rest?version=v1"
-)
+_REVIEWS_DISCOVERY = "https://mybusinessreviews.googleapis.com/$discovery/rest?version=v1"
 
 
 class GoogleBusinessIntegration(BaseIntegration):
@@ -41,7 +39,8 @@ class GoogleBusinessIntegration(BaseIntegration):
         from googleapiclient.discovery import build  # type: ignore[import]
 
         creds_path = os.environ["GA4_CREDENTIALS"]
-        location_id = os.environ["GBP_LOCATION_ID"].lstrip("locations/")
+        raw_location = os.environ["GBP_LOCATION_ID"]
+        location_id = raw_location.removeprefix("locations/")
 
         scopes = ["https://www.googleapis.com/auth/business.manage"]
         credentials = service_account.Credentials.from_service_account_file(
@@ -59,10 +58,7 @@ class GoogleBusinessIntegration(BaseIntegration):
         location_name = f"locations/{location_id}"
 
         reviews_resp = (
-            service.locations()
-            .reviews()
-            .list(parent=location_name, pageSize=50)
-            .execute()
+            service.locations().reviews().list(parent=location_name, pageSize=50).execute()
         )
 
         reviews = reviews_resp.get("reviews", [])
