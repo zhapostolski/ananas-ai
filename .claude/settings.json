@@ -4,12 +4,12 @@
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./secrets/**)",
-      "Read(./config/credentials/**)",
-      "Read(./build/**)"
+      "Read(./config/secrets/**)",
+      "Bash(curl:*)"
     ]
   },
   "env": {
-    "ANANAS_ENV": "project",
-    "ANANAS_TIMEZONE": "Europe/Skopje"
+    "AI_PLATFORM_PHASE": "v1-marketing",
+    "AI_PLATFORM_DOMAIN": "ai.ananas.mk"
   }
 }
