@@ -1,16 +1,14 @@
-"""Email delivery via Microsoft Graph API.
+"""Email delivery via AWS SES.
 
-Sends the daily brief to configured recipients using the same Azure AD
-app registration as Teams (TEAMS_CLIENT_ID / TEAMS_CLIENT_SECRET / TEAMS_TENANT_ID).
+Sends the daily brief using AWS SES -- no extra credentials needed beyond
+the IAM role already attached to EC2 (or AWS_* env vars locally).
 
 Required env vars:
-  TEAMS_CLIENT_ID       -- Azure AD app client ID
-  TEAMS_CLIENT_SECRET   -- Azure AD app client secret
-  TEAMS_TENANT_ID       -- Azure AD tenant ID
-  OUTLOOK_FROM_ADDRESS  -- sender address (must be a mailbox the app has Mail.Send for)
-  OUTLOOK_TO_ADDRESS    -- comma-separated recipient addresses
+  EMAIL_FROM_ADDRESS  -- verified SES sender (e.g. zharko.apostolski@ananas.mk)
+  EMAIL_TO_ADDRESS    -- comma-separated recipients
 
-The Azure AD app must have the Graph API application permission: Mail.Send
+The sender address must be verified in SES. Run once to verify:
+  aws ses verify-email-identity --email-address your@email.com --region eu-central-1
 """
 
 from __future__ import annotations
@@ -23,55 +21,17 @@ from ananas_ai.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-GRAPH_TOKEN_URL = "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"
-GRAPH_SEND_URL = "https://graph.microsoft.com/v1.0/users/{sender}/sendMail"
+SES_REGION = os.environ.get("AWS_REGION", "eu-central-1")
 
 
 def is_configured() -> bool:
-    required = [
-        "TEAMS_CLIENT_ID",
-        "TEAMS_CLIENT_SECRET",
-        "TEAMS_TENANT_ID",
-        "OUTLOOK_FROM_ADDRESS",
-        "OUTLOOK_TO_ADDRESS",
-    ]
-    return all(os.environ.get(k) for k in required)
-
-
-def _get_token() -> str:
-    import requests  # noqa: PLC0415
-
-    tenant = os.environ["TEAMS_TENANT_ID"]
-    resp = requests.post(
-        GRAPH_TOKEN_URL.format(tenant=tenant),
-        data={
-            "grant_type": "client_credentials",
-            "client_id": os.environ["TEAMS_CLIENT_ID"],
-            "client_secret": os.environ["TEAMS_CLIENT_SECRET"],
-            "scope": "https://graph.microsoft.com/.default",
-        },
-        timeout=15,
-    )
-    resp.raise_for_status()
-    return resp.json()["access_token"]  # type: ignore[no-any-return]
-
-
-def _build_payload(subject: str, body_text: str, to_addresses: list[str]) -> dict:
-    html_body = "<br>".join(body_text.splitlines())
-    return {
-        "message": {
-            "subject": subject,
-            "body": {"contentType": "HTML", "content": html_body},
-            "toRecipients": [{"emailAddress": {"address": addr}} for addr in to_addresses],
-        },
-        "saveToSentItems": "false",
-    }
+    return bool(os.environ.get("EMAIL_FROM_ADDRESS") and os.environ.get("EMAIL_TO_ADDRESS"))
 
 
 def send_brief(title: str, body: str, today: date | None = None) -> dict:
-    """Send the daily brief email.
+    """Send the daily brief email via SES.
 
-    Falls back to writing a local file if not configured or if the send fails.
+    Falls back to writing a local file if not configured or send fails.
     """
     if today is None:
         today = date.today()
@@ -81,23 +41,29 @@ def send_brief(title: str, body: str, today: date | None = None) -> dict:
     if not is_configured():
         return _write_local(subject, body)
 
-    from_addr = os.environ["OUTLOOK_FROM_ADDRESS"]
-    to_addrs = [a.strip() for a in os.environ["OUTLOOK_TO_ADDRESS"].split(",") if a.strip()]
+    from_addr = os.environ["EMAIL_FROM_ADDRESS"]
+    to_addrs = [a.strip() for a in os.environ["EMAIL_TO_ADDRESS"].split(",") if a.strip()]
 
     try:
-        import requests  # noqa: PLC0415
+        import boto3  # noqa: PLC0415
 
-        token = _get_token()
-        payload = _build_payload(subject, body, to_addrs)
-        resp = requests.post(
-            GRAPH_SEND_URL.format(sender=from_addr),
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-            json=payload,
-            timeout=15,
+        ses = boto3.client("ses", region_name=SES_REGION)
+        html_body = "<br>".join(body.splitlines())
+
+        resp = ses.send_email(
+            Source=from_addr,
+            Destination={"ToAddresses": to_addrs},
+            Message={
+                "Subject": {"Data": subject, "Charset": "UTF-8"},
+                "Body": {
+                    "Html": {"Data": html_body, "Charset": "UTF-8"},
+                    "Text": {"Data": body, "Charset": "UTF-8"},
+                },
+            },
         )
-        resp.raise_for_status()
-        logger.info("email: sent to %s (HTTP %s)", to_addrs, resp.status_code)
-        return {"status": "ok", "recipients": to_addrs, "http_status": resp.status_code}
+        msg_id = resp["MessageId"]
+        logger.info("email: sent to %s (MessageId: %s)", to_addrs, msg_id)
+        return {"status": "ok", "recipients": to_addrs, "message_id": msg_id}
     except Exception as e:
         logger.error("email: send failed: %s", e)
         local = _write_local(subject, body)
