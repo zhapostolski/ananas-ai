@@ -86,17 +86,19 @@ resource "aws_cloudwatch_dashboard" "main" {
       {
         type = "metric"
         properties = {
-          title  = "EC2 CPU"
+          title   = "EC2 CPU"
+          region  = var.aws_region
           metrics = [["AWS/EC2", "CPUUtilization", "InstanceId", aws_instance.runtime.id]]
-          period = 300
-          stat   = "Average"
-          view   = "timeSeries"
+          period  = 300
+          stat    = "Average"
+          view    = "timeSeries"
         }
       },
       {
         type = "metric"
         properties = {
-          title  = "EC2 Network"
+          title   = "EC2 Network"
+          region  = var.aws_region
           metrics = [
             ["AWS/EC2", "NetworkIn",  "InstanceId", aws_instance.runtime.id],
             ["AWS/EC2", "NetworkOut", "InstanceId", aws_instance.runtime.id],

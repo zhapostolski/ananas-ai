@@ -17,7 +17,7 @@ resource "aws_secretsmanager_secret" "openai" {
 
 resource "aws_secretsmanager_secret" "google" {
   name                    = "ananas-ai/google"
-  description             = "Google credentials — GA4, Ads, Search Console service account"
+  description             = "Google credentials - GA4, Ads, Search Console service account"
   recovery_window_in_days = 7
 }
 

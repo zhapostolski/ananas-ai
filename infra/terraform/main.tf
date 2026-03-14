@@ -88,7 +88,7 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_security_group" "runtime" {
   name        = "ananas-ai-runtime"
-  description = "Ananas AI runtime host — SSH from trusted IPs, all outbound"
+  description = "Ananas AI runtime host - SSH from trusted IPs, all outbound"
   vpc_id      = aws_vpc.main.id
 
   dynamic "ingress" {
