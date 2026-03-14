@@ -231,7 +231,7 @@ def run_brief() -> int:
             executor.submit(_run_one_specialist, name, agent, today): name
             for name, agent in specialists
         }
-        results: dict[str, object] = {}
+        results: dict[str, dict] = {}
         for future in as_completed(future_to_name):
             name = future_to_name[future]
             results[name] = future.result()

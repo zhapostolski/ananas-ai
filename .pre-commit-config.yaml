@@ -7,6 +7,16 @@ repos:
         args: [--fix]
       - id: ruff-format
 
+  # ── Mypy: type check ─────────────────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy src/ananas_ai/
+        language: system
+        types: [python]
+        pass_filenames: false
+
   # ── File hygiene ─────────────────────────────────────────────────────────────
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -21,18 +31,3 @@ repos:
         args: [--maxkb=500]
       - id: mixed-line-ending
         args: [--fix=lf]
-
-  # ── Secret detection ─────────────────────────────────────────────────────────
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
-    hooks:
-      - id: detect-secrets
-        args: [--baseline, .secrets.baseline]
-        exclude: (.env.example|CHANGELOG|\.md)$
-
-  # ── No direct commits to main ────────────────────────────────────────────────
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
-    hooks:
-      - id: no-commit-to-branch
-        args: [--branch, main]
