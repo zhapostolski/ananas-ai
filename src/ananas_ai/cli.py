@@ -12,6 +12,7 @@ from ananas_ai.config import load_settings
 from ananas_ai.logging_config import get_logger
 from ananas_ai.persistence import (
     bootstrap,
+    fetch_daily_tokens,
     fetch_latest_outputs,
     insert_agent_output,
     log_agent_run,
@@ -38,6 +39,29 @@ AGENT_CHANNELS = {
 }
 
 
+def _daily_cap() -> int:
+    try:
+        return int(load_settings().model_routing["controls"]["per_day_token_cap_per_agent"])
+    except Exception:
+        return 200_000
+
+
+def _check_daily_cap(agent_name: str) -> bool:
+    """Return True if agent is within daily token cap, False if exceeded."""
+    cap = _daily_cap()
+    used = fetch_daily_tokens(agent_name)
+    if used >= cap:
+        logger.warning(
+            "%s: daily token cap reached (%d/%d tokens) — skipping run",
+            agent_name,
+            used,
+            cap,
+        )
+        upsert_health(agent_name, "warning", f"Daily token cap reached ({used:,}/{cap:,} tokens)")
+        return False
+    return True
+
+
 def doctor() -> int:
     settings = load_settings()
     logger.info("Project:       %s", settings.project_overview["project_name"])
@@ -58,38 +82,57 @@ def run_agent(agent_name: str) -> int:
         raise SystemExit("Use run-brief for the cross-channel brief.")
 
     bootstrap()
+
+    if not _check_daily_cap(agent_name):
+        return 0
+
     agent = AGENT_MAP[agent_name]()
     today = str(date.today())
     channel, title = AGENT_CHANNELS[agent_name]
 
     logger.info("Running %s", agent_name)
-    # Use run() if the agent supports live data, otherwise fall back to sample_summary()
-    run_type = "live"
-    if hasattr(agent, "run"):
-        data = agent.run(today, today)
-    else:
-        data = agent.sample_summary()
-        run_type = "sample"
+    data = agent.run(today, today)
+    run_type = "live" if data.get("sources_active") or data.get("sources_live") else "sample"
 
     payload = agent.build_payload(data, today, today)
     errors = validate_agent_output(payload)
+
+    tokens_in = data.get("tokens_in", 0)
+    tokens_out = data.get("tokens_out", 0)
+    cost = data.get("estimated_cost", 0.0)
+    actual_model = data.get("model_used", payload.get("model_used", "unknown"))
 
     if errors:
         log_agent_run(
             agent_name,
             run_type,
-            payload.get("model_used", "unknown"),
+            actual_model,
             "error",
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            estimated_cost=cost,
             error_message="; ".join(errors),
         )
         upsert_health(agent_name, "error", "; ".join(errors))
         raise SystemExit("Validation failed: " + "; ".join(errors))
 
     insert_agent_output(payload)
-    log_agent_run(agent_name, run_type, payload.get("model_used", "unknown"), "ok")
-    upsert_health(agent_name, "ok", f"{run_type.capitalize()} run successful")
-    post_message(channel, title, payload["data"]["headline"])
-    logger.info("Completed %s", agent_name)
+    log_agent_run(
+        agent_name,
+        run_type,
+        actual_model,
+        "ok",
+        tokens_in=tokens_in,
+        tokens_out=tokens_out,
+        estimated_cost=cost,
+    )
+    upsert_health(
+        agent_name,
+        "ok",
+        f"{run_type.capitalize()} run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
+    )
+    post_message(channel, title, data.get("analysis", data.get("headline", "")))
+    logger.info("Completed %s (%d tokens, $%.4f)", agent_name, tokens_in + tokens_out, cost)
     return 0
 
 
@@ -111,52 +154,104 @@ def run_brief() -> int:
     ]
     specialist_payloads = []
     for agent_name, agent in specialists:
+        if not _check_daily_cap(agent_name):
+            specialist_payloads.append(agent.build_payload(agent.sample_summary(), today, today))
+            continue
+
         logger.info("  Running %s", agent_name)
         data = agent.run(today, today)
         pl = agent.build_payload(data, today, today)
         errors = validate_agent_output(pl)
         run_type = "live" if data.get("sources_active") or data.get("sources_live") else "sample"
+
+        tokens_in = data.get("tokens_in", 0)
+        tokens_out = data.get("tokens_out", 0)
+        cost = data.get("estimated_cost", 0.0)
+        actual_model = data.get("model_used", pl.get("model_used", "unknown"))
+
         if errors:
             log_agent_run(
                 agent_name,
                 run_type,
-                pl.get("model_used", "unknown"),
+                actual_model,
                 "error",
+                tokens_in=tokens_in,
+                tokens_out=tokens_out,
+                estimated_cost=cost,
                 error_message="; ".join(errors),
             )
             upsert_health(agent_name, "error", "; ".join(errors))
             logger.warning("  %s validation errors: %s", agent_name, errors)
         else:
             insert_agent_output(pl)
-            log_agent_run(agent_name, run_type, pl.get("model_used", "unknown"), "ok")
-            upsert_health(agent_name, "ok", f"{run_type.capitalize()} run successful")
+            log_agent_run(
+                agent_name,
+                run_type,
+                actual_model,
+                "ok",
+                tokens_in=tokens_in,
+                tokens_out=tokens_out,
+                estimated_cost=cost,
+            )
+            upsert_health(
+                agent_name,
+                "ok",
+                f"{run_type.capitalize()} run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
+            )
             channel, title = AGENT_CHANNELS[agent_name]
-            post_message(channel, title, pl["data"].get("analysis", pl["data"].get("headline", "")))
+            post_message(channel, title, data.get("analysis", data.get("headline", "")))
         specialist_payloads.append(pl)
 
     logger.info("Running cross-channel-brief-agent")
+    if not _check_daily_cap("cross-channel-brief-agent"):
+        return 0
+
     data = brief.build_from_specialists(specialist_payloads)
     payload = brief.build_payload(data, today, today, complexity="high")
     errors = validate_agent_output(payload)
+
+    tokens_in = data.get("tokens_in", 0)
+    tokens_out = data.get("tokens_out", 0)
+    cost = data.get("estimated_cost", 0.0)
+    actual_model = data.get("model_used", payload.get("model_used", "unknown"))
 
     if errors:
         log_agent_run(
             "cross-channel-brief-agent",
             "live",
-            payload.get("model_used", "unknown"),
+            actual_model,
             "error",
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            estimated_cost=cost,
             error_message="; ".join(errors),
         )
         upsert_health("cross-channel-brief-agent", "error", "; ".join(errors))
         raise SystemExit("Validation failed: " + "; ".join(errors))
 
     insert_agent_output(payload)
-    log_agent_run("cross-channel-brief-agent", "live", payload.get("model_used", "unknown"), "ok")
-    upsert_health("cross-channel-brief-agent", "ok", "Live run successful")
-    analysis = payload["data"].get("analysis", payload["data"].get("headline", "Brief ready."))
+    log_agent_run(
+        "cross-channel-brief-agent",
+        "live",
+        actual_model,
+        "ok",
+        tokens_in=tokens_in,
+        tokens_out=tokens_out,
+        estimated_cost=cost,
+    )
+    upsert_health(
+        "cross-channel-brief-agent",
+        "ok",
+        f"Live run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
+    )
+    analysis = data.get("analysis", data.get("headline", "Brief ready."))
     post_message("#marketing-summary", "Daily Marketing Brief", analysis)
     post_message("#executive-summary", "Executive Summary", analysis)
-    logger.info("Completed cross-channel-brief-agent")
+    logger.info(
+        "Completed cross-channel-brief-agent (%d tokens, $%.4f)",
+        tokens_in + tokens_out,
+        cost,
+    )
     return 0
 
 

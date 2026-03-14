@@ -50,11 +50,20 @@ class CrossChannelBriefAgent(BaseAgent):
         headline = "Cross-channel marketing brief"
         analysis = ""
 
+        tokens_in, tokens_out, cost = 0, 0, 0.0
         try:
             result = call_model(route.model, system, user)
             analysis = result["text"]
             headline = analysis.split("\n")[0][:100] if analysis else headline
-            logger.info("cross-channel-brief-agent: synthesis complete (%d chars)", len(analysis))
+            tokens_in = result["tokens_in"]
+            tokens_out = result["tokens_out"]
+            cost = result["estimated_cost"]
+            logger.info(
+                "cross-channel-brief-agent: synthesis complete (%d chars, %d tokens, $%.4f)",
+                len(analysis),
+                tokens_in + tokens_out,
+                cost,
+            )
         except Exception as e:
             logger.error("cross-channel-brief-agent: model call failed: %s", e)
             analysis = "Cross-channel brief — model unavailable. Check agent logs."
@@ -68,4 +77,7 @@ class CrossChannelBriefAgent(BaseAgent):
                 for o in specialist_outputs
                 if o.get("data", {}).get("sources_active")
             ],
+            "tokens_in": tokens_in,
+            "tokens_out": tokens_out,
+            "estimated_cost": cost,
         }

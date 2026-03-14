@@ -65,16 +65,45 @@ def log_agent_run(
     run_type: str,
     model_used: str,
     status: str,
+    tokens_in: int = 0,
+    tokens_out: int = 0,
+    estimated_cost: float = 0.0,
     duration_ms: int = 0,
     error_message: str | None = None,
 ) -> None:
     conn = get_conn()
     try:
         conn.execute(
-            "INSERT INTO agent_logs (agent_name,run_type,model_used,tokens_used_input,tokens_used_output,estimated_cost,duration_ms,status,error_message,created_at) VALUES (?,?,?,0,0,0,?,?,?,?)",
-            (agent_name, run_type, model_used, duration_ms, status, error_message, now_iso()),
+            "INSERT INTO agent_logs (agent_name,run_type,model_used,tokens_used_input,tokens_used_output,estimated_cost,duration_ms,status,error_message,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (
+                agent_name,
+                run_type,
+                model_used,
+                tokens_in,
+                tokens_out,
+                estimated_cost,
+                duration_ms,
+                status,
+                error_message,
+                now_iso(),
+            ),
         )
         conn.commit()
+    finally:
+        conn.close()
+
+
+def fetch_daily_tokens(agent_name: str) -> int:
+    """Return total tokens (input + output) used by agent today (UTC)."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    conn = get_conn()
+    try:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(tokens_used_input + tokens_used_output), 0) "
+            "FROM agent_logs WHERE agent_name = ? AND created_at >= ?",
+            (agent_name, today),
+        ).fetchone()
+        return int(row[0]) if row else 0
     finally:
         conn.close()
 

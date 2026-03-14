@@ -114,6 +114,9 @@ class CRMLifecycleAgent(BaseAgent):
             raw["analysis"] = result["text"]
             raw["model_used"] = result["model_used"]
             raw["fallback"] = result["fallback"]
+            raw["tokens_in"] = result["tokens_in"]
+            raw["tokens_out"] = result["tokens_out"]
+            raw["estimated_cost"] = result["estimated_cost"]
         except Exception as e:
             logger.error("crm-lifecycle-agent: model call failed: %s", e)
             raw["analysis"] = raw.get("headline", "CRM summary — model unavailable")
