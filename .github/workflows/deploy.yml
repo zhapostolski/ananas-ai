@@ -1,7 +1,9 @@
-name: Release
+name: Deploy
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*.*.*"
 
@@ -87,7 +89,7 @@ jobs:
 
   # ── Deploy — only runs if all QA jobs pass ─────────────────────────────────
   deploy:
-    name: Deploy ${{ github.ref_name }} to EC2
+    name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: [quality, test, validate, secrets-scan]
 
@@ -105,23 +107,30 @@ jobs:
         env:
           INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
           DEPLOY_PATH: ${{ secrets.EC2_DEPLOY_PATH }}
-          TAG: ${{ github.ref_name }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
         run: |
           python3 - <<'PYEOF'
           import boto3, os, sys, time
 
           instance_id = os.environ["INSTANCE_ID"]
           deploy_path = os.environ["DEPLOY_PATH"]
-          tag = os.environ["TAG"]
+          ref = os.environ["REF"]
+          sha = os.environ["SHA"]
+
+          # Tags check out by tag name; branch pushes check out by commit SHA
+          is_tag = ref.startswith("refs/tags/")
+          target = ref.split("/")[-1] if is_tag else sha
 
           commands = [
+              f"export HOME=/root ANANAS_ROOT={deploy_path}",
+              f"git config --global --add safe.directory {deploy_path}",
               f"cd {deploy_path}",
-              "git fetch origin --tags",
-              f"git checkout {tag}",
-              "source .venv/bin/activate",
-              "pip install -e . --quiet",
-              "python scripts/validate_pack.py",
-              f"echo 'Deploy of {tag} complete'",
+              "git fetch origin --tags --quiet",
+              f"git checkout {target} --quiet",
+              f"{deploy_path}/.venv/bin/pip install . --quiet",
+              f"{deploy_path}/.venv/bin/python3 scripts/validate_pack.py",
+              f"echo 'Deploy of {target} complete'",
           ]
 
           ssm = boto3.client("ssm", region_name=os.environ.get("AWS_DEFAULT_REGION", "eu-central-1"))
@@ -149,7 +158,3 @@ jobs:
               print(f"Deploy failed with status: {status}")
               sys.exit(1)
           PYEOF
-
-      - name: Notify on failure
-        if: failure()
-        run: echo "TODO - Teams alert on deploy failure"

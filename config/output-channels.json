@@ -50,8 +50,8 @@
 
   "email": {
     "daily_brief": {
-      "to": "denis@ananas.mk",
-      "subject_template": "Daily Marketing Brief — {date}",
+      "to": "zharko.apostolski@ananas.mk",
+      "subject_template": "Daily Marketing Brief -- {date}",
       "from_env_var": "OUTLOOK_FROM_ADDRESS",
       "to_env_var": "OUTLOOK_TO_ADDRESS",
       "agent": "cross-channel-brief-agent"

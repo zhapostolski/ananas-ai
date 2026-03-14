@@ -18,6 +18,7 @@ from ananas_ai.persistence import (
     log_agent_run,
     upsert_health,
 )
+from ananas_ai.email_delivery import send_brief
 from ananas_ai.teams import post_message
 from ananas_ai.validator import validate_agent_output
 
@@ -257,6 +258,7 @@ def run_brief() -> int:
     analysis = data.get("analysis", data.get("headline", "Brief ready."))
     post_message("#marketing-summary", "Daily Marketing Brief", analysis)
     post_message("#executive-summary", "Executive Summary", analysis)
+    send_brief("Daily Marketing Brief", analysis)
     logger.info(
         "Completed cross-channel-brief-agent (%d tokens, $%.4f)",
         tokens_in + tokens_out,
