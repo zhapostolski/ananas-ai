@@ -1,6 +1,6 @@
 {
-  "version": "v2",
-  "last_updated": "2026-03-14",
+  "version": "v3",
+  "last_updated": "2026-03-15",
   "phase": "marketing-first",
 
   "phase_1_agents": [
@@ -94,6 +94,66 @@
   ],
 
   "phase_2_agents": [
+    {
+      "name": "customer-segmentation-agent",
+      "module": "customer-segmentation",
+      "description": "RFM segmentation, LTV prediction, and churn risk scoring. Outputs customer distribution across VIP/Active/At-Risk/Churned/New segments and weekly drift. Enables targeted CRM actions and reduces coupon dependency by identifying who actually needs an incentive.",
+      "schedule": "weekly-monday-07:00",
+      "sources": ["orders-api", "crm-email-platform", "ga4"],
+      "key_metrics": ["rfm_segment_distribution", "churn_risk_score", "ltv_by_segment", "segment_drift_wow"],
+      "outputs": ["portal:customer-segmentation", "teams:#marketing-ops"],
+      "phase": "phase-2",
+      "priority": 1,
+      "credentials_needed": "none"
+    },
+    {
+      "name": "pricing-intelligence-agent",
+      "module": "pricing-intelligence",
+      "description": "Monitors competitor prices on comparable products across regional marketplaces (eMAG, Cenoteka, Amazon.de). Outputs price position score per category, identifies margin-safe repricing windows, and detects competitor promotions. Directly supports promo-simulator and Google Shopping bid strategy.",
+      "schedule": "daily-08:30",
+      "sources": ["product-catalog-api", "meta-ad-library", "google-shopping"],
+      "key_metrics": ["price_position_score_by_category", "competitor_promo_detected", "repricing_opportunities"],
+      "outputs": ["portal:pricing-intelligence", "teams:#marketing-ops"],
+      "phase": "phase-2",
+      "priority": 2,
+      "credentials_needed": "meta-ad-library-token (free public API)"
+    },
+    {
+      "name": "search-merchandising-agent",
+      "module": "search-merchandising",
+      "description": "Monitors internal site search quality: zero-result rate, failed search sessions (searched then bounced), top queries with poor product match, and search-to-conversion funnel. Identifies catalog gaps and surfaces highest-impact merchandising fixes.",
+      "schedule": "daily-08:15",
+      "sources": ["ga4", "internal-search-api"],
+      "key_metrics": ["zero_result_rate", "failed_search_session_rate", "search_cvr_by_query_type", "top_zero_result_queries"],
+      "outputs": ["portal:search-merchandising", "teams:#marketing-ops"],
+      "phase": "phase-2",
+      "priority": 3,
+      "credentials_needed": "internal-search-api (backend team)"
+    },
+    {
+      "name": "listing-content-quality-agent",
+      "module": "listing-content-quality",
+      "description": "Scans 250k catalog for missing images, thin descriptions, missing attributes (size/color/brand/material), and composite quality score. Prioritizes fixes by GMV impact. Covers all surfaces -- site search, category pages, conversion -- not just Shopping feed.",
+      "schedule": "weekly-friday-08:00",
+      "sources": ["product-catalog-api"],
+      "key_metrics": ["catalog_quality_score", "listings_below_threshold_count", "gmv_at_risk_from_thin_listings"],
+      "outputs": ["portal:listing-quality", "teams:#marketing-ops"],
+      "phase": "phase-2",
+      "priority": 4,
+      "credentials_needed": "product-catalog-api (backend team)"
+    },
+    {
+      "name": "competitor-intelligence-agent",
+      "module": "competitor-intelligence",
+      "description": "Lightweight competitor monitoring using free/existing sources: Meta Ad Library (active creatives, estimated spend), Google Auction Insights (impression share vs named competitors), and public review ratings. Weekly strategic summary plus daily promotion detection.",
+      "schedule": "daily-promo-scan + weekly-strategic",
+      "sources": ["meta-ad-library", "google-ads", "trustpilot-public", "google-shopping"],
+      "key_metrics": ["competitor_active_ads_count", "auction_impression_share_vs_competitors", "competitor_promo_activity"],
+      "outputs": ["portal:competitor-intelligence", "teams:#marketing-ops"],
+      "phase": "phase-2",
+      "priority": 5,
+      "credentials_needed": "meta-ad-library-token (free public API)"
+    },
     {
       "name": "organic-merchandising-agent",
       "module": "organic-merchandising",
@@ -191,6 +251,32 @@
       "trigger": "on-demand",
       "sources": ["confluence", "jira"],
       "phase": "phase-2"
+    }
+  ],
+
+  "phase_3_agents": [
+    {
+      "name": "anomaly-detection-agent",
+      "module": "anomaly-detection",
+      "description": "Near-real-time monitoring for business metric anomalies not covered by specialist agents: sudden GMV drops, unusual return rate spikes by supplier/category, order volume anomalies, payment failure rate spikes, conversion collapse. Requires event-triggered architecture beyond the current batch-cron stack.",
+      "schedule": "every-30-min + daily-summary",
+      "trigger": "event-triggered",
+      "sources": ["orders-api", "returns-api", "ga4", "payment-api"],
+      "key_metrics": ["gmv_anomaly_score", "return_rate_spike_by_supplier", "payment_failure_rate", "conversion_drop_alert"],
+      "outputs": ["portal:anomaly-alerts", "teams:#marketing-ops"],
+      "phase": "phase-3",
+      "note": "Requires real-time data pipeline beyond current batch cron. Build after Phase 2 infrastructure is mature."
+    },
+    {
+      "name": "attribution-mmm-agent",
+      "module": "attribution-mmm",
+      "description": "Marketing mix modeling and incrementality testing. Measures true incremental revenue per channel, accounts for coupon attribution errors and cross-channel touchpoints. Directly solves the coupon dependency attribution problem.",
+      "schedule": "monthly",
+      "sources": ["ga4", "google-ads", "meta-ads", "orders-api", "crm-email-platform"],
+      "key_metrics": ["incremental_revenue_by_channel", "coupon_cannibalization_rate", "true_cac_by_channel"],
+      "outputs": ["portal:attribution", "teams:#marketing-ops"],
+      "phase": "phase-3",
+      "note": "Requires 12+ months of clean tagged data. Groundwork (event tagging, coupon flags) should be laid in Phase 1-2."
     }
   ]
 }
