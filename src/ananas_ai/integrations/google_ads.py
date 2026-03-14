@@ -10,15 +10,15 @@ logger = get_logger(__name__)
 
 class GoogleAdsIntegration(BaseIntegration):
     """
-    Google Ads API — campaign performance, Shopping impression share.
+    Google Ads API -- campaign performance across Search, Display, and Video.
 
     Required env vars:
-      GOOGLE_ADS_DEVELOPER_TOKEN  — from Google Ads API Center
-      GOOGLE_ADS_CLIENT_ID        — OAuth2 client ID
-      GOOGLE_ADS_CLIENT_SECRET    — OAuth2 client secret
-      GOOGLE_ADS_REFRESH_TOKEN    — OAuth2 refresh token
-      GOOGLE_ADS_CUSTOMER_ID      — Ads account ID (digits only, no dashes)
-      GOOGLE_ADS_LOGIN_CUSTOMER_ID — MCC account ID (optional, same as customer if no MCC)
+      GOOGLE_ADS_DEVELOPER_TOKEN   -- from Google Ads API Center
+      GOOGLE_ADS_CLIENT_ID         -- OAuth2 client ID
+      GOOGLE_ADS_CLIENT_SECRET     -- OAuth2 client secret
+      GOOGLE_ADS_REFRESH_TOKEN     -- OAuth2 refresh token
+      GOOGLE_ADS_CUSTOMER_ID       -- Ads account ID (digits only, no dashes)
+      GOOGLE_ADS_LOGIN_CUSTOMER_ID -- MCC account ID (optional, same as customer if no MCC)
     """
 
     name = "google-ads"
@@ -104,35 +104,11 @@ class GoogleAdsIntegration(BaseIntegration):
 
         blended_roas = round(total_conv_value / total_spend, 2) if total_spend > 0 else 0
 
-        # ── Shopping impression share ────────────────────────────────────────
-        shopping_is = 0.0
-        shopping_query = f"""
-            SELECT
-                metrics.search_impression_share,
-                metrics.search_budget_lost_impression_share,
-                metrics.search_rank_lost_impression_share
-            FROM campaign
-            WHERE segments.date BETWEEN '{date_from}' AND '{date_to}'
-              AND campaign.advertising_channel_type = 'SHOPPING'
-              AND campaign.status = 'ENABLED'
-        """
-        try:
-            is_response = service.search(customer_id=customer_id, query=shopping_query)
-            shares = [
-                row.metrics.search_impression_share
-                for row in is_response
-                if row.metrics.search_impression_share
-            ]
-            shopping_is = round(sum(shares) / len(shares) * 100, 1) if shares else 0.0
-        except Exception:
-            shopping_is = 0.0
-
         logger.info(
-            "Google Ads fetched: campaigns=%d spend=%.2f roas=%.2f shopping_is=%.1f%%",
+            "Google Ads fetched: campaigns=%d spend=%.2f roas=%.2f",
             len(campaigns),
             total_spend,
             blended_roas,
-            shopping_is,
         )
 
         return {
@@ -140,9 +116,6 @@ class GoogleAdsIntegration(BaseIntegration):
             "total_spend": round(total_spend, 2),
             "total_conversion_value": round(total_conv_value, 2),
             "blended_roas": blended_roas,
-            "shopping_impression_share_pct": shopping_is,
-            "shopping_campaigns": shopping_campaigns,
-            "shopping_campaigns_active": len(shopping_campaigns),
             "date_from": date_from,
             "date_to": date_to,
         }

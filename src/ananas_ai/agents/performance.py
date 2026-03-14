@@ -57,24 +57,15 @@ class PerformanceAgent(BaseAgent):
         )
         blended_roas = round(total_paid_value / total_paid_spend, 2) if total_paid_spend else 0.0
 
-        shopping_is = gads_data.get("shopping_impression_share_pct", 0.0)
-        shopping_active = gads_data.get("shopping_campaigns_active", 0)
-
         notes = []
-        if gads_data and shopping_is == 0.0:
-            notes.append(
-                "CRITICAL: Google Shopping impression share is 0% — no active Shopping campaigns."
-            )
-        elif shopping_is and shopping_is < 20:
-            notes.append(
-                f"Google Shopping impression share is low at {shopping_is}% — review bids/budget."
-            )
-        if not notes:
-            notes.append("All channels operational.")
+        if not configured:
+            notes.append("No paid channel data available -- configure credentials.")
+        else:
+            notes.append("All configured channels operational.")
 
         return {
             "headline": self._build_headline(
-                ga4_data.get("revenue", 0), blended_roas, shopping_is, ga4_data.get("sessions", 0)
+                ga4_data.get("revenue", 0), blended_roas, ga4_data.get("sessions", 0)
             ),
             "sources_active": configured,
             "ga4": ga4_data,
@@ -85,8 +76,6 @@ class PerformanceAgent(BaseAgent):
                 "total_paid_spend": round(total_paid_spend, 2),
                 "total_paid_conversion_value": round(total_paid_value, 2),
                 "blended_roas": blended_roas,
-                "shopping_impression_share_pct": shopping_is,
-                "shopping_campaigns_active": shopping_active,
                 "ga4_revenue": ga4_data.get("revenue", 0),
                 "ga4_sessions": ga4_data.get("sessions", 0),
                 "ga4_conversion_rate_pct": ga4_data.get("conversion_rate_pct", 0),
@@ -96,38 +85,29 @@ class PerformanceAgent(BaseAgent):
             "date_to": date_to,
         }
 
-    def _build_headline(
-        self, revenue: float, roas: float, shopping_is: float, sessions: int
-    ) -> str:
+    def _build_headline(self, revenue: float, roas: float, sessions: int) -> str:
         parts = []
         if revenue:
             parts.append(f"Revenue EUR{revenue:,.0f}")
         if roas:
             parts.append(f"blended ROAS {roas:.1f}x")
-        if shopping_is == 0.0:
-            parts.append("Shopping IS: 0% CRITICAL")
-        elif shopping_is:
-            parts.append(f"Shopping IS {shopping_is:.0f}%")
         if sessions:
             parts.append(f"{sessions:,} sessions")
         return " | ".join(parts) if parts else "Performance summary (no live data)"
 
     def sample_summary(self) -> dict:
         return {
-            "headline": "Performance summary (sample data — configure credentials)",
+            "headline": "Performance summary (sample data -- configure credentials)",
             "sources_active": [],
             "summary": {
                 "total_paid_spend": 0,
                 "blended_roas": 0,
-                "shopping_impression_share_pct": 0,
-                "shopping_campaigns_active": 0,
                 "ga4_revenue": 0,
                 "ga4_sessions": 0,
                 "ga4_conversion_rate_pct": 0,
             },
             "notes": [
-                "CRITICAL: Google Shopping has 0 active campaigns despite 250k+ products.",
-                "No live integration data — configure GA4, Google Ads, Meta, Pinterest credentials.",
+                "No live integration data -- configure GA4, Google Ads, Meta, Pinterest credentials.",
             ],
         }
 
@@ -154,8 +134,7 @@ class PerformanceAgent(BaseAgent):
             "You are the Ananas AI Performance Agent. Ananas is North Macedonia's largest "
             "e-commerce marketplace with 250k+ products. Analyse the paid media performance data "
             "and write a concise daily briefing for the marketing team. "
-            "Critical context: Google Shopping has ZERO active campaigns despite 250k+ products — "
-            "always flag this. Sales are heavily coupon-dependent. "
+            "Context: sales are heavily coupon-dependent which masks real acquisition efficiency. "
             "Format: 3-5 bullet points, plain language, numbers in EUR, flag anomalies clearly. "
             "End with one priority action for today."
         )
