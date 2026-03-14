@@ -180,6 +180,12 @@ resource "aws_iam_instance_profile" "runtime" {
   role = aws_iam_role.runtime.name
 }
 
+# SSM managed instance core — allows GitHub Actions to deploy via SSM (no SSH port needed)
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.runtime.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 # ── EC2 Instance ──────────────────────────────────────────────────────────────
 
 resource "aws_instance" "runtime" {

@@ -1,54 +1,66 @@
 name: Deploy to EC2
 
-# Triggers on version tags: git tag v0.2.0 && git push origin v0.2.0
+# Triggers on version tags: git tag v0.2.1 && git push origin v0.2.1
 on:
   push:
     tags:
       - "v*.*.*"
-
-# TODO: Add these secrets in GitHub → Settings → Secrets and variables → Actions:
-#   EC2_HOST          — public IP or hostname of the EC2 instance
-#   EC2_USER          — SSH user (typically ubuntu or ec2-user)
-#   EC2_SSH_KEY       — private key content (the .pem file contents)
-#   EC2_DEPLOY_PATH   — absolute path on EC2, e.g. /home/ubuntu/ananas-ai
 
 jobs:
   deploy:
     name: Deploy ${{ github.ref_name }} to EC2
     runs-on: ubuntu-latest
 
-    # CI must pass before deploy runs
-    needs: []  # TODO: add 'quality' and 'test' once CI job IDs align
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy
+      - name: Deploy via SSM
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e
-            cd ${{ secrets.EC2_DEPLOY_PATH }}
-            git fetch origin
-            git checkout ${{ github.ref_name }}
-            source .venv/bin/activate
-            pip install -e . --quiet
-            python scripts/validate_pack.py
-            echo "Deploy of ${{ github.ref_name }} complete"
-          EOF
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "set -e",
+              "cd ${{ secrets.EC2_DEPLOY_PATH }}",
+              "git fetch origin --tags",
+              "git checkout ${{ github.ref_name }}",
+              "source .venv/bin/activate",
+              "pip install -e . --quiet",
+              "python scripts/validate_pack.py",
+              "echo Deploy of ${{ github.ref_name }} complete"
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command ID: $COMMAND_ID"
+
+          # Wait for the command to finish (up to 5 minutes)
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
+
+          # Print output
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+            --query "[StandardOutputContent, StandardErrorContent]" \
+            --output text
 
       - name: Notify Teams on success
         if: success()
-        run: |
-          echo "TODO: post deploy success notification to #marketing-ops via Graph API"
+        run: echo "TODO: post deploy success to #marketing-ops via Graph API"
 
       - name: Notify Teams on failure
         if: failure()
-        run: |
-          echo "TODO: post deploy failure alert to #marketing-ops via Graph API"
+        run: echo "TODO: post deploy failure alert to #marketing-ops via Graph API"
