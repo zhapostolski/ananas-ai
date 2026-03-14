@@ -140,7 +140,6 @@ def run_agent(agent_name: str) -> int:
         "ok",
         f"{run_type.capitalize()} run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
     )
-    post_message(channel, title, data.get("analysis", data.get("headline", "")))
     logger.info("Completed %s (%d tokens, $%.4f)", agent_name, tokens_in + tokens_out, cost)
     return 0
 
