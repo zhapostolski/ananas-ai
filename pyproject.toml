@@ -35,6 +35,7 @@ dev = [
 
 [project.scripts]
 ananas-ai = "ananas_ai.cli:main"
+ananas-ai-transcribe = "ananas_ai.transcribe_meeting:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
