@@ -15,6 +15,9 @@ class BaseAgent:
     def sample_summary(self) -> dict[str, Any]:
         return {}
 
+    def run(self, date_from: str, date_to: str) -> dict[str, Any]:
+        return self.sample_summary()
+
     def build_payload(
         self, data: dict[str, Any], date_from: str, date_to: str, complexity: str = "normal"
     ) -> dict[str, Any]:

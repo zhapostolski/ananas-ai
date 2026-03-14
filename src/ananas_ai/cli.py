@@ -102,13 +102,31 @@ def run_brief() -> int:
     brief = CrossChannelBriefAgent()
     today = str(date.today())
 
-    logger.info("Building specialist payloads")
-    specialist_payloads = [
-        perf.build_payload(perf.sample_summary(), today, today),
-        crm.build_payload(crm.sample_summary(), today, today),
-        rep.build_payload(rep.sample_summary(), today, today),
-        ops.build_payload(ops.sample_summary(), today, today),
+    logger.info("Running all specialist agents")
+    specialists = [
+        ("performance-agent", perf),
+        ("crm-lifecycle-agent", crm),
+        ("reputation-agent", rep),
+        ("marketing-ops-agent", ops),
     ]
+    specialist_payloads = []
+    for agent_name, agent in specialists:
+        logger.info("  Running %s", agent_name)
+        data = agent.run(today, today)
+        pl = agent.build_payload(data, today, today)
+        errors = validate_agent_output(pl)
+        run_type = "live" if data.get("sources_active") or data.get("sources_live") else "sample"
+        if errors:
+            log_agent_run(agent_name, run_type, pl.get("model_used", "unknown"), "error", error_message="; ".join(errors))
+            upsert_health(agent_name, "error", "; ".join(errors))
+            logger.warning("  %s validation errors: %s", agent_name, errors)
+        else:
+            insert_agent_output(pl)
+            log_agent_run(agent_name, run_type, pl.get("model_used", "unknown"), "ok")
+            upsert_health(agent_name, "ok", f"{run_type.capitalize()} run successful")
+            channel, title = AGENT_CHANNELS[agent_name]
+            post_message(channel, title, pl["data"].get("analysis", pl["data"].get("headline", "")))
+        specialist_payloads.append(pl)
 
     logger.info("Running cross-channel-brief-agent")
     data = brief.build_from_specialists(specialist_payloads)
@@ -118,7 +136,7 @@ def run_brief() -> int:
     if errors:
         log_agent_run(
             "cross-channel-brief-agent",
-            "sample",
+            "live",
             payload.get("model_used", "unknown"),
             "error",
             error_message="; ".join(errors),
@@ -127,10 +145,11 @@ def run_brief() -> int:
         raise SystemExit("Validation failed: " + "; ".join(errors))
 
     insert_agent_output(payload)
-    log_agent_run("cross-channel-brief-agent", "sample", payload.get("model_used", "unknown"), "ok")
-    upsert_health("cross-channel-brief-agent", "ok", "Sample run successful")
-    post_message("#marketing-summary", "Marketing Summary", payload["data"]["summary"])
-    post_message("#executive-summary", "Executive Summary", "Concise executive brief ready.")
+    log_agent_run("cross-channel-brief-agent", "live", payload.get("model_used", "unknown"), "ok")
+    upsert_health("cross-channel-brief-agent", "ok", "Live run successful")
+    analysis = payload["data"].get("analysis", payload["data"].get("headline", "Brief ready."))
+    post_message("#marketing-summary", "Daily Marketing Brief", analysis)
+    post_message("#executive-summary", "Executive Summary", analysis)
     logger.info("Completed cross-channel-brief-agent")
     return 0
 
