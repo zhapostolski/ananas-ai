@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 
 from ananas_ai.agents.crm_lifecycle import CRMLifecycleAgent
@@ -144,6 +145,69 @@ def run_agent(agent_name: str) -> int:
     return 0
 
 
+def _run_one_specialist(agent_name: str, agent: object, today: str) -> dict:
+    """Run a single specialist agent, persist results, and return its payload.
+
+    Designed to be called from a thread -- uses per-call DB connections.
+    Never raises: returns a sample payload on any failure so the brief
+    can still synthesize from the other agents.
+    """
+    from ananas_ai.agents.base import BaseAgent  # noqa: PLC0415
+
+    assert isinstance(agent, BaseAgent)
+
+    if not _check_daily_cap(agent_name):
+        return agent.build_payload(agent.sample_summary(), today, today)
+
+    logger.info("  Running %s", agent_name)
+    try:
+        data = agent.run(today, today)
+    except Exception as e:
+        logger.error("  %s failed: %s", agent_name, e)
+        upsert_health(agent_name, "error", str(e))
+        return agent.build_payload(agent.sample_summary(), today, today)
+
+    pl = agent.build_payload(data, today, today)
+    errors = validate_agent_output(pl)
+    run_type = "live" if data.get("sources_active") or data.get("sources_live") else "sample"
+    tokens_in = data.get("tokens_in", 0)
+    tokens_out = data.get("tokens_out", 0)
+    cost = data.get("estimated_cost", 0.0)
+    actual_model = data.get("model_used", pl.get("model_used", "unknown"))
+
+    if errors:
+        log_agent_run(
+            agent_name,
+            run_type,
+            actual_model,
+            "error",
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            estimated_cost=cost,
+            error_message="; ".join(errors),
+        )
+        upsert_health(agent_name, "error", "; ".join(errors))
+        logger.warning("  %s validation errors: %s", agent_name, errors)
+    else:
+        insert_agent_output(pl)
+        log_agent_run(
+            agent_name,
+            run_type,
+            actual_model,
+            "ok",
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            estimated_cost=cost,
+        )
+        upsert_health(
+            agent_name,
+            "ok",
+            f"{run_type.capitalize()} run -- {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
+        )
+
+    return pl
+
+
 def run_brief() -> int:
     bootstrap()
     perf = PerformanceAgent()
@@ -153,64 +217,27 @@ def run_brief() -> int:
     brief = CrossChannelBriefAgent()
     today = str(date.today())
 
-    logger.info("Running all specialist agents")
+    logger.info("Running all specialist agents in parallel")
     specialists = [
         ("performance-agent", perf),
         ("crm-lifecycle-agent", crm),
         ("reputation-agent", rep),
         ("marketing-ops-agent", ops),
     ]
-    specialist_payloads = []
-    for agent_name, agent in specialists:
-        if not _check_daily_cap(agent_name):
-            specialist_payloads.append(agent.build_payload(agent.sample_summary(), today, today))
-            continue
 
-        logger.info("  Running %s", agent_name)
-        data = agent.run(today, today)
-        pl = agent.build_payload(data, today, today)
-        errors = validate_agent_output(pl)
-        run_type = "live" if data.get("sources_active") or data.get("sources_live") else "sample"
+    # Run all 4 specialists concurrently -- each makes independent API calls
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        future_to_name = {
+            executor.submit(_run_one_specialist, name, agent, today): name
+            for name, agent in specialists
+        }
+        results: dict[str, object] = {}
+        for future in as_completed(future_to_name):
+            name = future_to_name[future]
+            results[name] = future.result()
 
-        tokens_in = data.get("tokens_in", 0)
-        tokens_out = data.get("tokens_out", 0)
-        cost = data.get("estimated_cost", 0.0)
-        actual_model = data.get("model_used", pl.get("model_used", "unknown"))
-
-        if errors:
-            log_agent_run(
-                agent_name,
-                run_type,
-                actual_model,
-                "error",
-                tokens_in=tokens_in,
-                tokens_out=tokens_out,
-                estimated_cost=cost,
-                error_message="; ".join(errors),
-            )
-            upsert_health(agent_name, "error", "; ".join(errors))
-            logger.warning("  %s validation errors: %s", agent_name, errors)
-        else:
-            insert_agent_output(pl)
-            log_agent_run(
-                agent_name,
-                run_type,
-                actual_model,
-                "ok",
-                tokens_in=tokens_in,
-                tokens_out=tokens_out,
-                estimated_cost=cost,
-            )
-            upsert_health(
-                agent_name,
-                "ok",
-                f"{run_type.capitalize()} run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
-            )
-            ch_cfg = _agent_channels()
-            if agent_name in ch_cfg:
-                ch, ch_title = ch_cfg[agent_name]
-                post_message(ch, ch_title, data.get("analysis", data.get("headline", "")))
-        specialist_payloads.append(pl)
+    # Preserve original order for the brief synthesis
+    specialist_payloads = [results[name] for name, _ in specialists]
 
     logger.info("Running cross-channel-brief-agent")
     if not _check_daily_cap("cross-channel-brief-agent"):

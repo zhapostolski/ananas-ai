@@ -1,0 +1,45 @@
+Subject: Daily Marketing Brief -- 2026-03-14
+
+# ANANAS CROSS-CHANNEL EXECUTIVE BRIEF
+**14 March 2026 | Prepared for Denis & Marketing Team**
+
+---
+
+## OVERALL STATUS: 🔴 CRITICAL
+Strong revenue (€1.1M) masking severe infrastructure gaps—we're flying blind on attribution, reputation, and lifecycle.
+
+---
+
+## TOP 3 HIGHLIGHTS
+
+1. **€1.1M revenue day** — but don't celebrate yet; 51% (€560K) came from "Unassigned" channel, indicating broken tracking, not healthy growth
+
+2. **Organic Search outperforms Paid Social 5x** on revenue-per-session (€228K from 8.9K sessions vs €137K from 27K sessions) — our paid spend is driving low-intent traffic
+
+3. **0.47% conversion rate** with 93-95% bounce on promo pages confirms heavy coupon dependency is attracting code-grabbers, not buyers
+
+---
+
+## TOP 3 RISKS
+
+1. **€560K attribution black hole** — cannot optimise spend when half of revenue source is unknown; UTM/tracking breakdown is urgent
+
+2. **Zero lifecycle automations live** — no cart recovery, no welcome series, no churn prevention. Leaving 15-25% recoverable revenue on the table daily
+
+3. **Complete reputation blindspot** — Google Business Profile unconfigured, Trustpilot 2.0 unclaimed. Competitors are managing their reviews; we're invisible
+
+---
+
+## PRIORITY ACTIONS FOR TODAY
+
+| # | Action | Owner | Why Now |
+|---|--------|-------|---------|
+| 1 | **Emergency: Fix "Unassigned" attribution** — audit UTM parameters, implement tracking on all coupon/promo campaigns | Performance/Tech | €560K at risk of misoptimisation |
+| 2 | **Activate cart recovery automation** in Sales Snap | CRM Team | Fastest ROI win; 15-25% recovery opportunity bleeding daily |
+| 3 | **Fix Search Console integration** — verify GA4 connection and domain tokens | Marketing Ops | Zero organic data = blind on 20-40% of traffic |
+
+---
+
+**Reminder:** Google Shopping still has ZERO campaigns. That's a known gap worth revisiting once tracking is fixed.
+
+*Next briefing: 15 March 2026*
