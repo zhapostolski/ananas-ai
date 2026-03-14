@@ -3,6 +3,9 @@ from pathlib import Path
 import json
 from dataclasses import dataclass
 from typing import Any, Dict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def project_root() -> Path:
     return Path(__file__).resolve().parents[2]

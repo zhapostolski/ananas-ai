@@ -1,5 +1,29 @@
 # Architecture Changelog
 
+## 2026-03-14 — v3 (presentation readiness + automation)
+
+### New documents
+- `docs/budget/budget.md` → complete Phase 1/2 cost breakdown with AWS vs Hetzner comparison and ROI framing
+- `docs/leadership/denis-summary.md` → full rewrite for Country Manager lens: daily brief format, success criteria, regional expansion context
+- `docs/presentation/monday-presentation.md` → exec-ready presentation narrative for Denis + marketing team approval meeting
+- `docs/operations/success-metrics.md` → Month 1/2/3 success criteria with measurable KPIs and Phase 2 gate conditions
+- `context/ananas/ananas-overview.md` → living company knowledge base, auto-updated via file watcher
+- `context/ananas/SOURCES.md` → source processing log
+- `.env.example` → environment variable template
+
+### New infrastructure
+- `scripts/watch_context.py` → automated file watcher: detects files dropped in `context/ananas/raw/`, calls Claude API, updates overview
+- `~/.config/systemd/user/ananas-context-watcher.service` → systemd user service, runs on WSL2 boot, auto-restarts on failure
+- `scripts/setup_watcher_service.sh` → one-time service setup script
+
+### Dependency updates
+- `pyproject.toml` → added: anthropic, watchdog, pypdf, python-docx, openpyxl, pillow
+
+### Config corrections
+- Denis role corrected to Country Manager (not executive stakeholder) across all docs
+
+---
+
 ## 2026-03-14 — v2 (full GPT conversation audit + gap implementation)
 
 ### Config changes

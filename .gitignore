@@ -20,6 +20,8 @@ __pycache__/
 # OS/editor noise
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
 
 # Generated outputs
 examples/sample_outputs/*.md
