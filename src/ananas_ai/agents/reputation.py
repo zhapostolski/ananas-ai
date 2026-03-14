@@ -7,6 +7,7 @@ Critical known state:
 - Trustpilot: 2.0 rating, profile NOT claimed — CRITICAL risk
 - Google Business: status unknown, needs verification
 """
+
 from __future__ import annotations
 
 import os
@@ -107,11 +108,7 @@ class ReputationAgent(BaseAgent):
             "Format: overall risk level (OK/WARNING/CRITICAL), key themes, "
             "reviews needing immediate response, one priority action."
         )
-        user = (
-            f"Date: {date_from}\n"
-            f"Reputation data:\n{raw}\n\n"
-            "Write the daily reputation briefing."
-        )
+        user = f"Date: {date_from}\nReputation data:\n{raw}\n\nWrite the daily reputation briefing."
 
         try:
             result = call_model(route.model, system, user)

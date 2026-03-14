@@ -132,6 +132,9 @@ class PerformanceAgent(BaseAgent):
         }
 
     def run(self, date_from: str, date_to: str) -> dict:
+        from ananas_ai.model_client import call_model
+        from ananas_ai.model_router import choose_model
+
         any_configured = any(
             [
                 self.ga4.is_configured(),
@@ -140,8 +143,33 @@ class PerformanceAgent(BaseAgent):
                 self.pinterest.is_configured(),
             ]
         )
+        raw = self.fetch_live_data(date_from, date_to) if any_configured else self.sample_summary()
         if any_configured:
             logger.info("performance-agent: running with live integrations")
-            return self.fetch_live_data(date_from, date_to)
-        logger.warning("performance-agent: no integrations configured, using sample data")
-        return self.sample_summary()
+        else:
+            logger.warning("performance-agent: no integrations configured, using sample data")
+
+        route = choose_model(self.name)
+        system = (
+            "You are the Ananas AI Performance Agent. Ananas is North Macedonia's largest "
+            "e-commerce marketplace with 250k+ products. Analyse the paid media performance data "
+            "and write a concise daily briefing for the marketing team. "
+            "Critical context: Google Shopping has ZERO active campaigns despite 250k+ products — "
+            "always flag this. Sales are heavily coupon-dependent. "
+            "Format: 3-5 bullet points, plain language, numbers in EUR, flag anomalies clearly. "
+            "End with one priority action for today."
+        )
+        user = (
+            f"Date: {date_from}\nPerformance data:\n{raw}\n\nWrite the daily performance briefing."
+        )
+
+        try:
+            result = call_model(route.model, system, user)
+            raw["analysis"] = result["text"]
+            raw["model_used"] = result["model_used"]
+            raw["fallback"] = result["fallback"]
+        except Exception as e:
+            logger.error("performance-agent: model call failed: %s", e)
+            raw["analysis"] = raw.get("headline", "Performance summary — model unavailable")
+
+        return raw

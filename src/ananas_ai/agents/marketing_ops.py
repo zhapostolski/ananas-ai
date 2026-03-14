@@ -83,8 +83,39 @@ class MarketingOpsAgent(BaseAgent):
         }
 
     def run(self, date_from: str, date_to: str) -> dict:
+        from ananas_ai.model_client import call_model
+        from ananas_ai.model_router import choose_model
+
         if self.ga4.is_configured() or self.search_console.is_configured():
             logger.info("marketing-ops-agent: running with live integrations")
-            return self.fetch_live_data(date_from, date_to)
-        logger.warning("marketing-ops-agent: no integrations configured, using sample data")
-        return self.sample_summary()
+            raw = self.fetch_live_data(date_from, date_to)
+        else:
+            logger.warning("marketing-ops-agent: no integrations configured, using sample data")
+            raw = self.sample_summary()
+
+        route = choose_model(self.name)
+        system = (
+            "You are the Ananas AI Marketing Ops Agent. Ananas is North Macedonia's largest "
+            "e-commerce marketplace. Your job is to ensure marketing operations health — "
+            "tracking integrity, KPI sanity, campaign coverage, and operational issues. "
+            "Known issues to watch: heavy coupon dependency masking real acquisition efficiency, "
+            "no email lifecycle automations live (no cart recovery, no churn flows), "
+            "Trustpilot rating 2.0 and profile unclaimed. "
+            "Format: status indicators (OK/WARNING/CRITICAL), bullet points, one priority action."
+        )
+        user = (
+            f"Date: {date_from}\n"
+            f"Marketing ops data:\n{raw}\n\n"
+            "Write the daily marketing ops briefing."
+        )
+
+        try:
+            result = call_model(route.model, system, user)
+            raw["analysis"] = result["text"]
+            raw["model_used"] = result["model_used"]
+            raw["fallback"] = result["fallback"]
+        except Exception as e:
+            logger.error("marketing-ops-agent: model call failed: %s", e)
+            raw["analysis"] = raw.get("headline", "Marketing ops summary — model unavailable")
+
+        return raw

@@ -117,7 +117,13 @@ def run_brief() -> int:
         errors = validate_agent_output(pl)
         run_type = "live" if data.get("sources_active") or data.get("sources_live") else "sample"
         if errors:
-            log_agent_run(agent_name, run_type, pl.get("model_used", "unknown"), "error", error_message="; ".join(errors))
+            log_agent_run(
+                agent_name,
+                run_type,
+                pl.get("model_used", "unknown"),
+                "error",
+                error_message="; ".join(errors),
+            )
             upsert_health(agent_name, "error", "; ".join(errors))
             logger.warning("  %s validation errors: %s", agent_name, errors)
         else:

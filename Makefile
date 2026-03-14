@@ -46,9 +46,21 @@ test-fast:        ## Run tests without coverage (faster)
 validate:         ## Run repository/config validation script
 	$(PYTHON) scripts/validate_pack.py
 
-# ── Full CI check (runs locally before pushing) ───────────────────────────────
+# ── Full CI check + release ───────────────────────────────────────────────────
 
-ci: fmt-check lint typecheck test validate  ## Run everything CI runs
+ci: fmt-check typecheck test validate  ## Run everything CI runs (no auto-fix)
+
+release:          ## QA → tag → push: make release VERSION=v0.4.0
+ifndef VERSION
+	$(error VERSION is required: make release VERSION=v0.4.0)
+endif
+	@echo "==> Running QA gate..."
+	$(MAKE) fmt lint typecheck test validate
+	@echo "==> Tagging $(VERSION)..."
+	git tag $(VERSION)
+	git push
+	git push --tags
+	@echo "==> Release $(VERSION) pushed — CI+Deploy running on GitHub Actions"
 
 # ── Runtime ───────────────────────────────────────────────────────────────────
 

@@ -1,4 +1,5 @@
 """Microsoft Teams output — writes formatted cards to file or posts via webhook."""
+
 from __future__ import annotations
 
 import json
@@ -28,18 +29,22 @@ def _build_card(title: str, body: str) -> dict:
     body_items: list[dict] = []
 
     if plain_lines:
-        body_items.append({
-            "type": "TextBlock",
-            "text": "\n".join(plain_lines).strip(),
-            "wrap": True,
-            "size": "Small",
-        })
+        body_items.append(
+            {
+                "type": "TextBlock",
+                "text": "\n".join(plain_lines).strip(),
+                "wrap": True,
+                "size": "Small",
+            }
+        )
 
     if facts:
-        body_items.append({
-            "type": "FactSet",
-            "facts": facts,
-        })
+        body_items.append(
+            {
+                "type": "FactSet",
+                "facts": facts,
+            }
+        )
 
     return {
         "type": "message",
