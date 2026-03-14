@@ -35,9 +35,15 @@ def test_send_brief_writes_file_when_not_configured(tmp_path):
 
     with (
         patch.dict("os.environ", {}, clear=True),
-        patch.object(email_delivery, "_write_local", return_value={"status": "ok", "path": str(tmp_path / "x.txt")}) as mock_write,
+        patch.object(
+            email_delivery,
+            "_write_local",
+            return_value={"status": "ok", "path": str(tmp_path / "x.txt")},
+        ) as mock_write,
     ):
-        result = email_delivery.send_brief("Daily Marketing Brief", "body text", today=date(2026, 3, 14))
+        result = email_delivery.send_brief(
+            "Daily Marketing Brief", "body text", today=date(2026, 3, 14)
+        )
 
     mock_write.assert_called_once()
     assert result["status"] == "ok"
@@ -61,7 +67,9 @@ def test_send_brief_posts_to_graph_api():
         patch.dict("os.environ", _configured_env(), clear=False),
         patch.dict("sys.modules", {"requests": mock_requests}),
     ):
-        result = email_delivery.send_brief("Daily Marketing Brief", "body text", today=date(2026, 3, 14))
+        result = email_delivery.send_brief(
+            "Daily Marketing Brief", "body text", today=date(2026, 3, 14)
+        )
 
     assert result["status"] == "ok"
     assert result["http_status"] == 202
@@ -77,9 +85,13 @@ def test_send_brief_returns_error_on_api_failure():
     with (
         patch.dict("os.environ", _configured_env(), clear=False),
         patch.dict("sys.modules", {"requests": mock_requests}),
-        patch.object(email_delivery, "_write_local", return_value={"status": "ok", "path": "/tmp/x.txt"}),
+        patch.object(
+            email_delivery, "_write_local", return_value={"status": "ok", "path": "/tmp/x.txt"}
+        ),
     ):
-        result = email_delivery.send_brief("Daily Marketing Brief", "body text", today=date(2026, 3, 14))
+        result = email_delivery.send_brief(
+            "Daily Marketing Brief", "body text", today=date(2026, 3, 14)
+        )
 
     assert result["status"] == "error"
     assert "connection refused" in result["error"]

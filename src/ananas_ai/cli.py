@@ -9,6 +9,7 @@ from ananas_ai.agents.marketing_ops import MarketingOpsAgent
 from ananas_ai.agents.performance import PerformanceAgent
 from ananas_ai.agents.reputation import ReputationAgent
 from ananas_ai.config import load_agent_channels, load_settings
+from ananas_ai.email_delivery import send_brief
 from ananas_ai.logging_config import get_logger
 from ananas_ai.persistence import (
     bootstrap,
@@ -18,7 +19,6 @@ from ananas_ai.persistence import (
     log_agent_run,
     upsert_health,
 )
-from ananas_ai.email_delivery import send_brief
 from ananas_ai.teams import post_message
 from ananas_ai.validator import validate_agent_output
 

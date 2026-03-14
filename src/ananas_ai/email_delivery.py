@@ -15,7 +15,6 @@ The Azure AD app must have the Graph API application permission: Mail.Send
 
 from __future__ import annotations
 
-import json
 import os
 from datetime import date
 from pathlib import Path
@@ -63,9 +62,7 @@ def _build_payload(subject: str, body_text: str, to_addresses: list[str]) -> dic
         "message": {
             "subject": subject,
             "body": {"contentType": "HTML", "content": html_body},
-            "toRecipients": [
-                {"emailAddress": {"address": addr}} for addr in to_addresses
-            ],
+            "toRecipients": [{"emailAddress": {"address": addr}} for addr in to_addresses],
         },
         "saveToSentItems": "false",
     }
