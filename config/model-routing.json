@@ -9,7 +9,7 @@
       "purpose": "Lightweight routing, intent classification, normalization, complexity pre-checks",
       "approx_cost_per_mtok_input": 0.15,
       "approx_cost_per_mtok_output": 0.60,
-      "note": "GPT-4o-mini is the recommended budget routing layer. Upgrade to o3-mini if reasoning quality is insufficient."
+      "note": "GPT-4o-mini kept for routing — cheapest tier, sufficient for classification. Upgrade to gpt-4.1-nano if latency is a concern."
     },
     "default": {
       "provider": "anthropic",

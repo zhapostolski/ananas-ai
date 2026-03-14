@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ananas_ai.model_client import CLAUDE_TO_OPENAI, call_model, estimate_cost
+from ananas_ai.model_client import call_model, estimate_cost
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -109,7 +109,7 @@ def test_call_model_falls_back_to_openai_on_claude_error(monkeypatch):
         result = call_model("claude-sonnet-4-5", "system", "user")
 
     assert result["fallback"] is True
-    assert result["model_used"] == CLAUDE_TO_OPENAI["claude-sonnet-4-5"]
+    assert result["model_used"] == "gpt-4.1"
     assert result["text"] == "fallback response"
     assert result["tokens_in"] == 80
     assert result["tokens_out"] == 120

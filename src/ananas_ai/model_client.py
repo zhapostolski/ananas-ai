@@ -14,7 +14,7 @@ Returns:
         "estimated_cost": float,   # USD
     }
 
-Falls back to GPT-4o if Claude fails (rate limit, quota, outage).
+Falls back to GPT-4.1 if Claude fails (rate limit, quota, outage).
 Per-run token caps loaded from config/model-routing.json controls block.
 """
 
@@ -38,16 +38,22 @@ _PER_RUN_CAP_OPUS = 30_000
 _PRICES: dict[str, tuple[float, float]] = {
     "claude-opus": (5.00, 25.00),
     "claude-sonnet": (3.00, 15.00),
-    "gpt-4o-mini": (0.15, 0.60),
-    "gpt-4o": (5.00, 15.00),
+    "gpt-4.1-mini": (0.40, 1.60),  # gpt-4.1-mini pricing
+    "gpt-4.1-nano": (0.10, 0.40),  # gpt-4.1-nano pricing
+    "gpt-4.1": (2.00, 8.00),  # gpt-4.1 pricing
+    "gpt-4o-mini": (0.15, 0.60),  # kept for legacy fallback
+    "gpt-4o": (5.00, 15.00),  # kept for legacy fallback
 }
 
 # ── OpenAI fallback model map ─────────────────────────────────────────────────
+# gpt-4.1 is the latest OpenAI model (released April 2025).
+# Sonnet → gpt-4.1 (comparable capability tier)
+# Opus   → gpt-4.1 (best available fallback)
 CLAUDE_TO_OPENAI: dict[str, str] = {
-    "claude-sonnet-4-5": "gpt-4o",
-    "claude-sonnet-4-6": "gpt-4o",
-    "claude-opus-4-5": "gpt-4o",
-    "claude-opus-4-6": "gpt-4o",
+    "claude-sonnet-4-5": "gpt-4.1",
+    "claude-sonnet-4-6": "gpt-4.1",
+    "claude-opus-4-5": "gpt-4.1",
+    "claude-opus-4-6": "gpt-4.1",
 }
 
 
