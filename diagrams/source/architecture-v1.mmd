@@ -1,0 +1,13 @@
+flowchart TD
+    A[Users] --> B[ai.ananas.mk]
+    B --> C[Next.js Portal on AWS]
+    C --> D[Entra ID + Middleware]
+    D --> E[GraphQL / Read API]
+    E --> F[(PostgreSQL)]
+    G[Claude Runtime on AWS EC2] --> F
+    H[Model Routing Layer] --> G
+    I[Specialist Agents] --> H
+    J[MCP Integrations] --> I
+    K[Marketing / Business / Internal Systems] --> J
+    G --> L[Teams / Email / Portal Outputs]
+    G --> M[CloudWatch / S3 / Secrets]

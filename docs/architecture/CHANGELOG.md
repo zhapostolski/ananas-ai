@@ -1,0 +1,40 @@
+# Architecture Changelog
+
+## 2026-03-14 — v2 (full GPT conversation audit + gap implementation)
+
+### Config changes
+- `config/metrics.json` → v2: added 8 new metric groups (marketplace, promo_simulator, app_metrics, ai_system); added contribution margin waterfall, POAS per campaign, Shopping impression share, coupon dependency ratio, CLV/CAC, cost per insight, automations active/total, app DAU/MAU, push opt-in rate
+- `config/model-routing.json` → v2: formally added OpenAI GPT-4o-mini as 3rd routing tier; added per-agent model assignments; added token cap values; added batch processing policy
+- `config/agents.json` → v2: added 11 Phase 2 agents (category-growth, supplier-intelligence, demand-forecasting, promo-simulator, product-feed, organic-merchandising, influencer-partnership, traditional-media-correlation, employer-branding, meeting-intelligence, knowledge-retrieval); all Phase 1 agents updated with router_model field
+- `config/integrations-matrix.json` → v2: added Trustpilot API endpoint; added LinkedIn Ads and X Ads explicitly; moved Search Console to Phase 1; added app analytics (Firebase/Adjust), social publishing (Hootsuite), traditional media (Campaign Calendar Sheet), supplier API, inventory API, product catalog API, Berry HR noted
+- `config/schedules.json` → v2: added Phase 2 weekly schedule; added Phase 2 on-demand agents; added system jobs
+
+### Agent definition changes (`.claude/agents/`)
+- All 5 Phase 1 agents: updated model field to `claude-sonnet-4-5`; added business context, specific metric targets, escalation triggers, structured output formats
+- `performance-agent.md`: added Shopping impression share priority, POAS per campaign, coupon distortion context
+- `reputation-agent.md`: added Trustpilot 2.0 critical context, API endpoint, response time target, alert triggers
+- `marketing-ops-agent.md`: added coupon dependency ratio priority, contribution margin waterfall, return rate by category
+- `crm-lifecycle-agent.md`: added lifecycle flow gap context, cart recovery targets, churn window tracking, email revenue per send target
+- `cross-channel-brief-agent.md`: added Denis email spec, contribution margin lead framing, waterfall reference, coupon context, mobile-readable brief format
+- Created 11 new Phase 2 agent definitions
+
+### CLAUDE.md
+- Updated to v2: added 3-tier model table, Phase 1 and Phase 2 agent tables, critical business context section, updated config file references
+
+### Architecture doc
+- `architecture-v1.md` → updated to v2 content: full architecture tree, infrastructure flow, metric coverage table, Phase 2 priority ranking, v2 change log
+
+---
+
+## 2026-03-13 — GA4 live integration tested
+- GA4 Data API v1beta connected and validated
+- Live proof: 464,844 sessions, 215,232 users, 2,925 conversions, €13.36M revenue
+- Google Cloud project: ananas-ai-ga4-test
+- Auth: ADC via gcloud application-default login
+
+## 2026-03-07 — v1 initial build
+- Populated architecture pack with Phase 1 architecture, budget, roadmap, rules, agents, and config files
+- Added CLAUDE.md and project-scoped Claude Code structure
+- Added 5 specialist subagent definitions
+- Added validation script and integration matrix
+- Added SQL schema (6 tables)

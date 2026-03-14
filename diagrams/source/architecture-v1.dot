@@ -1,0 +1,12 @@
+digraph G {
+rankdir=TB;
+node [shape=box];
+Users -> "ai.ananas.mk" -> "Next.js Portal on AWS" -> "Entra ID + Middleware" -> "GraphQL / Read API" -> "PostgreSQL";
+"Claude Runtime on AWS EC2" -> "PostgreSQL";
+"Model Routing Layer" -> "Claude Runtime on AWS EC2";
+"Specialist Agents" -> "Model Routing Layer";
+"MCP Integrations" -> "Specialist Agents";
+"Marketing / Business / Internal Systems" -> "MCP Integrations";
+"Claude Runtime on AWS EC2" -> "Teams / Email / Portal Outputs";
+"Claude Runtime on AWS EC2" -> "CloudWatch / S3 / Secrets";
+}
