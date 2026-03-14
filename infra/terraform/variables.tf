@@ -13,13 +13,13 @@ variable "environment" {
 variable "instance_type" {
   description = "EC2 instance type for the runtime host"
   type        = string
-  default     = "t3.xlarge"  # 4 vCPU / 16GB — Phase 1
+  default     = "t3.small"   # 2 vCPU / 2GB — cheapest viable; scale up when needed
 }
 
 variable "ebs_volume_size_gb" {
   description = "EBS root volume size in GB"
   type        = number
-  default     = 100
+  default     = 20
 }
 
 variable "allowed_ssh_cidrs" {
