@@ -1,5 +1,55 @@
 # Architecture Changelog
 
+## 2026-03-14 — v0.3.1 (QA gate + release process)
+
+### Release process
+- `deploy.yml` restructured as "Release" workflow: 4 QA jobs (`quality`, `test`, `validate`, `secrets-scan`) run in parallel; `deploy` job blocked behind `needs: [quality, test, validate, secrets-scan]`
+- `Makefile` `release` target added: runs full local QA gate before tagging and pushing — broken code cannot reach EC2 or GitHub
+
+### Code quality
+- Applied `ruff format` to all files; CI now enforces format check on every push and tag
+
+---
+
+## 2026-03-14 — v0.3.0 (Claude + OpenAI integration, agent wiring)
+
+### New files
+- `src/ananas_ai/model_client.py` — unified Claude + OpenAI client with automatic fallback; returns `{text, model_used, fallback}`
+
+### Agent changes
+- `agents/base.py` — added `run(date_from, date_to)` stub so all agents share the interface
+- `agents/performance.py` — `run()` wired with Claude call; Shopping IS=0 critical context in system prompt
+- `agents/marketing_ops.py` — `run()` wired with Claude call; tracking health + Search Console analysis
+- `agents/crm_lifecycle.py` — rewritten: Sales Snap API stub, `KNOWN_GAPS` + `JOURNEYS` constants (all 6 lifecycle journeys `not_live`), Claude call
+- `agents/reputation.py` — rewritten: Trustpilot API stub, `TRUSTPILOT_KNOWN_STATE` (2.0 rating, unclaimed), Claude call
+- `agents/cross_channel_brief.py` — rewritten: calls Claude with `complexity="high"` (Opus escalation), synthesises all specialist `analysis` fields
+
+### CLI changes
+- `cli.py` `run_brief()` now calls `agent.run()` for all 4 specialists before building the brief; each specialist result is persisted and posted to its own Teams channel
+
+### Teams output
+- `teams.py` rewritten: produces Teams Adaptive Card JSON; posts to `TEAMS_WEBHOOK_URL` when configured, always writes local debug file; parses `- Key: value` lines into FactSet
+
+### Dependencies
+- `pyproject.toml` — added `openai>=1.50.0`
+
+---
+
+## 2026-03-14 — v0.2.4 (EC2 bootstrap + CI fixes)
+
+### Infrastructure
+- EC2 t3.small provisioned via Terraform in eu-central-1, Elastic IP 52.29.60.185
+- PostgreSQL installed, schema bootstrapped
+- SSM agent installed; GitHub Actions deploy via SSM send-command (SSH port closed)
+- 5 secrets loaded in AWS Secrets Manager: Anthropic key, GA4 paths, DB config
+
+### CI fixes
+- mypy: fixed 9 type errors across integrations and persistence
+- TruffleHog: switched to before/after SHA comparison
+- Config validation: fixed `docs/budget/budget.md` path
+
+---
+
 ## 2026-03-14 — v3 (presentation readiness + automation)
 
 ### New documents

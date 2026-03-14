@@ -25,10 +25,7 @@ python -m ananas_ai.cli doctor
 # Bootstrap database
 python -m ananas_ai.cli bootstrap-db
 
-# Check integrations
-python -m ananas_ai.cli check-integrations
-
-# Run a single agent (dry-run)
+# Run a single agent
 python -m ananas_ai.cli run-agent performance
 
 # Run full morning brief
@@ -40,12 +37,13 @@ python -m ananas_ai.cli list-latest
 
 ## Production (AWS EC2)
 
-```bash
-# SSH to EC2
-ssh -i ~/.ssh/ananas-ai-prod.pem ubuntu@<EC2_IP>
+EC2 access is via AWS SSM only (SSH port is closed). Requires AWS CLI configured.
 
-# Check service status
-systemctl status ananas-ai-cron
+```bash
+# Open interactive session on EC2
+aws ssm start-session --target <INSTANCE_ID> --region eu-central-1
+
+# Check cron status
 
 # Check last brief
 cd /opt/ananas-ai && source .venv/bin/activate
