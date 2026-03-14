@@ -64,6 +64,26 @@ resource "aws_cloudwatch_metric_alarm" "disk_usage" {
   }
 }
 
+# ── Dead-man heartbeat alarm ──────────────────────────────────────────────────
+# Fires if run-brief hasn't published a heartbeat in 25 hours (1 missed run = alert).
+# The metric is published by ananas_ai.cli._publish_heartbeat() after every
+# successful run-brief completion.
+
+resource "aws_cloudwatch_metric_alarm" "brief_missing" {
+  alarm_name          = "ananas-ai-brief-missing"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "BriefHeartbeat"
+  namespace           = "AnanasAI"
+  period              = 90000 # 25 hours in seconds
+  statistic           = "Sum"
+  threshold           = 1
+  treat_missing_data  = "breaching"
+  alarm_description   = "Daily marketing brief did not run in the last 25 hours"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+  ok_actions          = [aws_sns_topic.alerts.arn]
+}
+
 # ── CloudWatch Log Group for agent logs ───────────────────────────────────────
 
 resource "aws_cloudwatch_log_group" "agents" {
@@ -106,6 +126,20 @@ resource "aws_cloudwatch_dashboard" "main" {
           period = 300
           stat   = "Sum"
           view   = "timeSeries"
+        }
+      },
+      {
+        type = "metric"
+        properties = {
+          title   = "Daily Brief Heartbeat"
+          region  = var.aws_region
+          metrics = [["AnanasAI", "BriefHeartbeat"]]
+          period  = 86400
+          stat    = "Sum"
+          view    = "timeSeries"
+          annotations = {
+            horizontal = [{ value = 1, label = "Expected", color = "#2ca02c" }]
+          }
         }
       },
     ]

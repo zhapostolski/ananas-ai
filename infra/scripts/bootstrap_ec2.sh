@@ -145,6 +145,27 @@ CRONEOF
 chmod 644 "$CRON_FILE"
 echo "Cron jobs installed"
 
+# ── Log rotation ──────────────────────────────────────────────────────────────
+cat > /etc/logrotate.d/ananas-ai << 'LOGEOF'
+/var/log/ananas-agents.log {
+    weekly
+    rotate 8
+    compress
+    missingok
+    notifempty
+    copytruncate
+}
+/var/log/ananas-backup.log {
+    weekly
+    rotate 4
+    compress
+    missingok
+    notifempty
+    copytruncate
+}
+LOGEOF
+echo "Log rotation configured"
+
 # ── CloudWatch agent config ───────────────────────────────────────────────────
 cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'CWJSON'
 {

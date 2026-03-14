@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
+
+import boto3
 
 from ananas_ai.agents.crm_lifecycle import CRMLifecycleAgent
 from ananas_ai.agents.cross_channel_brief import CrossChannelBriefAgent
@@ -24,6 +27,30 @@ from ananas_ai.teams import post_message
 from ananas_ai.validator import validate_agent_output
 
 logger = get_logger(__name__)
+
+_CW_NAMESPACE = "AnanasAI"
+_CW_METRIC = "BriefHeartbeat"
+_CW_REGION = os.environ.get("AWS_REGION", "eu-central-1")
+
+
+def _publish_heartbeat() -> None:
+    """Put a CloudWatch metric so the dead-man alarm knows the brief ran."""
+    try:
+        cw = boto3.client("cloudwatch", region_name=_CW_REGION)
+        cw.put_metric_data(
+            Namespace=_CW_NAMESPACE,
+            MetricData=[
+                {
+                    "MetricName": _CW_METRIC,
+                    "Value": 1,
+                    "Unit": "Count",
+                }
+            ],
+        )
+        logger.info("Heartbeat published to CloudWatch (%s/%s)", _CW_NAMESPACE, _CW_METRIC)
+    except Exception as e:
+        logger.warning("Heartbeat publish failed (non-fatal): %s", e)
+
 
 AGENT_MAP = {
     "performance-agent": PerformanceAgent,
@@ -289,6 +316,7 @@ def run_brief() -> int:
         tokens_in + tokens_out,
         cost,
     )
+    _publish_heartbeat()
     return 0
 
 
