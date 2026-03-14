@@ -108,7 +108,7 @@ resource "aws_security_group" "runtime" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "All outbound — agents call external APIs"
+    description = "All outbound - agents call external APIs"
   }
 
   tags = { Name = "ananas-ai-runtime-sg" }
@@ -200,10 +200,11 @@ resource "aws_instance" "runtime" {
   }
 
   user_data = base64encode(templatefile("${path.module}/../scripts/bootstrap_ec2.sh", {
-    github_repo = var.github_repo
-    db_name     = var.db_name
-    db_user     = var.db_user
-    aws_region  = var.aws_region
+    github_repo     = var.github_repo
+    db_name         = var.db_name
+    db_user         = var.db_user
+    aws_region      = var.aws_region
+    PYTHON_VERSION  = "3.12"
   }))
 
   tags = { Name = "ananas-ai-runtime" }

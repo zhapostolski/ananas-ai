@@ -25,6 +25,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "backups" {
   rule {
     id     = "expire-old-backups"
     status = "Enabled"
+    filter {}
     expiration { days = var.s3_backup_retention_days }
     noncurrent_version_expiration { noncurrent_days = 7 }
   }
