@@ -1,30 +1,12 @@
 {
-  "project_name": "Ananas AI Platform",
+  "version": "v1",
   "domain": "ai.ananas.mk",
-  "phase": "brand-new baseline",
-  "department_scope": "marketing-first",
-  "portal_stack": [
-    "Next.js",
-    "TypeScript",
-    "React Query",
-    "GraphQL",
-    "Storybook"
-  ],
-  "runtime_stack": [
-    "Python",
-    "AWS EC2",
-    "PostgreSQL",
-    "Teams integration",
-    "MCP-style connectors"
-  ],
+  "portal_repo": "ananas-ai-portal",
+  "runtime_repo": "ananas-ai-runtime",
+  "runtime_host": "aws-ec2-t3-xlarge",
   "primary_interfaces": [
     "portal",
-    "teams-channels",
-    "teams-bot"
+    "teams"
   ],
-  "model_policy": {
-    "router": "openai-lightweight",
-    "default_execution": "claude-sonnet",
-    "escalation": "claude-opus"
-  }
+  "phase": "marketing-first"
 }

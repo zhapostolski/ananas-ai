@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "required_common_fields": [
+    "agent_name",
+    "module_name",
+    "output_type",
+    "date_from",
+    "date_to",
+    "data_json",
+    "version",
+    "model_used",
+    "created_at"
+  ]
+}

@@ -1,25 +1,37 @@
 {
+  "version": "v2",
+  "last_updated": "2026-03-14",
   "timezone": "Europe/Skopje",
+
   "phase_1_daily": [
-    {
-      "agent": "performance-agent",
-      "time": "06:00"
-    },
-    {
-      "agent": "crm-lifecycle-agent",
-      "time": "06:30"
-    },
-    {
-      "agent": "reputation-agent",
-      "time": "07:00"
-    },
-    {
-      "agent": "marketing-ops-agent",
-      "time": "07:15"
-    },
-    {
-      "agent": "cross-channel-brief-agent",
-      "time": "07:30"
-    }
+    { "agent": "performance-agent",       "time": "06:00", "description": "Paid channels + GA4 summary" },
+    { "agent": "crm-lifecycle-agent",     "time": "06:30", "description": "Email, cart recovery, churn signals" },
+    { "agent": "reputation-agent",        "time": "07:00", "description": "Trustpilot + Google Business" },
+    { "agent": "marketing-ops-agent",     "time": "07:15", "description": "KPI integrity, tracking QA, coupon dependency" },
+    { "agent": "cross-channel-brief-agent", "time": "07:30", "description": "Synthesis → Teams + email to Denis" }
+  ],
+
+  "phase_2_weekly": [
+    { "agent": "organic-merchandising-agent",       "day": "Monday",    "time": "08:00" },
+    { "agent": "category-growth-agent",             "day": "Monday",    "time": "08:30" },
+    { "agent": "supplier-intelligence-agent",       "day": "Tuesday",   "time": "08:00" },
+    { "agent": "demand-forecasting-agent",          "day": "Wednesday", "time": "08:00" },
+    { "agent": "product-feed-agent",                "day": "Thursday",  "time": "08:00" },
+    { "agent": "traditional-media-correlation-agent", "day": "Friday",  "time": "08:00" },
+    { "agent": "influencer-partnership-agent",      "day": "Friday",    "time": "08:30" },
+    { "agent": "employer-branding-agent",           "day": "Friday",    "time": "09:00" }
+  ],
+
+  "phase_2_on_demand": [
+    { "agent": "promo-simulator-agent",     "trigger": "manual-request-via-portal-or-teams" },
+    { "agent": "meeting-intelligence-agent","trigger": "new-audio-file-in-intake-folder" },
+    { "agent": "knowledge-retrieval-agent", "trigger": "user-query-via-portal-or-teams" }
+  ],
+
+  "system_jobs": [
+    { "job": "db-health-check",     "interval": "every-15-minutes" },
+    { "job": "token-usage-report",  "interval": "daily-at-08:00" },
+    { "job": "db-backup-to-s3",     "interval": "daily-at-03:00" },
+    { "job": "ec2-snapshot",        "interval": "weekly-sunday-02:00" }
   ]
 }

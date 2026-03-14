@@ -1,22 +1,28 @@
-# Ananas AI
+# Ananas AI Platform Repository
 
-Brand-new repository baseline for the Ananas AI Platform.
+This pack is a populated project knowledge base for the Ananas AI Platform.
 
-This repository is designed for Claude Code onboarding and human implementation. It contains:
-- the full internal architecture
-- Phase 1 and Phase 2 plans
-- repo conventions and governance
-- Claude Code project memory and subagents
-- starter runtime code
-- validation, persistence, and routing logic
-- diagrams and configuration files
+It is designed for two audiences:
+- Humans: architecture, budget, roadmap, decisions, and operating rules
+- Claude Code: persistent project memory, scoped rules, subagents, schedules, metrics, and integration maps
 
-## Core product
-Marketing-first internal AI platform for `ai.ananas.mk`, built on:
-- existing Ananas portal stack
+## Repository intent
+This is the marketing-first implementation of the broader Ananas AI Platform.
+Phase 1 covers:
+- ai.ananas.mk portal
 - AWS runtime
-- Microsoft Entra ID
-- Teams integration
-- MCP-first tool access
-- specialist agents
+- Teams channel posting
+- Teams bot engagement
+- five specialist agents
 - multi-model routing
+- GitHub-governed prompts, metrics, schemas, and schedules
+
+## Most important files
+- `CLAUDE.md` — project-wide operating context for Claude Code
+- `.claude/rules/` — modular project rules
+- `.claude/agents/` — project subagents
+- `docs/architecture/architecture-v1.md` — business-facing architecture narrative
+- `docs/budgets/budget-v1.md` — detailed budget scenarios
+- `docs/roadmap/phase-1-roadmap.md` — implementation plan
+- `config/` — live architecture-driving config files
+- `scripts/validate_pack.py` — repository sanity checks

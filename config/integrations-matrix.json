@@ -1,60 +1,291 @@
 {
-  "phase_1": {
-    "performance": [
-      "google-ads",
-      "meta-ads",
-      "tiktok-ads",
-      "linkedin-ads",
-      "x-ads-planned",
-      "ga4",
-      "search-console"
-    ],
-    "crm": [
-      "crm-platform",
-      "email-platform"
-    ],
-    "reputation": [
-      "trustpilot",
-      "google-business"
-    ],
-    "internal_work": [
-      "teams-channels",
-      "teams-bot",
-      "outlook-email",
-      "jira",
-      "confluence",
-      "sharepoint"
-    ],
-    "business_data": [
-      "orders",
-      "returns",
-      "revenue",
-      "margin",
-      "categories",
-      "coupon-usage"
-    ]
-  },
-  "phase_2": {
-    "competitor_intelligence": [
-      "seo-tooling",
-      "serp-data",
-      "social-listening",
-      "marketplace-monitoring"
-    ],
-    "lead_gen_outreach": [
-      "prospecting-datasets",
-      "contact-enrichment",
-      "outreach-sequences"
-    ],
-    "video_rendering": [
-      "rendering-engine",
-      "template-system",
-      "asset-library"
-    ],
-    "self_learning_memory": [
-      "curated-memory-store",
-      "evaluation-archive",
-      "example-library"
-    ]
+  "version": "v2",
+  "last_updated": "2026-03-14",
+
+  "domains": {
+
+    "performance": {
+      "description": "Paid acquisition and analytics channels",
+      "phase": "phase-1",
+      "connectors": [
+        {
+          "name": "google-ads",
+          "type": "mcp",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["spend", "cpc", "cvr", "poas_per_campaign", "blended_roas"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "google-shopping",
+          "type": "mcp",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["impression_share", "feed_health", "disapprovals"],
+          "note": "Critical — Ananas has 250k products with no Shopping campaigns currently",
+          "phase": "phase-1"
+        },
+        {
+          "name": "meta-ads",
+          "type": "mcp",
+          "auth": "app-token",
+          "access": "read-only",
+          "key_metrics": ["spend", "roas", "cpm", "cvr"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "linkedin-ads",
+          "type": "mcp",
+          "auth": "oauth2",
+          "access": "read-only",
+          "key_metrics": ["spend", "cpc", "cvr"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "x-ads",
+          "type": "mcp",
+          "auth": "oauth2",
+          "access": "read-only",
+          "key_metrics": ["spend", "engagement"],
+          "note": "X profile does not yet exist — account creation is on team roadmap",
+          "phase": "phase-1"
+        },
+        {
+          "name": "tiktok-ads",
+          "type": "mcp",
+          "auth": "oauth2",
+          "access": "read-only",
+          "key_metrics": ["spend", "cvr", "cpm"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "ga4",
+          "type": "mcp",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["sessions", "users", "cvr", "revenue", "organic_sessions"],
+          "phase": "phase-1",
+          "status": "LIVE — tested and working 2026-03-13"
+        }
+      ]
+    },
+
+    "search_organic": {
+      "description": "Search visibility and organic traffic signals",
+      "phase": "phase-1",
+      "connectors": [
+        {
+          "name": "google-search-console",
+          "type": "mcp",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["indexed_pages", "top_keyword_positions", "organic_clicks", "ctr"],
+          "phase": "phase-1",
+          "note": "Moved to Phase 1 — critical for 250k product catalog"
+        },
+        {
+          "name": "ahrefs-or-semrush",
+          "type": "mcp",
+          "auth": "api-key",
+          "access": "read-only",
+          "key_metrics": ["domain_rating", "backlink_count", "keyword_gaps"],
+          "phase": "phase-1"
+        }
+      ]
+    },
+
+    "crm": {
+      "description": "Lifecycle, email, and retention systems",
+      "phase": "phase-1",
+      "connectors": [
+        {
+          "name": "crm-email-platform",
+          "type": "mcp",
+          "auth": "api-key",
+          "access": "read-only",
+          "key_metrics": ["cart_recovery_rate", "email_open_rate", "email_revenue_per_send", "churn_rate", "active_subscribers"],
+          "note": "Specific platform (HubSpot/ActiveCampaign/Klaviyo) to be confirmed",
+          "phase": "phase-1"
+        }
+      ]
+    },
+
+    "reputation": {
+      "description": "Review platforms and customer trust signals",
+      "phase": "phase-1",
+      "connectors": [
+        {
+          "name": "trustpilot",
+          "type": "mcp",
+          "auth": "api-key",
+          "access": "read-only",
+          "api_base": "https://api.trustpilot.com/v1",
+          "key_metrics": ["review_count", "average_rating", "response_rate", "response_time"],
+          "note": "Trustpilot currently at 2.0 — CRITICAL priority. Profile not yet claimed.",
+          "phase": "phase-1"
+        },
+        {
+          "name": "google-business-profile",
+          "type": "mcp",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["google_business_rating", "review_count"],
+          "phase": "phase-1"
+        }
+      ]
+    },
+
+    "internal_work": {
+      "description": "Internal collaboration and workflow systems",
+      "phase": "phase-1",
+      "connectors": [
+        {
+          "name": "microsoft-teams-posting",
+          "type": "mcp",
+          "auth": "graph-api",
+          "access": "post-only",
+          "channels": [
+            "#marketing-performance",
+            "#marketing-crm",
+            "#marketing-reputation",
+            "#marketing-ops",
+            "#marketing-summary",
+            "#executive-summary"
+          ],
+          "phase": "phase-1"
+        },
+        {
+          "name": "outlook-email",
+          "type": "mcp",
+          "auth": "graph-api",
+          "access": "send-only",
+          "recipients": ["denis@ananas.mk"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "jira",
+          "type": "mcp",
+          "auth": "api-key",
+          "access": "read-write",
+          "phase": "phase-1"
+        },
+        {
+          "name": "confluence",
+          "type": "mcp",
+          "auth": "api-key",
+          "access": "read-write",
+          "phase": "phase-1"
+        }
+      ]
+    },
+
+    "business_data": {
+      "description": "Internal Ananas business APIs — read-only, requires backend team coordination",
+      "phase": "phase-1-partial",
+      "connectors": [
+        {
+          "name": "orders-api",
+          "type": "internal-api",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["orders", "revenue", "aov"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "returns-api",
+          "type": "internal-api",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["return_rate", "return_reasons_by_category"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "margin-api",
+          "type": "internal-api",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["contribution_margin_pct", "poas"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "categories-api",
+          "type": "internal-api",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["category_revenue", "category_margin", "category_return_rate"],
+          "phase": "phase-1"
+        },
+        {
+          "name": "product-catalog-api",
+          "type": "internal-api",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["total_products", "feed_completeness", "listing_quality"],
+          "phase": "phase-2"
+        },
+        {
+          "name": "supplier-api",
+          "type": "internal-api",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["supplier_revenue", "supplier_campaign_participation", "supplier_margin"],
+          "phase": "phase-2"
+        },
+        {
+          "name": "inventory-api",
+          "type": "internal-api",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["stock_levels", "oos_rate"],
+          "phase": "phase-2"
+        }
+      ]
+    },
+
+    "app_analytics": {
+      "description": "Mobile app analytics — pending MK app launch",
+      "phase": "phase-2",
+      "connectors": [
+        {
+          "name": "firebase-or-adjust",
+          "type": "mcp",
+          "auth": "service-account",
+          "access": "read-only",
+          "key_metrics": ["app_installs", "dau_mau", "push_opt_in_rate", "app_cvr"],
+          "phase": "phase-2"
+        }
+      ]
+    },
+
+    "social_publishing": {
+      "description": "Social media management — Hootsuite or equivalent",
+      "phase": "phase-2",
+      "connectors": [
+        {
+          "name": "hootsuite-or-buffer",
+          "type": "mcp",
+          "auth": "oauth2",
+          "access": "read-write",
+          "key_metrics": ["post_reach", "engagement_rate", "scheduled_posts"],
+          "note": "Team meeting confirmed Hootsuite setup is on the roadmap",
+          "phase": "phase-2"
+        }
+      ]
+    },
+
+    "traditional_media": {
+      "description": "Offline campaign tracking via correlation signals",
+      "phase": "phase-2",
+      "connectors": [
+        {
+          "name": "campaign-calendar-sheet",
+          "type": "google-sheets",
+          "auth": "service-account",
+          "access": "read-only",
+          "note": "Campaign dates, channel, region, spend — correlated with branded search lift, direct traffic, and GMV signals",
+          "phase": "phase-2"
+        }
+      ]
+    }
   }
 }

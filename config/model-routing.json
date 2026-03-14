@@ -1,20 +1,100 @@
 {
-  "version": "2026-03-brand-new",
-  "router_model": "openai-lightweight",
-  "default_execution_model": "claude-sonnet",
-  "escalation_model": "claude-opus",
-  "routing_rules": [
-    "Use the low-cost router for classification, normalization, and complexity pre-checks.",
-    "Use Claude Sonnet for all standard specialist-agent execution.",
-    "Use Claude Opus only for explicit escalation or high-complexity synthesis.",
-    "Record model_used on every output and run log.",
-    "Enforce per-run and per-day token caps."
-  ],
-  "agent_defaults": {
-    "performance-agent": "claude-sonnet",
-    "crm-lifecycle-agent": "claude-sonnet",
-    "reputation-agent": "claude-sonnet",
-    "marketing-ops-agent": "claude-sonnet",
-    "cross-channel-brief-agent": "claude-sonnet"
+  "version": "v2",
+  "last_updated": "2026-03-14",
+
+  "models": {
+    "router": {
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "purpose": "Lightweight routing, intent classification, normalization, complexity pre-checks",
+      "approx_cost_per_mtok_input": 0.15,
+      "approx_cost_per_mtok_output": 0.60,
+      "note": "GPT-4o-mini is the recommended budget routing layer. Upgrade to o3-mini if reasoning quality is insufficient."
+    },
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5",
+      "purpose": "Standard production execution for all five Phase 1 agents",
+      "approx_cost_per_mtok_input": 3.00,
+      "approx_cost_per_mtok_output": 15.00
+    },
+    "escalation": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-5",
+      "purpose": "Complex cross-domain synthesis, high-stakes executive reasoning, architecture review",
+      "approx_cost_per_mtok_input": 5.00,
+      "approx_cost_per_mtok_output": 25.00,
+      "note": "Use only when Sonnet quality is provably insufficient"
+    }
+  },
+
+  "agent_model_assignments": {
+    "performance-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "escalation_trigger": "anomaly_detected OR complexity=high"
+    },
+    "crm-lifecycle-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "escalation_trigger": "complexity=high"
+    },
+    "reputation-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "escalation_trigger": "sentiment_crisis OR complexity=high"
+    },
+    "marketing-ops-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "escalation_trigger": "complexity=high"
+    },
+    "cross-channel-brief-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "escalation_trigger": "complexity=high OR executive_brief=true"
+    },
+    "category-growth-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "escalation_trigger": "complexity=high",
+      "phase": "phase-2"
+    },
+    "supplier-intelligence-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "demand-forecasting-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    },
+    "promo-simulator-agent": {
+      "router_model": "router",
+      "execution_model": "default",
+      "escalation_model": "escalation",
+      "phase": "phase-2"
+    }
+  },
+
+  "controls": {
+    "per_run_token_cap_enabled": true,
+    "per_run_token_cap_sonnet": 50000,
+    "per_run_token_cap_opus": 30000,
+    "per_day_token_cap_per_agent": 200000,
+    "log_model_used": true,
+    "log_estimated_cost": true,
+    "prompt_caching_allowed": true,
+    "batch_processing_allowed": true,
+    "batch_processing_use_case": "non-urgent historical backfills and large report regenerations"
   }
 }

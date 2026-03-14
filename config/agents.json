@@ -1,74 +1,196 @@
 {
-  "version": "2026-03-brand-new",
+  "version": "v2",
+  "last_updated": "2026-03-14",
+  "phase": "marketing-first",
+
   "phase_1_agents": [
     {
       "name": "performance-agent",
       "module": "performance",
-      "default_model": "claude-sonnet",
-      "escalation_model": "claude-opus",
+      "description": "Covers GA4, Google Ads, Google Shopping, Meta, TikTok, LinkedIn, X. Produces spend/ROAS/POAS/CAC analysis plus Shopping impression share and channel anomalies.",
+      "default_model": "claude-sonnet-4-5",
+      "router_model": "gpt-4o-mini",
+      "escalation_model": "claude-opus-4-5",
       "schedule": "06:00",
+      "sources": ["ga4", "google-ads", "google-shopping", "meta-ads", "tiktok-ads", "linkedin-ads", "x-ads"],
+      "key_metrics": ["poas_per_campaign", "blended_roas", "cac", "google_shopping_impression_share", "cpc_trend", "cvr_by_device"],
       "outputs": [
-        "portal",
+        "portal:performance",
         "teams:#marketing-performance"
       ]
     },
     {
       "name": "crm-lifecycle-agent",
       "module": "crm-lifecycle",
-      "default_model": "claude-sonnet",
-      "escalation_model": "claude-opus",
+      "description": "Covers email/CRM platform. Tracks cart abandonment, recovery, email revenue, churn signals, and repeat purchase patterns.",
+      "default_model": "claude-sonnet-4-5",
+      "router_model": "gpt-4o-mini",
+      "escalation_model": "claude-opus-4-5",
       "schedule": "06:30",
+      "sources": ["crm-email-platform"],
+      "key_metrics": ["cart_abandonment_rate", "cart_recovery_rate", "email_revenue_per_send", "churn_rate_30_60_90", "active_subscribers"],
       "outputs": [
-        "portal",
+        "portal:crm",
         "teams:#marketing-crm"
       ]
     },
     {
       "name": "reputation-agent",
       "module": "reputation",
-      "default_model": "claude-sonnet",
-      "escalation_model": "claude-opus",
+      "description": "Covers Trustpilot and Google Business. Monitors review count, sentiment, response rate, and trust risk signals.",
+      "default_model": "claude-sonnet-4-5",
+      "router_model": "gpt-4o-mini",
+      "escalation_model": "claude-opus-4-5",
       "schedule": "07:00",
+      "sources": ["trustpilot", "google-business-profile"],
+      "key_metrics": ["trustpilot_review_count", "trustpilot_response_rate", "average_response_time_hours", "sentiment_score_weekly_trend", "google_business_rating"],
       "outputs": [
-        "portal",
+        "portal:reputation",
         "teams:#marketing-reputation"
+      ],
+      "alerts": [
+        "new_negative_review",
+        "response_rate_below_80pct",
+        "rating_drop"
       ]
     },
     {
       "name": "marketing-ops-agent",
       "module": "marketing-ops",
-      "default_model": "claude-sonnet",
-      "escalation_model": "claude-opus",
+      "description": "Covers GA4 data integrity, KPI sanity, campaign QA, tracking quality, and coupon dependency monitoring.",
+      "default_model": "claude-sonnet-4-5",
+      "router_model": "gpt-4o-mini",
+      "escalation_model": "claude-opus-4-5",
       "schedule": "07:15",
+      "sources": ["ga4", "orders-api", "returns-api"],
+      "key_metrics": ["coupon_dependency_ratio", "data_quality_score", "campaign_analysis_coverage", "tracking_health"],
       "outputs": [
-        "portal",
+        "portal:marketing-ops",
         "teams:#marketing-ops"
+      ],
+      "alerts": [
+        "coupon_dependency_above_threshold",
+        "tracking_event_missing",
+        "conversion_discrepancy"
       ]
     },
     {
       "name": "cross-channel-brief-agent",
       "module": "cross-channel-brief",
-      "default_model": "claude-sonnet",
-      "escalation_model": "claude-opus",
+      "description": "Synthesis agent. Reads outputs from all four specialist agents and produces the daily marketing team brief and executive summary.",
+      "default_model": "claude-sonnet-4-5",
+      "router_model": "gpt-4o-mini",
+      "escalation_model": "claude-opus-4-5",
+      "escalation_trigger": "complexity=high OR executive_brief=true",
       "schedule": "07:30",
+      "sources": ["agent-outputs-db"],
       "outputs": [
-        "portal",
+        "portal:cross-channel-brief",
         "teams:#marketing-summary",
         "teams:#executive-summary",
-        "email:executive"
+        "email:denis"
       ]
     }
   ],
+
   "phase_2_agents": [
-    "organic-merchandising-agent",
-    "knowledge-retrieval-agent",
-    "meeting-intelligence-agent",
-    "competitor-intelligence-agent",
-    "lead-gen-outreach-agent",
-    "content-memory-agent",
-    "scoring-evaluation-agent",
-    "video-rendering-agent",
-    "search-shopping-agent",
-    "paid-social-agent"
+    {
+      "name": "organic-merchandising-agent",
+      "module": "organic-merchandising",
+      "description": "Search Console, Ahrefs, product feed quality, catalog indexation, category SEO.",
+      "schedule": "08:00",
+      "sources": ["google-search-console", "ahrefs-or-semrush", "product-catalog-api"],
+      "key_metrics": ["indexed_pages_vs_catalog", "top_keyword_positions", "organic_conversion_rate", "product_feed_health"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "category-growth-agent",
+      "module": "category-growth",
+      "description": "Most important marketplace-specific agent. Ranks categories by revenue, margin, return risk, and demand trend. Identifies which categories to scale, monitor, or fix.",
+      "schedule": "weekly-monday-08:30",
+      "sources": ["categories-api", "margin-api", "returns-api", "ga4"],
+      "key_metrics": ["category_revenue_by_margin", "category_return_rate", "category_demand_trend"],
+      "outputs": ["portal:category-growth", "teams:#marketing-ops"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "supplier-intelligence-agent",
+      "module": "supplier-intelligence",
+      "description": "Identifies suppliers with high revenue potential but low marketing investment. Suggests co-marketing campaigns.",
+      "schedule": "weekly-tuesday-08:00",
+      "sources": ["supplier-api", "categories-api", "orders-api"],
+      "key_metrics": ["supplier_marketing_potential", "supplier_revenue_contribution"],
+      "outputs": ["portal:supplier-intelligence", "teams:#marketing-ops"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "demand-forecasting-agent",
+      "module": "demand-forecasting",
+      "description": "Detects demand spikes from search trends, internal search, category views, and seasonal patterns. Alerts marketing before demand peaks.",
+      "schedule": "weekly-wednesday-08:00",
+      "sources": ["ga4", "google-search-console", "categories-api"],
+      "outputs": ["portal:demand-forecast", "teams:#marketing-ops"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "promo-simulator-agent",
+      "module": "promo-simulator",
+      "description": "Pre-launch promo impact estimator. Given a proposed discount and category, outputs expected GMV lift, margin impact, and break-even volume.",
+      "trigger": "on-demand",
+      "sources": ["orders-api", "margin-api", "categories-api", "returns-api"],
+      "key_metrics": ["promo_expected_gmv_lift", "promo_margin_impact", "promo_break_even_volume"],
+      "outputs": ["portal:promo-simulator"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "product-feed-agent",
+      "module": "product-feed",
+      "description": "Scans 250k+ product catalog for missing attributes, poor titles/descriptions, Shopping feed readiness, and listing quality issues.",
+      "schedule": "weekly-thursday-08:00",
+      "sources": ["product-catalog-api", "google-shopping"],
+      "key_metrics": ["product_feed_health", "indexed_pages_vs_catalog"],
+      "outputs": ["portal:feed-quality", "teams:#marketing-ops"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "influencer-partnership-agent",
+      "module": "influencer",
+      "description": "Tracks influencer campaign ROI, creator scoring, and co-marketing opportunity detection.",
+      "schedule": "weekly",
+      "sources": ["ga4", "crm-email-platform"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "traditional-media-correlation-agent",
+      "module": "traditional-media",
+      "description": "Correlates offline campaign dates (TV, OOH, Radio) with branded search lift, direct traffic, and GMV signals.",
+      "schedule": "weekly",
+      "sources": ["campaign-calendar-sheet", "ga4", "google-search-console"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "employer-branding-agent",
+      "module": "employer-branding",
+      "description": "Monitors LinkedIn employer presence, recruiter engagement, talent pipeline visibility.",
+      "schedule": "weekly",
+      "sources": ["linkedin-ads"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "meeting-intelligence-agent",
+      "module": "meeting-intelligence",
+      "description": "Processes meeting transcripts via Whisper, generates structured summaries, extracts action items, creates Jira tasks.",
+      "trigger": "on-file-upload",
+      "sources": ["audio-intake-folder", "jira", "confluence"],
+      "phase": "phase-2"
+    },
+    {
+      "name": "knowledge-retrieval-agent",
+      "module": "knowledge-retrieval",
+      "description": "Searches Confluence, campaign docs, experiment archive, and meeting summaries for institutional memory retrieval.",
+      "trigger": "on-demand",
+      "sources": ["confluence", "jira"],
+      "phase": "phase-2"
+    }
   ]
 }

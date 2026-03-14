@@ -1,46 +1,358 @@
 {
+  "version": "v2",
+  "last_updated": "2026-03-14",
+  "notes": "Extended to include full KPI set from operational audit. All formulas are finance-aligned.",
+
   "groups": {
-    "profit_revenue": [
-      "net_revenue",
-      "contribution_margin_pct",
-      "poas",
-      "return_rate",
-      "new_vs_returning_revenue_split"
-    ],
-    "acquisition": [
-      "spend",
-      "roas",
-      "blended_roas",
-      "cac",
-      "cpc",
-      "cvr",
-      "new_customers"
-    ],
-    "crm": [
-      "cart_abandonment",
-      "cart_recovery",
-      "email_revenue",
-      "active_subscribers",
-      "churn"
-    ],
-    "organic": [
-      "indexed_pages",
-      "organic_sessions",
-      "organic_conversion_rate",
-      "top_keyword_positions",
-      "listing_health"
-    ],
-    "reputation": [
-      "trustpilot_score",
-      "review_count",
-      "response_rate",
-      "sentiment"
-    ],
-    "system": [
-      "tokens_used",
-      "estimated_cost",
-      "agent_uptime",
-      "delivery_success_rate"
-    ]
+
+    "profit_revenue": {
+      "description": "Core profitability metrics. These are the most important metrics for leadership.",
+      "metrics": {
+        "net_revenue": {
+          "formula": "GMV - returns - refunds",
+          "owner": "finance",
+          "refresh": "daily"
+        },
+        "contribution_margin_pct": {
+          "formula": "(net_revenue - COGS - logistics - discounts - marketing_spend) / net_revenue * 100",
+          "owner": "finance",
+          "refresh": "daily",
+          "target": ">18%"
+        },
+        "contribution_margin_waterfall": {
+          "formula": "GMV -> net_revenue -> gross_margin -> contribution (after logistics, returns, payment_fees, discounts, marketing)",
+          "owner": "finance",
+          "refresh": "weekly",
+          "note": "Step-by-step waterfall for Finance alignment"
+        },
+        "poas": {
+          "formula": "contribution_margin / ad_spend",
+          "owner": "performance_marketing",
+          "refresh": "daily",
+          "target": ">3.0"
+        },
+        "poas_per_campaign": {
+          "formula": "campaign_contribution / campaign_ad_spend",
+          "owner": "performance_marketing",
+          "refresh": "daily",
+          "note": "Campaign-level profitability, not just blended"
+        },
+        "return_rate": {
+          "formula": "returned_orders / total_orders * 100",
+          "owner": "operations",
+          "refresh": "daily",
+          "note": "Hidden margin killer — monitor by category"
+        },
+        "new_vs_returning_revenue_split": {
+          "formula": "new_customer_revenue / total_revenue",
+          "owner": "crm",
+          "refresh": "daily"
+        },
+        "clv_cac_ratio": {
+          "formula": "customer_lifetime_value / customer_acquisition_cost",
+          "owner": "marketing",
+          "refresh": "weekly",
+          "target": ">=3.0"
+        },
+        "aov": {
+          "formula": "total_revenue / total_orders",
+          "owner": "marketing",
+          "refresh": "daily"
+        },
+        "payback_period_days": {
+          "formula": "CAC / (contribution_margin_per_order * repeat_frequency)",
+          "owner": "finance",
+          "refresh": "monthly"
+        }
+      }
+    },
+
+    "acquisition": {
+      "description": "Paid and organic acquisition efficiency metrics.",
+      "metrics": {
+        "blended_roas": {
+          "formula": "total_revenue / total_ad_spend",
+          "owner": "performance_marketing",
+          "refresh": "daily",
+          "note": "All paid channels combined"
+        },
+        "google_shopping_impression_share": {
+          "formula": "impressions / eligible_impressions * 100",
+          "owner": "performance_marketing",
+          "refresh": "daily",
+          "target": ">60%",
+          "source": "google-ads-api"
+        },
+        "cac": {
+          "formula": "total_ad_spend / new_customers_acquired",
+          "owner": "performance_marketing",
+          "refresh": "daily"
+        },
+        "cost_per_new_vs_returning": {
+          "formula": "spend_new_customer_campaigns / new_customers",
+          "owner": "performance_marketing",
+          "refresh": "daily",
+          "note": "Track separately to avoid blended distortion"
+        },
+        "cpc_trend": {
+          "formula": "total_spend / total_clicks — rolling 7d vs prior 7d",
+          "owner": "performance_marketing",
+          "refresh": "daily",
+          "alert_threshold": "+25% WoW"
+        },
+        "cvr_by_device_and_channel": {
+          "formula": "conversions / sessions — segmented by device type and traffic source",
+          "owner": "performance_marketing",
+          "refresh": "daily"
+        },
+        "total_ad_spend_vs_budget": {
+          "formula": "actual_spend / planned_budget * 100",
+          "owner": "performance_marketing",
+          "refresh": "daily"
+        },
+        "new_customers_today": {
+          "formula": "count(distinct new_customer_orders today)",
+          "owner": "performance_marketing",
+          "refresh": "daily"
+        }
+      }
+    },
+
+    "crm_retention": {
+      "description": "Lifecycle and retention metrics. This is the profit engine.",
+      "metrics": {
+        "cart_abandonment_rate": {
+          "formula": "abandoned_carts / initiated_carts * 100",
+          "owner": "crm",
+          "refresh": "daily",
+          "target": "<65%"
+        },
+        "cart_recovery_rate": {
+          "formula": "recovered_carts / abandoned_carts * 100",
+          "owner": "crm",
+          "refresh": "daily",
+          "target": ">20%",
+          "source": "crm-email-platform"
+        },
+        "email_open_rate": {
+          "formula": "opens / sent * 100",
+          "owner": "crm",
+          "refresh": "per_campaign"
+        },
+        "email_revenue_per_send": {
+          "formula": "revenue_attributed_to_email / emails_sent",
+          "owner": "crm",
+          "refresh": "per_campaign",
+          "target": ">0.40 EUR"
+        },
+        "active_subscribers": {
+          "formula": "count(subscribers who opened/clicked in last 90d)",
+          "owner": "crm",
+          "refresh": "weekly"
+        },
+        "churn_rate_30_60_90": {
+          "formula": "customers_lost_in_period / customers_at_start * 100",
+          "owner": "crm",
+          "refresh": "monthly",
+          "note": "Track at 30, 60, and 90 day windows"
+        },
+        "nps_score": {
+          "formula": "promoters_pct - detractors_pct",
+          "owner": "brand",
+          "refresh": "quarterly"
+        },
+        "repeat_purchase_rate": {
+          "formula": "customers_with_2plus_orders / total_customers * 100",
+          "owner": "crm",
+          "refresh": "monthly"
+        }
+      }
+    },
+
+    "seo_organic": {
+      "description": "Search and organic growth metrics.",
+      "metrics": {
+        "organic_sessions": {
+          "formula": "sessions from organic search — daily",
+          "owner": "seo",
+          "refresh": "daily",
+          "source": "ga4"
+        },
+        "domain_rating_trend": {
+          "formula": "DR score — rolling monthly trend",
+          "owner": "seo",
+          "refresh": "monthly",
+          "source": "ahrefs-or-equivalent"
+        },
+        "indexed_pages_vs_catalog": {
+          "formula": "google_indexed_pages / total_product_catalog_size * 100",
+          "owner": "seo",
+          "refresh": "weekly",
+          "note": "Critical for 250k+ product catalog"
+        },
+        "top_keyword_positions": {
+          "formula": "count(keywords ranking in top 10)",
+          "owner": "seo",
+          "refresh": "weekly",
+          "source": "search-console"
+        },
+        "organic_conversion_rate": {
+          "formula": "organic_conversions / organic_sessions * 100",
+          "owner": "seo",
+          "refresh": "daily",
+          "source": "ga4"
+        }
+      }
+    },
+
+    "app_metrics": {
+      "description": "Mobile app metrics — Phase 2 pending MK app launch.",
+      "phase": "phase-2",
+      "metrics": {
+        "app_installs_daily": {
+          "formula": "new_installs per day",
+          "source": "firebase-or-adjust",
+          "phase": "phase-2"
+        },
+        "app_dau_mau": {
+          "formula": "daily_active_users / monthly_active_users",
+          "source": "firebase-or-adjust",
+          "target": ">25%",
+          "phase": "phase-2"
+        },
+        "push_opt_in_rate": {
+          "formula": "users_who_opted_in / total_app_installs * 100",
+          "source": "firebase-or-adjust",
+          "phase": "phase-2"
+        },
+        "app_vs_web_conversion": {
+          "formula": "app_cvr / web_cvr",
+          "source": "ga4 + firebase",
+          "phase": "phase-2"
+        }
+      }
+    },
+
+    "reputation": {
+      "description": "Customer trust and brand perception metrics.",
+      "metrics": {
+        "trustpilot_review_count": {
+          "formula": "total reviews on Trustpilot property",
+          "owner": "brand",
+          "refresh": "daily",
+          "source": "trustpilot-api"
+        },
+        "trustpilot_response_rate": {
+          "formula": "responded_reviews / total_reviews * 100",
+          "owner": "brand",
+          "refresh": "daily",
+          "target": "100%"
+        },
+        "average_response_time_hours": {
+          "formula": "avg(response_time) for all reviews",
+          "owner": "brand",
+          "refresh": "daily",
+          "target": "<24h"
+        },
+        "sentiment_score_weekly_trend": {
+          "formula": "weighted positive sentiment from reviews + support themes",
+          "owner": "brand",
+          "refresh": "weekly"
+        },
+        "google_business_rating": {
+          "formula": "current star rating on Google Business",
+          "owner": "brand",
+          "refresh": "daily",
+          "source": "google-business-api"
+        }
+      }
+    },
+
+    "marketplace": {
+      "description": "Marketplace-specific metrics for category and supplier intelligence.",
+      "metrics": {
+        "category_revenue_by_margin": {
+          "formula": "revenue per category x contribution_margin_pct",
+          "owner": "commercial",
+          "refresh": "weekly",
+          "note": "Identifies high-revenue but low-margin categories"
+        },
+        "category_return_rate": {
+          "formula": "returns / orders per category",
+          "owner": "commercial",
+          "refresh": "weekly",
+          "note": "Risk detection for high-return categories"
+        },
+        "supplier_marketing_potential": {
+          "formula": "supplier_revenue_trend * (1 - current_marketing_investment_pct)",
+          "owner": "commercial",
+          "refresh": "monthly",
+          "note": "Identifies co-marketing opportunities"
+        },
+        "product_feed_health": {
+          "formula": "pct_products_with_complete_attributes / total_products",
+          "owner": "seo_merchandising",
+          "refresh": "weekly",
+          "note": "Critical for Shopping ads + organic visibility"
+        },
+        "coupon_dependency_ratio": {
+          "formula": "coupon_driven_revenue / total_revenue",
+          "owner": "finance",
+          "refresh": "daily",
+          "note": "CRITICAL — high ratio signals unsustainable demand"
+        }
+      }
+    },
+
+    "promo_simulator": {
+      "description": "Pre-launch promo impact estimation metrics.",
+      "phase": "phase-2",
+      "metrics": {
+        "promo_expected_gmv_lift": {
+          "formula": "baseline_gmv * expected_uplift_pct",
+          "note": "Estimated before promo launch"
+        },
+        "promo_margin_impact": {
+          "formula": "promo_gmv_lift * (1 - discount_pct) - promo_costs",
+          "note": "Estimated margin after discount"
+        },
+        "promo_break_even_volume": {
+          "formula": "promo_costs / (contribution_margin_per_order * expected_uplift)",
+          "note": "Minimum volume for promo to break even"
+        }
+      }
+    },
+
+    "ai_system": {
+      "description": "AI platform operational health metrics.",
+      "metrics": {
+        "daily_token_usage_vs_cap": {
+          "formula": "tokens_used_today / daily_token_cap * 100",
+          "owner": "platform",
+          "refresh": "hourly"
+        },
+        "agent_uptime_pct": {
+          "formula": "successful_runs / scheduled_runs * 100",
+          "owner": "platform",
+          "refresh": "daily",
+          "target": ">99%"
+        },
+        "automations_active_vs_total": {
+          "formula": "active_automations / configured_automations",
+          "owner": "platform",
+          "refresh": "daily"
+        },
+        "cost_per_insight": {
+          "formula": "total_api_cost / total_outputs_generated",
+          "owner": "platform",
+          "refresh": "weekly"
+        },
+        "anomalies_detected_today": {
+          "formula": "count(alerts triggered today across all agents)",
+          "owner": "platform",
+          "refresh": "daily"
+        }
+      }
+    }
   }
 }
