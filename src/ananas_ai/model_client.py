@@ -86,6 +86,11 @@ def estimate_cost(model: str, tokens_in: int, tokens_out: int) -> float:
     return round((tokens_in * price_in + tokens_out * price_out) / 1_000_000, 6)
 
 
+def _sanitize(text: str) -> str:
+    """Strip characters that cause downstream issues (em/en dashes from LLM output)."""
+    return text.replace("\u2014", "-").replace("\u2013", "-")
+
+
 def _call_claude(model: str, system: str, user: str, max_tokens: int) -> tuple[str, int, int]:
     """Call Claude. Returns (text, tokens_in, tokens_out)."""
     import anthropic  # type: ignore[import]
@@ -98,7 +103,7 @@ def _call_claude(model: str, system: str, user: str, max_tokens: int) -> tuple[s
         messages=[{"role": "user", "content": user}],
     )
     text_block = next((b for b in msg.content if b.type == "text"), None)
-    text = str(text_block.text) if text_block else ""  # type: ignore[union-attr]
+    text = _sanitize(str(text_block.text) if text_block else "")  # type: ignore[union-attr]
     tokens_in = int(msg.usage.input_tokens)
     tokens_out = int(msg.usage.output_tokens)
     return text, tokens_in, tokens_out
@@ -117,7 +122,7 @@ def _call_openai(model: str, system: str, user: str, max_tokens: int) -> tuple[s
             {"role": "user", "content": user},
         ],
     )
-    text = str(resp.choices[0].message.content)
+    text = _sanitize(str(resp.choices[0].message.content))
     tokens_in = int(resp.usage.prompt_tokens) if resp.usage else 0
     tokens_out = int(resp.usage.completion_tokens) if resp.usage else 0
     return text, tokens_in, tokens_out
