@@ -129,10 +129,10 @@ cd /home/ubuntu/ananas-ai/portal
 # Write portal .env.local from /etc/ananas-ai/env
 source /etc/ananas-ai/env 2>/dev/null || true
 cat > .env.local << ENVLOCAL
-AZURE_AD_CLIENT_ID=${AZURE_AD_CLIENT_ID}
-AZURE_AD_CLIENT_SECRET=${AZURE_AD_CLIENT_SECRET}
-AZURE_AD_TENANT_ID=${AZURE_AD_TENANT_ID}
-AUTH_SECRET=${AUTH_SECRET:-$(openssl rand -hex 32)}
+AZURE_AD_CLIENT_ID=$${AZURE_AD_CLIENT_ID}
+AZURE_AD_CLIENT_SECRET=$${AZURE_AD_CLIENT_SECRET}
+AZURE_AD_TENANT_ID=$${AZURE_AD_TENANT_ID}
+AUTH_SECRET=$${AUTH_SECRET:-$(openssl rand -hex 32)}
 NEXTAUTH_URL=https://ai.ananas.mk
 DB_PATH=/home/ubuntu/ananas-ai/ananas_ai.db
 ENVLOCAL

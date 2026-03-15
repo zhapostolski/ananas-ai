@@ -112,7 +112,7 @@ resource "aws_security_group" "runtime" {
   }
 
   ingress {
-    description = "HTTP - redirect to HTTPS / Let's Encrypt challenge"
+    description = "HTTP - redirect to HTTPS and certbot challenge"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
