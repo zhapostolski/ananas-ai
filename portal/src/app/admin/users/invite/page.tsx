@@ -14,9 +14,15 @@ const ALL_ROLES: Role[] = [
   "content_brand",
   "marketing_ops",
   "commercial_head",
+  "commercial_3p",
+  "commercial_1p",
   "finance_head",
+  "finance_team",
+  "logistics_head",
+  "logistics_team",
   "cx_head",
   "cx_team",
+  "hr_head",
   "hr",
 ];
 
@@ -24,6 +30,7 @@ export default function InviteUserPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("performance_marketer");
   const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">("idle");
+  const [emailSent, setEmailSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,7 +42,13 @@ export default function InviteUserPage() {
       body: JSON.stringify({ email, role }),
     });
 
-    setStatus(res.ok ? "done" : "error");
+    if (res.ok) {
+      const data = await res.json();
+      setEmailSent(data.emailSent === true);
+      setStatus("done");
+    } else {
+      setStatus("error");
+    }
   }
 
   return (
@@ -64,8 +77,18 @@ export default function InviteUserPage() {
                 Invite created for {email}
               </p>
               <p className="text-xs text-green-600 dark:text-green-500 mt-1">
-                When they log in with Microsoft, they will be assigned the role: {ROLE_LABELS[role]}
+                Role assigned: {ROLE_LABELS[role]}. Access granted on first Microsoft login.
               </p>
+              {emailSent && (
+                <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
+                  Invitation email sent.
+                </p>
+              )}
+              {!emailSent && (
+                <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-0.5">
+                  Email could not be sent — invite is still active for login.
+                </p>
+              )}
             </div>
             <div className="flex gap-3">
               <button

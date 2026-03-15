@@ -21,6 +21,7 @@ interface UserMenuProps {
   email?: string | null;
   role: Role;
   avatarColor?: string;
+  avatarUrl?: string | null;
   isAdmin?: boolean;
 }
 
@@ -28,15 +29,26 @@ export function UserAvatar({
   name,
   email,
   avatarColor = "#FE5000",
+  avatarUrl,
   size = "sm",
 }: {
   name?: string | null;
   email?: string | null;
   avatarColor?: string;
+  avatarUrl?: string | null;
   size?: "sm" | "md";
 }) {
   const initials = getInitials(name, email);
   const dim = size === "md" ? "h-9 w-9 text-sm" : "h-7 w-7 text-xs";
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name ?? email ?? "avatar"}
+        className={`${dim} shrink-0 rounded-full object-cover`}
+      />
+    );
+  }
   return (
     <div
       className={`flex ${dim} shrink-0 items-center justify-center rounded-full font-semibold text-white select-none`}
@@ -47,20 +59,20 @@ export function UserAvatar({
   );
 }
 
-export function UserMenu({ name, email, role, avatarColor = "#FE5000", isAdmin = false }: UserMenuProps) {
+export function UserMenu({ name, email, role, avatarColor = "#FE5000", avatarUrl, isAdmin = false }: UserMenuProps) {
   return (
     <div className="group relative">
       <button
         className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent transition-colors"
         aria-label="User menu"
       >
-        <UserAvatar name={name} email={email} avatarColor={avatarColor} size="sm" />
+        <UserAvatar name={name} email={email} avatarColor={avatarColor} avatarUrl={avatarUrl} size="sm" />
         <span className="hidden lg:block text-sm font-medium max-w-[120px] truncate">
           {name ?? email}
         </span>
       </button>
 
-      <div className="absolute right-0 top-full z-50 mt-1 hidden w-52 rounded-xl border bg-popover shadow-lg group-focus-within:block group-hover:block">
+      <div className="absolute right-0 top-full z-50 mt-1 hidden w-52 rounded-xl border border-border bg-white dark:bg-gray-900 shadow-xl ring-1 ring-black/5 group-focus-within:block group-hover:block">
         <div className="px-3 py-2 border-b">
           <p className="text-sm font-medium truncate">{name ?? email}</p>
           <p className="text-xs text-muted-foreground truncate">{email}</p>

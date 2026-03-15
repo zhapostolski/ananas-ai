@@ -4,7 +4,8 @@ export type Department =
   | "finance"
   | "logistics"
   | "executive"
-  | "customer_experience";
+  | "customer_experience"
+  | "hr";
 
 export type MarketingModule =
   | "performance"
@@ -16,6 +17,7 @@ export type MarketingModule =
   | "brief";
 
 export type Role =
+  | "super_admin"
   | "executive"
   | "marketing_head"
   | "performance_marketer"
@@ -31,6 +33,7 @@ export type Role =
   | "logistics_team"
   | "cx_head"
   | "cx_team"
+  | "hr_head"
   | "hr";
 
 export interface UserProfile {

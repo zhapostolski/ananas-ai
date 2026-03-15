@@ -64,6 +64,10 @@ export function getLatestOutput(agentName: string) {
   };
 }
 
+/**
+ * Returns the latest N outputs for an agent, each with its full parsed JSON.
+ * Used to build time-series charts on portal pages.
+ */
 export function getOutputHistory(agentName: string, days = 7) {
   const db = getDb();
   return db
@@ -75,4 +79,56 @@ export function getOutputHistory(agentName: string, days = 7) {
        ORDER BY created_at DESC`
     )
     .all(agentName, `-${days} days`) as Record<string, unknown>[];
+}
+
+interface DailyMetric {
+  date: string;
+  sessions: number;
+  revenue: number;
+  users: number;
+  conversion_rate: number;
+  paid_spend: number;
+  blended_roas: number;
+}
+
+/**
+ * Builds a time-series of daily GA4 + paid metrics from the last N agent_outputs
+ * rows for the performance agent. Returns one entry per unique date, most recent last.
+ */
+export function getPerformanceHistory(days = 7): DailyMetric[] {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT data_json, date(created_at) as day
+       FROM agent_outputs
+       WHERE agent_name = 'performance-agent'
+         AND created_at >= datetime('now', ?)
+       ORDER BY created_at DESC`
+    )
+    .all(`-${days} days`) as Array<{ data_json: string; day: string }>;
+
+  // De-duplicate by day, keep latest per day
+  const seen = new Set<string>();
+  const daily: DailyMetric[] = [];
+  for (const row of rows) {
+    if (seen.has(row.day)) continue;
+    seen.add(row.day);
+    let parsed: Record<string, unknown> = {};
+    try {
+      parsed = JSON.parse(row.data_json);
+    } catch { /* empty */ }
+    const ga4 = (parsed.ga4 ?? {}) as Record<string, unknown>;
+    const summary = (parsed.summary ?? {}) as Record<string, unknown>;
+    daily.push({
+      date: row.day,
+      sessions: (ga4.sessions ?? summary.ga4_sessions ?? 0) as number,
+      revenue: (ga4.revenue ?? summary.ga4_revenue ?? 0) as number,
+      users: (ga4.users ?? 0) as number,
+      conversion_rate: (ga4.conversion_rate_pct ?? summary.ga4_conversion_rate_pct ?? 0) as number,
+      paid_spend: (summary.total_paid_spend ?? 0) as number,
+      blended_roas: (summary.blended_roas ?? 0) as number,
+    });
+  }
+  // Return chronological order (oldest first for charts)
+  return daily.reverse();
 }

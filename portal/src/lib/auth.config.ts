@@ -7,7 +7,7 @@ import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import type { Role } from "@/types";
 
 const EMAIL_ROLE_MAP: Record<string, Role> = {
-  "zharko.apostolski@ananas.mk": "marketing_head",
+  "zharko.apostolski@ananas.mk": "executive",
 };
 
 export const authConfig: NextAuthConfig = {
@@ -17,6 +17,11 @@ export const authConfig: NextAuthConfig = {
       clientId: process.env.AZURE_AD_CLIENT_ID!,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
       issuer: `https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID!}/v2.0`,
+      authorization: {
+        params: {
+          scope: "openid profile email User.Read offline_access",
+        },
+      },
     }),
   ],
   callbacks: {

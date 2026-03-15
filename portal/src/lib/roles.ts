@@ -4,7 +4,8 @@ import type { Role, Department } from "@/types";
  * Role -> Departments the user can access.
  */
 export const ROLE_DEPARTMENTS: Record<Role, Department[]> = {
-  executive: ["marketing", "commercial", "finance", "logistics", "executive", "customer_experience"],
+  super_admin: ["marketing", "commercial", "finance", "logistics", "executive", "customer_experience", "hr"],
+  executive: ["marketing", "commercial", "finance", "logistics", "executive", "customer_experience", "hr"],
   marketing_head: ["marketing"],
   performance_marketer: ["marketing"],
   crm_specialist: ["marketing"],
@@ -19,7 +20,8 @@ export const ROLE_DEPARTMENTS: Record<Role, Department[]> = {
   logistics_team: ["logistics"],
   cx_head: ["customer_experience", "marketing"],
   cx_team: ["customer_experience"],
-  hr: [],
+  hr_head: ["hr", "executive"],
+  hr: ["hr"],
 };
 
 /**
@@ -49,9 +51,78 @@ export function canAccessMarketingModule(
 }
 
 /**
+ * Roles that can access the admin area (user management).
+ */
+export const ADMIN_ROLES: Role[] = [
+  "super_admin",
+  "executive",
+  "marketing_head",
+  "finance_head",
+  "logistics_head",
+  "cx_head",
+  "commercial_head",
+  "hr_head",
+];
+
+/**
+ * Roles that can invite new users.
+ */
+export const CAN_INVITE_ROLES: Role[] = ["super_admin", "executive"];
+
+/**
+ * Roles that can change other users' roles.
+ */
+export const CAN_CHANGE_ROLES: Role[] = [
+  "super_admin",
+  "executive",
+  "marketing_head",
+  "finance_head",
+  "logistics_head",
+  "cx_head",
+  "commercial_head",
+  "hr_head",
+];
+
+/**
+ * Roles that can send platform notifications.
+ */
+export const CAN_SEND_NOTIFICATIONS_ROLES: Role[] = [
+  "super_admin",
+  "executive",
+  "marketing_head",
+  "finance_head",
+  "logistics_head",
+  "cx_head",
+  "commercial_head",
+  "hr_head",
+];
+
+/**
+ * HR roles that can manage HR access delegation.
+ */
+export const HR_ROLES: Role[] = ["super_admin", "executive", "hr_head", "hr"];
+
+export function isAdminRole(role: Role): boolean {
+  return ADMIN_ROLES.includes(role);
+}
+
+export function canInvite(role: Role): boolean {
+  return CAN_INVITE_ROLES.includes(role);
+}
+
+export function canChangeRoles(role: Role): boolean {
+  return CAN_CHANGE_ROLES.includes(role);
+}
+
+export function canSendNotifications(role: Role): boolean {
+  return CAN_SEND_NOTIFICATIONS_ROLES.includes(role);
+}
+
+/**
  * Human-readable role labels.
  */
 export const ROLE_LABELS: Record<Role, string> = {
+  super_admin: "Super Admin",
   executive: "Executive",
   marketing_head: "Marketing Head",
   performance_marketer: "Performance Marketer",
@@ -67,5 +138,6 @@ export const ROLE_LABELS: Record<Role, string> = {
   logistics_team: "Logistics Team",
   cx_head: "CX Head",
   cx_team: "CX Team",
+  hr_head: "HR Head",
   hr: "HR",
 };

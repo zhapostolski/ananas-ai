@@ -9,7 +9,17 @@ CREATE TABLE IF NOT EXISTS portal_users (
   role                  TEXT    NOT NULL DEFAULT 'performance_marketer',
   department            TEXT,
   avatar_color          TEXT    NOT NULL DEFAULT '#FE5000',
+  avatar_url            TEXT,
   bio                   TEXT,
+  -- Azure AD / Microsoft Graph fields (synced on login)
+  azure_job_title       TEXT,
+  azure_department      TEXT,
+  azure_phone           TEXT,
+  azure_office          TEXT,
+  -- HR fields
+  birth_date            TEXT,
+  hire_date             TEXT,
+  berry_employee_id     TEXT,
   interests_json        TEXT    NOT NULL DEFAULT '[]',
   preferences_json      TEXT    NOT NULL DEFAULT '{"theme":"system","density":"default"}',
   favorite_agents_json  TEXT    NOT NULL DEFAULT '[]',
@@ -49,3 +59,19 @@ CREATE TABLE IF NOT EXISTS portal_role_audit (
   note        TEXT,
   created_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS portal_notifications (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  recipient     TEXT,         -- NULL = broadcast to all users
+  sender        TEXT NOT NULL,
+  type          TEXT NOT NULL DEFAULT 'admin_message',
+  -- types: admin_message | token_cap | agent_failure | system | invite
+  title         TEXT NOT NULL,
+  body          TEXT,
+  link          TEXT,         -- optional action URL
+  read_by_json  TEXT NOT NULL DEFAULT '{}',  -- JSON: {email: iso_timestamp}
+  created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_created ON portal_notifications(created_at);
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON portal_notifications(recipient);

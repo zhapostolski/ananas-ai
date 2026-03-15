@@ -2,13 +2,11 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { AgentStatus } from "@/components/dashboard/agent-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getLatestOutput } from "@/lib/db";
+import { getLatestOutput, getPerformanceHistory } from "@/lib/db";
 import { formatDate, dbStr, stripMarkdown } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { getPortalUser } from "@/lib/db-portal";
 import { RevenueAreaChart, SessionsLineChart } from "@/components/dashboard/overview-charts";
-import type { Role } from "@/types";
-
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -20,19 +18,13 @@ const AGENTS = [
   { id: "cross-channel-brief-agent", label: "Overview" },
 ];
 
-/** Build fake 7-day chart data from brief JSON or return empty */
-function buildChartData(
-  briefJson: Record<string, unknown> | null,
-  key: string
-): Array<{ label: string; value: number }> {
-  const trend = briefJson?.[key];
-  if (!Array.isArray(trend) || trend.length === 0) return [];
-
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  return trend.slice(0, 7).map((v: unknown, i: number) => ({
-    label: days[i] ?? `D${i + 1}`,
-    value: typeof v === "number" ? v : 0,
-  }));
+function shortDay(dateStr: string): string {
+  try {
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString("en-US", { weekday: "short" });
+  } catch {
+    return dateStr.slice(5); // MM-DD fallback
+  }
 }
 
 export default async function OverviewPage() {
@@ -66,8 +58,9 @@ export default async function OverviewPage() {
       ? stripMarkdown(briefOutput.summary_text)
       : null;
 
-  const revenueData = buildChartData(briefJson, "revenue_trend");
-  const sessionsData = buildChartData(briefJson, "sessions_trend");
+  const perfHistory = getPerformanceHistory(7);
+  const revenueData = perfHistory.map((d) => ({ label: shortDay(d.date), value: d.revenue }));
+  const sessionsData = perfHistory.map((d) => ({ label: shortDay(d.date), value: d.sessions }));
 
   return (
     <div className="space-y-6">

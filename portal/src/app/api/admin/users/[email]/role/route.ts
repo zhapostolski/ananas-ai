@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getPortalUser, auditRoleChange } from "@/lib/db-portal";
+import { canChangeRoles } from "@/lib/roles";
 import type { Role } from "@/types";
-
-const ADMIN_ROLES: Role[] = ["executive", "marketing_head"];
 
 export async function PUT(
   request: Request,
@@ -11,7 +10,7 @@ export async function PUT(
 ) {
   const session = await auth();
   const sessionRole = (session?.user as { role?: Role } | undefined)?.role;
-  if (!session?.user?.email || !sessionRole || !ADMIN_ROLES.includes(sessionRole)) {
+  if (!session?.user?.email || !sessionRole || !canChangeRoles(sessionRole)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

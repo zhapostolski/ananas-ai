@@ -1,11 +1,7 @@
-This file is a Windows Zone.Identifier metadata file (marking the JSON as downloaded from the internet, ZoneId=3). It contains no company-relevant information.
-
-The overview remains unchanged except for the source count increment.
-
 ```markdown
 # Ananas — Company Overview
 <!-- Living document. Updated incrementally as source materials are added to context/ananas/raw/. -->
-<!-- Last updated: 2026-03-14 | Sources processed: 3 -->
+<!-- Last updated: 2026-03-13 | Sources processed: 5 -->
 
 ---
 
@@ -52,8 +48,33 @@ The overview remains unchanged except for the source count increment.
 | Users | 215,000 |
 | Revenue | €13.4M |
 
-### Targets & Benchmarks
-> *To be populated.*
+### Targets & Benchmarks (from whiteboard — 2026-03-13)
+Whiteboard photograph shows a traffic funnel with current state and apparent targets (right-hand column). Figures interpreted as targets or benchmark comparisons:
+
+| Metric | Current / Noted Value | Target / Benchmark |
+|---|---|---|
+| Users | 600k × 3 (i.e. target ~1.8M) | — |
+| Sessions | 1,800,000 | — |
+| Page Views | 3,500,000 | 3 (×?) |
+| Product Page Views | 2.2M | — |
+| CVR (Conversion Rate) | 1% | — |
+| Orders (QTY) | 22,000 | — |
+| AOV | 50 | — |
+| GMV | 1,100,000 (monthly est.) | — |
+| SEO (sessions or users) | — | 630 (unit TBD) |
+| — | 3,275 | — |
+| — | 10,316M | — |
+| — | 24,337M | — |
+| — | 1.9 | — |
+| — | 42,000 | — |
+| — | 27,830 | — |
+
+> ⚠️ *Whiteboard figures are partially legible. Numbers in the right-hand column may represent targets, a second market/channel breakdown, or a comparison period. Interpretation should be confirmed with the team. AOV of ~50 (currency assumed RSD thousands or EUR — to clarify).*
+
+**Key funnel ratios visible on whiteboard:**
+- Sessions → Page Views → Product Pages → CVR 1% → ~22,000 orders
+- AOV ~50 → GMV ~1.1M (monthly)
+- App noted separately with figure ~50 (AOV or share)
 
 ---
 
@@ -69,10 +90,14 @@ The overview remains unchanged except for the source count increment.
 | LinkedIn Ads | Active | |
 | X (Twitter) Ads | Pending | Account creation pending |
 | Email / CRM | Active | Platform TBD (HubSpot / ActiveCampaign / Klaviyo) |
-| SEO / Organic | Active | Managed via Search Console + Ahrefs/Semrush |
+| SEO / Organic | Active | Managed via Search Console + Ahrefs/Semrush; SEO traffic target noted on whiteboard |
 | Influencer / Creator | Active | Used for product launches and seasonal campaigns |
 | Push Notifications | Active | Web and app push |
 | Affiliate | Active | Regional affiliate network |
+
+### Channel Mix Notes (from whiteboard left margin — partially legible)
+- References to: Google ~4%, Meta ~50%, something ~29%, other channels including email (~5%), direct (~10%), other (~-)
+- *Note: figures are partially illegible; to be confirmed with performance team*
 
 ### Internal Tools
 - Jira, Asana, Confluence, Teams, SharePoint, Outlook, Berry (HR)
@@ -150,6 +175,7 @@ The overview remains unchanged except for the source count increment.
 7. **Regional expansion** — Serbia is core market; Balkan expansion (BA, HR, MK) in planning — requires localisation of ops, marketing, and legal
 8. **Seller growth** — increasing marketplace seller count and GMV share is a strategic priority
 9. **App engagement** — push notification and in-app personalisation underutilised
+10. **Traffic scale gap** — whiteboard indicates current users ~600k with a 3× growth target; CVR at 1% and GMV ~1.1M/month suggest significant headroom to improve both traffic and conversion
 
 ---
 
@@ -189,6 +215,7 @@ The overview remains unchanged except for the source count increment.
 - The onboarding document indicates Ananas is in a **scale-up phase**: the core platform is operational, seller base is growing, and the focus is shifting from pure acquisition to retention, brand building, and regional expansion.
 - **Mentor/onboarding programme** is in place — suggesting investment in structured knowledge transfer and team capability building, likely related to marketing maturity uplift.
 - Customer logistics experience (delivery speed, returns) is identified as a key lever for both retention and reputation improvement.
+- Whiteboard session (2026-03-13) shows active internal planning around traffic funnel metrics, with a clear 3× user growth ambition and focus on improving CVR from the current 1% baseline.
 
 ---
 

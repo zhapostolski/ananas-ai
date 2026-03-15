@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { UserMenu } from "@/components/nav/user-menu";
+import { NotificationBell } from "@/components/nav/notification-bell";
 import type { Role } from "@/types";
 
 const BREADCRUMBS: Record<string, string> = {
@@ -23,6 +24,10 @@ const BREADCRUMBS: Record<string, string> = {
   "/settings": "Settings",
   "/admin/users": "User Management",
   "/admin/users/invite": "Invite User",
+  "/admin/notifications": "Send Notification",
+  "/hr": "HR",
+  "/hr/team": "Team",
+  "/hr/attendance": "Attendance",
 };
 
 function getPageTitle(pathname: string): string {
@@ -38,13 +43,15 @@ interface HeaderProps {
   email?: string | null;
   role: Role;
   avatarColor?: string;
+  avatarUrl?: string | null;
+  userEmail?: string;
 }
 
-export function Header({ name, email, role, avatarColor = "#FE5000" }: HeaderProps) {
+export function Header({ name, email, role, avatarColor = "#FE5000", avatarUrl, userEmail }: HeaderProps) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const pageTitle = getPageTitle(pathname);
-  const isAdmin = role === "executive" || role === "marketing_head";
+  const isAdmin = ["super_admin", "executive", "marketing_head", "finance_head", "logistics_head", "cx_head", "commercial_head", "hr_head"].includes(role);
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-6 gap-4">
@@ -68,17 +75,7 @@ export function Header({ name, email, role, avatarColor = "#FE5000" }: HeaderPro
         </button>
 
         {/* Notification bell */}
-        <button
-          className="relative flex h-8 w-8 items-center justify-center rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
-          title="Notifications"
-          aria-label="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-          <span
-            className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-card"
-            style={{ backgroundColor: "#FE5000" }}
-          />
-        </button>
+        <NotificationBell userEmail={userEmail ?? email ?? ""} />
 
         {/* Divider */}
         <div className="h-6 w-px bg-border mx-1" />
@@ -88,6 +85,7 @@ export function Header({ name, email, role, avatarColor = "#FE5000" }: HeaderPro
           email={email}
           role={role}
           avatarColor={avatarColor}
+          avatarUrl={avatarUrl}
           isAdmin={isAdmin}
         />
       </div>

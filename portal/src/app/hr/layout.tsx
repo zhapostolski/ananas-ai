@@ -7,7 +7,7 @@ import { canAccessDepartment } from "@/lib/roles";
 import { getPortalUser } from "@/lib/db-portal";
 import { PageTracker } from "@/components/page-tracker";
 
-export default async function MarketingLayout({
+export default async function HrLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -17,13 +17,11 @@ export default async function MarketingLayout({
 
   const role = ((session.user as { role?: Role }).role ?? "performance_marketer") as Role;
 
-  if (!canAccessDepartment(role, "marketing")) {
-    redirect("/executive");
+  if (!canAccessDepartment(role, "hr")) {
+    redirect("/marketing/overview");
   }
 
-  const portalUser = session.user.email
-    ? getPortalUser(session.user.email)
-    : undefined;
+  const portalUser = session.user.email ? getPortalUser(session.user.email) : undefined;
   const avatarColor = portalUser?.avatar_color ?? "#FE5000";
   const avatarUrl = portalUser?.avatar_url ?? null;
 

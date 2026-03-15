@@ -17,11 +17,13 @@ import {
   Briefcase,
   HeartHandshake,
   Shield,
+  UserCircle,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { Role } from "@/types";
-import { canAccessDepartment, canAccessMarketingModule } from "@/lib/roles";
+import { canAccessDepartment, canAccessMarketingModule, isAdminRole, canInvite, canSendNotifications } from "@/lib/roles";
 import { UserAvatar } from "@/components/nav/user-menu";
 
 interface NavChild {
@@ -83,6 +85,16 @@ const NAV: NavGroup[] = [
       { label: "Support Insights", href: "/customer-experience/support", icon: <Users className="h-3.5 w-3.5" /> },
     ],
   },
+  {
+    id: "hr",
+    label: "HR",
+    icon: <UserCircle className="h-4 w-4" />,
+    href: "/hr",
+    children: [
+      { label: "Team", href: "/hr/team", icon: <Users className="h-3.5 w-3.5" /> },
+      { label: "Attendance", href: "/hr/attendance", icon: <CalendarDays className="h-3.5 w-3.5" /> },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -90,16 +102,19 @@ interface SidebarProps {
   userName?: string | null;
   userEmail?: string | null;
   avatarColor?: string;
+  avatarUrl?: string | null;
 }
 
-export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000" }: SidebarProps) {
+export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", avatarUrl }: SidebarProps) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     marketing: pathname.startsWith("/marketing"),
     customer_experience: pathname.startsWith("/customer-experience"),
   });
 
-  const isAdmin = role === "executive" || role === "marketing_head";
+  const isAdmin = isAdminRole(role);
+  const showInvite = canInvite(role);
+  const showSendNotif = canSendNotifications(role);
 
   const visibleGroups = NAV.filter((g) =>
     canAccessDepartment(role, g.id as Parameters<typeof canAccessDepartment>[1])
@@ -123,7 +138,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000" }: 
             alt="ananas"
             width={100}
             height={38}
-            style={{ objectFit: "contain", filter: "brightness(0) invert(1)" }}
+            style={{ objectFit: "contain" }}
           />
           <span className="text-xs font-semibold tracking-wide uppercase" style={{ color: "#FE5000" }}>
             AI
@@ -201,19 +216,49 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000" }: 
       {/* Bottom: Admin + User */}
       <div className="border-t px-2 py-3 space-y-0.5" style={{ borderColor: "#1f2937" }}>
         {isAdmin && (
-          <Link
-            href="/admin/users"
-            className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-              pathname.startsWith("/admin")
-                ? "text-white"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
+          <div>
+            <Link
+              href="/admin/users"
+              className={cn(
+                "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                pathname.startsWith("/admin")
+                  ? "text-white"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              )}
+              style={pathname.startsWith("/admin") ? { backgroundColor: "#FE5000" } : {}}
+            >
+              <Shield className="h-4 w-4" />
+              Admin
+            </Link>
+            {pathname.startsWith("/admin") && (
+              <div className="ml-3 mt-0.5 space-y-0.5 border-l pl-3" style={{ borderColor: "#1f2937" }}>
+                <Link
+                  href="/admin/users"
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
+                    pathname === "/admin/users" || pathname.startsWith("/admin/users/")
+                      ? "font-semibold text-white"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  Users
+                </Link>
+                {showSendNotif && (
+                  <Link
+                    href="/admin/notifications"
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
+                      pathname === "/admin/notifications"
+                        ? "font-semibold text-white"
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    Send Notification
+                  </Link>
+                )}
+              </div>
             )}
-            style={pathname.startsWith("/admin") ? { backgroundColor: "#FE5000" } : {}}
-          >
-            <Shield className="h-4 w-4" />
-            Admin
-          </Link>
+          </div>
         )}
 
         <Link
@@ -239,6 +284,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000" }: 
             name={userName}
             email={userEmail}
             avatarColor={avatarColor}
+            avatarUrl={avatarUrl}
             size="sm"
           />
           <span className="truncate">{userName ?? userEmail ?? "Profile"}</span>
