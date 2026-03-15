@@ -13,6 +13,39 @@ async function resolveRoleFromDb(email: string): Promise<Role> {
   return "performance_marketer";
 }
 
+async function refreshAccessToken(refreshToken: string): Promise<{ access_token: string; expires_at: number; refresh_token: string } | null> {
+  const tenantId = process.env.AZURE_AD_TENANT_ID;
+  const clientId = process.env.AZURE_AD_CLIENT_ID;
+  const clientSecret = process.env.AZURE_AD_CLIENT_SECRET;
+  if (!tenantId || !clientId || !clientSecret) return null;
+  try {
+    const res = await fetch(
+      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: refreshToken,
+          scope: "openid profile email User.Read Mail.Send offline_access",
+        }).toString(),
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json() as { access_token?: string; expires_in?: number; refresh_token?: string };
+    if (!data.access_token) return null;
+    return {
+      access_token: data.access_token,
+      expires_at: Date.now() + (data.expires_in ?? 3600) * 1000,
+      refresh_token: data.refresh_token ?? refreshToken,
+    };
+  } catch {
+    return null;
+  }
+}
+
 interface GraphProfile {
   displayName?: string;
   jobTitle?: string;
@@ -22,9 +55,6 @@ interface GraphProfile {
   birthday?: string;
 }
 
-/**
- * Fetch the signed-in user's profile from Microsoft Graph.
- */
 async function fetchGraphProfile(accessToken: string): Promise<GraphProfile | null> {
   try {
     const res = await fetch(
@@ -38,10 +68,6 @@ async function fetchGraphProfile(accessToken: string): Promise<GraphProfile | nu
   }
 }
 
-/**
- * Fetch the signed-in user's profile photo from Microsoft Graph.
- * Returns a base64 data URL or null.
- */
 async function fetchUserPhoto(accessToken: string): Promise<string | null> {
   try {
     const res = await fetch("https://graph.microsoft.com/v1.0/me/photo/$value", {
@@ -62,14 +88,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async jwt({ token, profile, account }) {
-      if (profile && token.email) {
+      // Initial sign-in: store tokens and resolve role
+      if (account && profile && token.email) {
         token.role = await resolveRoleFromDb(token.email);
-        // Store access token for Graph API use in signIn event
-        if (account?.access_token) {
-          token.accessToken = account.access_token;
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        token.accessTokenExpiresAt = account.expires_at
+          ? account.expires_at * 1000
+          : Date.now() + 3600_000;
+        return token;
+      }
+
+      // Token still valid
+      if (Date.now() < ((token.accessTokenExpiresAt as number | undefined) ?? 0) - 60_000) {
+        return token;
+      }
+
+      // Refresh expired access token
+      if (token.refreshToken) {
+        const refreshed = await refreshAccessToken(token.refreshToken as string);
+        if (refreshed) {
+          token.accessToken = refreshed.access_token;
+          token.refreshToken = refreshed.refresh_token;
+          token.accessTokenExpiresAt = refreshed.expires_at;
         }
       }
+
       return token;
+    },
+    session({ session, token }) {
+      if (session.user) {
+        (session.user as { role?: Role }).role = token.role as Role;
+        // Expose access token for server-side API routes (email fallback)
+        (session.user as { accessToken?: string }).accessToken = token.accessToken as string | undefined;
+      }
+      return session;
     },
   },
   events: {

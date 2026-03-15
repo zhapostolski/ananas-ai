@@ -31,6 +31,7 @@ export default function InviteUserPage() {
   const [role, setRole] = useState<Role>("performance_marketer");
   const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [emailSent, setEmailSent] = useState(false);
+  const [emailFrom, setEmailFrom] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,6 +46,7 @@ export default function InviteUserPage() {
     if (res.ok) {
       const data = await res.json();
       setEmailSent(data.emailSent === true);
+      setEmailFrom(data.emailFrom ?? "");
       setStatus("done");
     } else {
       setStatus("error");
@@ -81,12 +83,12 @@ export default function InviteUserPage() {
               </p>
               {emailSent && (
                 <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
-                  Invitation email sent.
+                  Invitation email sent from {emailFrom}.
                 </p>
               )}
               {!emailSent && (
                 <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-0.5">
-                  Email could not be sent — invite is still active for login.
+                  Email could not be sent. Invite is still active for login.
                 </p>
               )}
             </div>

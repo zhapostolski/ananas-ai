@@ -2,43 +2,43 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { createRoleInvite } from "@/lib/db-portal";
 import { ROLE_LABELS, canInvite } from "@/lib/roles";
+import { getGraphToken } from "@/lib/graph";
 import type { Role } from "@/types";
 
-async function getGraphAccessToken(): Promise<string | null> {
-  const tenantId = process.env.GRAPH_TENANT_ID;
-  const clientId = process.env.GRAPH_CLIENT_ID;
-  const clientSecret = process.env.GRAPH_CLIENT_SECRET;
-
-  if (!tenantId || !clientId || !clientSecret) return null;
-
+async function sendViaGraph(
+  accessToken: string,
+  fromEmail: string,
+  toEmail: string,
+  subject: string,
+  html: string
+): Promise<boolean> {
   const res = await fetch(
-    `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(fromEmail)}/sendMail`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        grant_type: "client_credentials",
-        client_id: clientId,
-        client_secret: clientSecret,
-        scope: "https://graph.microsoft.com/.default",
-      }).toString(),
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: {
+          subject,
+          body: { contentType: "HTML", content: html },
+          toRecipients: [{ emailAddress: { address: toEmail } }],
+        },
+        saveToSentItems: false,
+      }),
     }
   );
-
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.access_token ?? null;
+  return res.status === 202;
 }
 
 async function sendInviteEmail(
-  fromEmail: string,
   toEmail: string,
   role: Role,
-  invitedBy: string
-): Promise<boolean> {
-  const token = await getGraphAccessToken();
-  if (!token) return false;
-
+  invitedBy: string,
+  userAccessToken?: string
+): Promise<{ sent: boolean; from: string }> {
   const roleLabel = ROLE_LABELS[role] ?? role;
   const portalUrl = process.env.PORTAL_URL ?? "https://ai.ananas.mk";
 
@@ -48,7 +48,7 @@ async function sendInviteEmail(
     <span style="font-size: 20px; font-weight: 700; color: #FE5000;">Ananas AI</span>
     <span style="font-size: 14px; font-weight: 600; color: #6B7280; margin-left: 6px;">Portal</span>
   </div>
-  <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 8px;">You've been invited to Ananas AI Platform</h2>
+  <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 8px;">You have been invited to Ananas AI Platform</h2>
   <p style="color: #6B7280; font-size: 14px; margin: 0 0 20px;">
     ${invitedBy} has invited you to access the Ananas AI intelligence portal with the role of <strong>${roleLabel}</strong>.
   </p>
@@ -60,28 +60,27 @@ async function sendInviteEmail(
   </p>
 </div>`;
 
-  const body = {
-    message: {
-      subject: "You've been invited to Ananas AI Platform",
-      body: { contentType: "HTML", content: html },
-      toRecipients: [{ emailAddress: { address: toEmail } }],
-    },
-    saveToSentItems: false,
-  };
+  const subject = "You have been invited to Ananas AI Platform";
+  const systemFrom = process.env.INVITE_FROM_EMAIL ?? "no-reply@ananas.mk";
 
-  const sendRes = await fetch(
-    `https://graph.microsoft.com/v1.0/users/${fromEmail}/sendMail`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
+  // Try 1: app-level client_credentials (requires Mail.Send application permission)
+  try {
+    const appToken = await getGraphToken();
+    if (appToken) {
+      const ok = await sendViaGraph(appToken, systemFrom, toEmail, subject, html);
+      if (ok) return { sent: true, from: systemFrom };
     }
-  );
+  } catch { /* fall through */ }
 
-  return sendRes.status === 202;
+  // Try 2: delegated token from the inviting user's session
+  if (userAccessToken) {
+    try {
+      const ok = await sendViaGraph(userAccessToken, invitedBy, toEmail, subject, html);
+      if (ok) return { sent: true, from: invitedBy };
+    } catch { /* fall through */ }
+  }
+
+  return { sent: false, from: "" };
 }
 
 export async function POST(request: Request) {
@@ -101,18 +100,13 @@ export async function POST(request: Request) {
 
   createRoleInvite(email, role, session.user.email);
 
-  // Send invite email — use configured sender or fall back to no-reply@ananas.mk
-  const fromEmail =
-    process.env.INVITE_FROM_EMAIL ??
-    process.env.EMAIL_FROM_ADDRESS ??
-    "no-reply@ananas.mk";
-
-  const emailSent = await sendInviteEmail(
-    fromEmail,
+  const userAccessToken = (session.user as { accessToken?: string }).accessToken;
+  const { sent, from } = await sendInviteEmail(
     email,
     role,
-    session.user.email
-  ).catch(() => false);
+    session.user.email,
+    userAccessToken
+  ).catch(() => ({ sent: false, from: "" }));
 
-  return NextResponse.json({ ok: true, emailSent });
+  return NextResponse.json({ ok: true, emailSent: sent, emailFrom: from });
 }

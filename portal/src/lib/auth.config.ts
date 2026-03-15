@@ -19,7 +19,7 @@ export const authConfig: NextAuthConfig = {
       issuer: `https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID!}/v2.0`,
       authorization: {
         params: {
-          scope: "openid profile email User.Read offline_access",
+          scope: "openid profile email User.Read Mail.Send offline_access",
         },
       },
     }),
