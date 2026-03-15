@@ -1,13 +1,16 @@
-"""Tests for email delivery via AWS SES."""
+"""Tests for email delivery via Microsoft Graph API."""
 
 from __future__ import annotations
 
 from datetime import date
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 
 def _configured_env() -> dict:
     return {
+        "GRAPH_TENANT_ID": "test-tenant-id",
+        "GRAPH_CLIENT_ID": "test-client-id",
+        "GRAPH_REFRESH_TOKEN": "test-refresh-token",
         "EMAIL_FROM_ADDRESS": "zharko.apostolski@ananas.mk",
         "EMAIL_TO_ADDRESS": "zharko.apostolski@ananas.mk",
     }
@@ -47,33 +50,31 @@ def test_send_brief_writes_file_when_not_configured():
 def test_send_brief_calls_ses():
     from ananas_ai import email_delivery
 
-    mock_ses = MagicMock()
-    mock_ses.send_email.return_value = {"MessageId": "test-msg-id-123"}
-
-    mock_boto3 = MagicMock()
-    mock_boto3.client.return_value = mock_ses
-
     with (
         patch.dict("os.environ", _configured_env(), clear=False),
-        patch.dict("sys.modules", {"boto3": mock_boto3}),
+        patch.object(
+            email_delivery,
+            "_send_graph",
+            return_value={
+                "status": "ok",
+                "recipients": ["zharko.apostolski@ananas.mk"],
+                "provider": "graph",
+            },
+        ) as mock_send,
     ):
         result = email_delivery.send_brief("Daily Marketing Brief", "body", today=date(2026, 3, 14))
 
     assert result["status"] == "ok"
-    assert result["message_id"] == "test-msg-id-123"
     assert result["recipients"] == ["zharko.apostolski@ananas.mk"]
-    mock_ses.send_email.assert_called_once()
+    mock_send.assert_called_once()
 
 
 def test_send_brief_returns_error_on_ses_failure():
     from ananas_ai import email_delivery
 
-    mock_boto3 = MagicMock()
-    mock_boto3.client.side_effect = Exception("SES not available")
-
     with (
         patch.dict("os.environ", _configured_env(), clear=False),
-        patch.dict("sys.modules", {"boto3": mock_boto3}),
+        patch.object(email_delivery, "_send_graph", side_effect=Exception("Graph not available")),
         patch.object(
             email_delivery, "_write_local", return_value={"status": "ok", "path": "/tmp/x.txt"}
         ),
@@ -81,7 +82,7 @@ def test_send_brief_returns_error_on_ses_failure():
         result = email_delivery.send_brief("Daily Marketing Brief", "body", today=date(2026, 3, 14))
 
     assert result["status"] == "error"
-    assert "SES not available" in result["error"]
+    assert "Graph not available" in result["error"]
 
 
 def test_send_brief_subject_includes_date():
@@ -106,38 +107,42 @@ def test_send_brief_subject_includes_date():
 def test_send_brief_ses_subject_passed_correctly():
     from ananas_ai import email_delivery
 
-    mock_ses = MagicMock()
-    mock_ses.send_email.return_value = {"MessageId": "abc"}
-    mock_boto3 = MagicMock()
-    mock_boto3.client.return_value = mock_ses
+    captured = {}
+
+    def fake_send_graph(subject: str, body: str, from_addr: str, to_addrs: list) -> dict:
+        captured["subject"] = subject
+        captured["from_addr"] = from_addr
+        captured["to_addrs"] = to_addrs
+        return {"status": "ok", "recipients": to_addrs, "provider": "graph"}
 
     with (
         patch.dict("os.environ", _configured_env(), clear=False),
-        patch.dict("sys.modules", {"boto3": mock_boto3}),
+        patch.object(email_delivery, "_send_graph", side_effect=fake_send_graph),
     ):
         email_delivery.send_brief("Daily Marketing Brief", "body", today=date(2026, 3, 14))
 
-    call_kwargs = mock_ses.send_email.call_args[1]
-    assert call_kwargs["Message"]["Subject"]["Data"] == "Daily Marketing Brief -- 2026-03-14"
-    assert call_kwargs["Destination"]["ToAddresses"] == ["zharko.apostolski@ananas.mk"]
-    assert call_kwargs["Source"] == "zharko.apostolski@ananas.mk"
+    assert captured["subject"] == "Daily Marketing Brief -- 2026-03-14"
+    assert captured["to_addrs"] == ["zharko.apostolski@ananas.mk"]
+    assert captured["from_addr"] == "zharko.apostolski@ananas.mk"
 
 
 def test_send_brief_multiple_recipients():
     from ananas_ai import email_delivery
 
     env = {
-        "EMAIL_FROM_ADDRESS": "zharko.apostolski@ananas.mk",
+        **_configured_env(),
         "EMAIL_TO_ADDRESS": "zharko.apostolski@ananas.mk,denis@ananas.mk",
     }
-    mock_ses = MagicMock()
-    mock_ses.send_email.return_value = {"MessageId": "abc"}
-    mock_boto3 = MagicMock()
-    mock_boto3.client.return_value = mock_ses
+
+    captured = {}
+
+    def fake_send_graph(subject: str, body: str, from_addr: str, to_addrs: list) -> dict:
+        captured["to_addrs"] = to_addrs
+        return {"status": "ok", "recipients": to_addrs, "provider": "graph"}
 
     with (
         patch.dict("os.environ", env, clear=False),
-        patch.dict("sys.modules", {"boto3": mock_boto3}),
+        patch.object(email_delivery, "_send_graph", side_effect=fake_send_graph),
     ):
         result = email_delivery.send_brief("Brief", "body", today=date(2026, 3, 14))
 
