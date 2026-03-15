@@ -66,8 +66,8 @@ export default async function CrmPage() {
             title="Cart Recovery Rate"
             value={cartRecoveryRate != null ? cartRecoveryRate.toFixed(1) + "%" : "0%"}
             status={cartRecoveryRate == null || cartRecoveryRate === 0 ? "critical" : pctStatus(cartRecoveryRate, 20, 10)}
-            description={cartRecoveryRate === 0 || cartRecoveryRate == null ? "No recovery automation — target 15%+" : "Target: >20%"}
-            badge={cartRecoveryRate === 0 || cartRecoveryRate == null ? "0% — Not live" : undefined}
+            description={cartRecoveryRate === 0 || cartRecoveryRate == null ? "No recovery automation - target 15%+" : "Target: >20%"}
+            badge={cartRecoveryRate === 0 || cartRecoveryRate == null ? "0% - Not live" : undefined}
           />
           <KpiCard
             title="Avg Order Value"

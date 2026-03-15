@@ -77,7 +77,7 @@ export default function PerformancePage() {
         <div>
           <h1 className="text-2xl font-bold">Performance & Paid Media</h1>
           <p className="text-sm text-muted-foreground">
-            Paid channel performance — Google, Meta, and more
+            Paid channel performance - Google, Meta, and more
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -92,11 +92,6 @@ export default function PerformancePage() {
 
       {/* Critical gaps */}
       <div className="space-y-2">
-        <KpiAlertBanner
-          title="Google Shopping: 0 campaigns"
-          message="250,000+ products are not running on Google Shopping. This is a significant revenue gap — every competitor with Shopping campaigns is capturing impressions Ananas is leaving on the table."
-          status="critical"
-        />
         <KpiAlertBanner
           title="No email lifecycle automations active"
           message="Cart recovery, churn prevention, and win-back flows are not live. Industry average cart recovery rate: 15-20%. Currently 0%."
@@ -161,12 +156,6 @@ export default function PerformancePage() {
             description="Needs margin data (Phase 2)"
             badge="Phase 2"
           />
-          <KpiCard
-            title="Google Shopping Impr. Share"
-            value="0%"
-            status="critical"
-            description="No Shopping campaigns active"
-          />
         </div>
       </div>
 
@@ -194,7 +183,6 @@ export default function PerformancePage() {
               { channel: "Direct", source: "GA4", sessions: "--", revenue: "--", status: "live" },
               { channel: "Google Ads", source: "Google Ads API", sessions: "--", revenue: "--", status: "needs_credentials" },
               { channel: "Meta Ads", source: "Meta API", sessions: "--", revenue: "--", status: "needs_credentials" },
-              { channel: "Google Shopping", source: "Google Ads API", sessions: "--", revenue: "--", status: "no_campaigns" },
             ].map((row) => (
               <div key={row.channel} className="flex items-center justify-between py-2.5 gap-4">
                 <div className="flex items-center gap-2 min-w-0">
@@ -207,10 +195,6 @@ export default function PerformancePage() {
                   {row.status === "live" ? (
                     <span className="rounded-full px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 font-medium">
                       Live
-                    </span>
-                  ) : row.status === "no_campaigns" ? (
-                    <span className="rounded-full px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 font-medium">
-                      No campaigns
                     </span>
                   ) : (
                     <span className="rounded-full px-2 py-0.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400 font-medium">

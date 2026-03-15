@@ -43,8 +43,8 @@ export default async function ReputationPage() {
       {/* Critical reputation alerts */}
       <div className="space-y-2">
         <KpiAlertBanner
-          title="Trustpilot: 2.0 star rating — CRITICAL"
-          message="Ananas has a 2.0/5.0 rating on Trustpilot. This is actively damaging brand trust and acquisition. The profile has not yet been claimed — claiming it is the immediate first step."
+          title="Trustpilot: 2.0 star rating - CRITICAL"
+          message="Ananas has a 2.0/5.0 rating on Trustpilot. This is actively damaging brand trust and acquisition. The profile has not yet been claimed - claiming it is the immediate first step."
           status="critical"
         />
         {!tpClaimed && (

@@ -9,6 +9,8 @@ function daysForPreset(preset: string | null): number {
       return 1;
     case "last_7d":
       return 7;
+    case "last_week":
+      return 14;
     case "last_30d":
       return 30;
     case "mtd": {

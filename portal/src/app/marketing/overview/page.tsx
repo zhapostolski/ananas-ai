@@ -112,7 +112,7 @@ export default async function OverviewPage() {
         />
       </div>
 
-      {/* Charts row — only shown when data available */}
+      {/* Charts row - only shown when data available */}
       {(revenueData.length > 0 || sessionsData.length > 0) && (
         <div className="grid gap-6 lg:grid-cols-2">
           {revenueData.length > 0 && <RevenueAreaChart data={revenueData} />}

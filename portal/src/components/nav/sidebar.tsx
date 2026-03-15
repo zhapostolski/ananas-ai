@@ -243,6 +243,19 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
                 >
                   Users
                 </Link>
+                {showInvite && (
+                  <Link
+                    href="/admin/users/invite"
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
+                      pathname === "/admin/users/invite"
+                        ? "font-semibold text-white"
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    Invite User
+                  </Link>
+                )}
                 {showSendNotif && (
                   <Link
                     href="/admin/notifications"
