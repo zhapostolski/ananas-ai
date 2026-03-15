@@ -2,14 +2,15 @@
  * Lightweight SQLite reader for portal API routes.
  * Uses better-sqlite3 (sync) for simplicity in Next.js Route Handlers.
  *
- * Install: npm install better-sqlite3 @types/better-sqlite3
+ * Schema tables: agent_outputs, agent_logs, metrics_history, system_health,
+ *                delivery_log, bot_interactions
  */
 import Database from "better-sqlite3";
 import path from "path";
 
 const DB_PATH =
   process.env.DB_PATH ??
-  path.resolve(process.cwd(), "../ananas_ai_dev.db");
+  path.resolve(process.cwd(), "../ananas_ai.db");
 
 let _db: Database.Database | null = null;
 
@@ -20,27 +21,53 @@ export function getDb(): Database.Database {
   return _db;
 }
 
-export function getLatestOutput(agentId: string) {
+/**
+ * Returns the latest successful output for an agent.
+ * Columns aliased for portal compatibility:
+ *   data_json  → output_json
+ *   created_at → run_at
+ *   summary    from data_json → summary_text (if present)
+ */
+export function getLatestOutput(agentName: string) {
   const db = getDb();
-  return db
+  const row = db
     .prepare(
-      `SELECT * FROM agent_runs
-       WHERE agent_id = ? AND status = 'ok'
-       ORDER BY run_at DESC
+      `SELECT id, agent_name, output_type, data_json, model_used, created_at
+       FROM agent_outputs
+       WHERE agent_name = ?
+       ORDER BY created_at DESC
        LIMIT 1`
     )
-    .get(agentId) as Record<string, unknown> | undefined;
+    .get(agentName) as Record<string, unknown> | undefined;
+
+  if (!row) return undefined;
+
+  // Parse data_json and surface summary_text for template compatibility
+  let parsed: Record<string, unknown> = {};
+  try {
+    parsed = JSON.parse(row.data_json as string);
+  } catch {
+    // leave empty
+  }
+
+  return {
+    ...row,
+    output_json: parsed,
+    run_at: row.created_at,
+    summary_text: (parsed.summary_text ?? parsed.summary ?? null) as string | null,
+    status: "ok",
+  };
 }
 
-export function getOutputHistory(agentId: string, days = 7) {
+export function getOutputHistory(agentName: string, days = 7) {
   const db = getDb();
   return db
     .prepare(
-      `SELECT id, agent_id, run_at, status, summary_text, model_used,
-              tokens_in, tokens_out, estimated_cost, duration_ms
-       FROM agent_runs
-       WHERE agent_id = ? AND run_at >= datetime('now', ?)
-       ORDER BY run_at DESC`
+      `SELECT id, agent_name, output_type, model_used, created_at AS run_at,
+              'ok' AS status
+       FROM agent_outputs
+       WHERE agent_name = ? AND created_at >= datetime('now', ?)
+       ORDER BY created_at DESC`
     )
-    .all(agentId, `-${days} days`) as Record<string, unknown>[];
+    .all(agentName, `-${days} days`) as Record<string, unknown>[];
 }
