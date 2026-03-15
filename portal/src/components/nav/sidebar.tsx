@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import {
   BarChart2,
   Mail,
@@ -105,12 +106,18 @@ export function Sidebar({ role }: SidebarProps) {
   );
 
   return (
-    <aside className="flex h-full w-60 flex-col border-r bg-background">
+    <aside className="flex h-full w-60 flex-col border-r bg-white">
       {/* Logo */}
-      <div className="flex h-14 items-center border-b px-4">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
-          <span className="text-2xl">🍍</span>
-          <span>Ananas AI</span>
+      <div className="flex h-14 items-center border-b px-4" style={{ borderBottomColor: "#f0ebe6" }}>
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/ananas-logo.png"
+            alt="ānanas"
+            width={100}
+            height={38}
+            className="object-contain"
+          />
+          <span className="text-xs font-semibold text-gray-400 tracking-wide uppercase">AI</span>
         </Link>
       </div>
 
@@ -129,9 +136,10 @@ export function Sidebar({ role }: SidebarProps) {
                 className={cn(
                   "flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "text-white"
+                    : "text-gray-600 hover:bg-orange-50 hover:text-orange-600"
                 )}
+                style={isActive ? { backgroundColor: "#FE5000" } : {}}
               >
                 {group.icon}
                 <span className="flex-1 text-left">{group.label}</span>
@@ -152,9 +160,10 @@ export function Sidebar({ role }: SidebarProps) {
                       className={cn(
                         "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
                         pathname === child.href
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                          ? "font-semibold"
+                          : "text-gray-500 hover:bg-orange-50 hover:text-orange-600"
                       )}
+                      style={pathname === child.href ? { color: "#FE5000", backgroundColor: "#fff3ee" } : {}}
                     >
                       {child.icon}
                       {child.label}
@@ -171,7 +180,7 @@ export function Sidebar({ role }: SidebarProps) {
       <div className="border-t p-2">
         <Link
           href="/settings"
-          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-500 hover:bg-orange-50 hover:text-orange-600"
         >
           <Settings className="h-4 w-4" />
           Settings
