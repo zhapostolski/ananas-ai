@@ -1,30 +1,30 @@
-"""Email delivery via Microsoft Graph API (primary) or AWS SES (fallback).
+"""Email delivery via Microsoft Graph API (delegated auth).
 
-Primary: Microsoft Graph API using client credentials (app-only auth).
-  Sends from ai@ananas.mk using an Entra ID app with Mail.Send permission.
+Uses a stored refresh token to send email as the configured user.
+No admin consent needed - only user-level Mail.Send permission.
 
-Required env vars for Graph:
-  GRAPH_TENANT_ID      -- Azure tenant ID
-  GRAPH_CLIENT_ID      -- App registration client ID
-  GRAPH_CLIENT_SECRET  -- App registration client secret
-  EMAIL_FROM_ADDRESS   -- sender address (e.g. ai@ananas.mk)
-  EMAIL_TO_ADDRESS     -- comma-separated recipients
+Required env vars:
+  GRAPH_TENANT_ID       -- Azure tenant ID
+  GRAPH_CLIENT_ID       -- App registration client ID (public client, no secret needed)
+  GRAPH_REFRESH_TOKEN   -- Long-lived refresh token (get once via scripts/get_graph_token.py)
+  EMAIL_FROM_ADDRESS    -- sender address (e.g. zharko.apostolski@ananas.mk)
+  EMAIL_TO_ADDRESS      -- comma-separated recipients
 
-Fallback: AWS SES (used if Graph vars are missing).
-  EMAIL_FROM_ADDRESS must be a verified SES sender.
+One-time setup:
+  1. Add Delegated permissions to the app: Mail.Send + offline_access
+  2. Run: python scripts/get_graph_token.py
+  3. Copy GRAPH_REFRESH_TOKEN=... into .env on EC2
 
-Setup (Graph, one-time):
-  1. Create ai@ananas.mk in Microsoft 365 admin
-  2. Register an app in Entra ID (no redirect URI needed)
-  3. Add API permission: Microsoft Graph > Application > Mail.Send
-  4. Grant admin consent
-  5. Create a client secret
-  6. Set the 4 env vars above
+Fallback: writes a local file if not configured.
 """
 
 from __future__ import annotations
 
+import json
 import os
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import date
 from pathlib import Path
 
@@ -32,25 +32,22 @@ from ananas_ai.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-SES_REGION = os.environ.get("AWS_REGION", "eu-central-1")
+GRAPH_TOKEN_URL = "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"
+GRAPH_SEND_URL = "https://graph.microsoft.com/v1.0/users/{user}/sendMail"
 
 
-def _is_graph_configured() -> bool:
+def _is_configured() -> bool:
     return bool(
         os.environ.get("GRAPH_TENANT_ID")
         and os.environ.get("GRAPH_CLIENT_ID")
-        and os.environ.get("GRAPH_CLIENT_SECRET")
+        and os.environ.get("GRAPH_REFRESH_TOKEN")
         and os.environ.get("EMAIL_FROM_ADDRESS")
         and os.environ.get("EMAIL_TO_ADDRESS")
     )
 
 
-def _is_ses_configured() -> bool:
-    return bool(os.environ.get("EMAIL_FROM_ADDRESS") and os.environ.get("EMAIL_TO_ADDRESS"))
-
-
 def is_configured() -> bool:
-    return _is_graph_configured() or _is_ses_configured()
+    return _is_configured()
 
 
 def _clean(text: str) -> str:
@@ -64,38 +61,45 @@ def _html(body: str) -> str:
     )
 
 
-# ---------------------------------------------------------------------------
-# Graph API sender
-# ---------------------------------------------------------------------------
-def _send_graph(subject: str, body: str, from_addr: str, to_addrs: list[str]) -> dict:
-    """Send via Microsoft Graph API using client credentials."""
-    import json
-    import urllib.parse
-    import urllib.request
-
+def _get_access_token() -> tuple[str, str | None]:
+    """Exchange refresh token for access token. Returns (access_token, new_refresh_token)."""
     tenant_id = os.environ["GRAPH_TENANT_ID"]
     client_id = os.environ["GRAPH_CLIENT_ID"]
-    client_secret = os.environ["GRAPH_CLIENT_SECRET"]
+    refresh_token = os.environ["GRAPH_REFRESH_TOKEN"]
 
-    # 1. Get access token
-    token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
-    token_data = urllib.parse.urlencode(
+    data = urllib.parse.urlencode(
         {
-            "grant_type": "client_credentials",
+            "grant_type": "refresh_token",
             "client_id": client_id,
-            "client_secret": client_secret,
-            "scope": "https://graph.microsoft.com/.default",
+            "refresh_token": refresh_token,
+            "scope": "https://graph.microsoft.com/Mail.Send offline_access",
         }
     ).encode()
 
-    req = urllib.request.Request(token_url, data=token_data, method="POST")
+    req = urllib.request.Request(
+        GRAPH_TOKEN_URL.format(tenant=tenant_id),
+        data=data,
+        method="POST",
+    )
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
+
     with urllib.request.urlopen(req, timeout=15) as resp:
         token_resp = json.loads(resp.read())
-    access_token = token_resp["access_token"]
 
-    # 2. Send mail via Graph
-    send_url = f"https://graph.microsoft.com/v1.0/users/{from_addr}/sendMail"
+    access_token = token_resp["access_token"]
+    # Refresh tokens rotate - update in-memory env so the current process has the latest
+    new_refresh = token_resp.get("refresh_token")
+    if new_refresh and new_refresh != refresh_token:
+        os.environ["GRAPH_REFRESH_TOKEN"] = new_refresh
+        logger.debug("email: refresh token rotated")
+
+    return access_token, new_refresh
+
+
+def _send_graph(subject: str, body: str, from_addr: str, to_addrs: list[str]) -> dict:
+    """Send via Microsoft Graph API using delegated (refresh token) auth."""
+    access_token, _ = _get_access_token()
+
     payload = json.dumps(
         {
             "message": {
@@ -111,49 +115,23 @@ def _send_graph(subject: str, body: str, from_addr: str, to_addrs: list[str]) ->
         }
     ).encode()
 
-    req2 = urllib.request.Request(send_url, data=payload, method="POST")
-    req2.add_header("Authorization", f"Bearer {access_token}")
-    req2.add_header("Content-Type", "application/json")
-    with urllib.request.urlopen(req2, timeout=15) as resp2:
-        # 202 Accepted = success, no body
-        status = resp2.status
+    req = urllib.request.Request(
+        GRAPH_SEND_URL.format(user=from_addr),
+        data=payload,
+        method="POST",
+    )
+    req.add_header("Authorization", f"Bearer {access_token}")
+    req.add_header("Content-Type", "application/json")
+
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        status = resp.status  # 202 Accepted
 
     logger.info("email: Graph sent to %s (HTTP %s)", to_addrs, status)
     return {"status": "ok", "recipients": to_addrs, "provider": "graph"}
 
 
-# ---------------------------------------------------------------------------
-# SES fallback
-# ---------------------------------------------------------------------------
-def _send_ses(subject: str, body: str, from_addr: str, to_addrs: list[str]) -> dict:
-    """Send via AWS SES."""
-    import boto3  # noqa: PLC0415
-
-    ses = boto3.client("ses", region_name=SES_REGION)
-    resp = ses.send_email(
-        Source=f"Ananas AI <{from_addr}>",
-        Destination={"ToAddresses": to_addrs},
-        Message={
-            "Subject": {"Data": subject, "Charset": "UTF-8"},
-            "Body": {
-                "Html": {"Data": _html(body), "Charset": "UTF-8"},
-                "Text": {"Data": body, "Charset": "UTF-8"},
-            },
-        },
-    )
-    msg_id = resp["MessageId"]
-    logger.info("email: SES sent to %s (MessageId: %s)", to_addrs, msg_id)
-    return {"status": "ok", "recipients": to_addrs, "message_id": msg_id, "provider": "ses"}
-
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 def send_brief(title: str, body: str, today: date | None = None) -> dict:
-    """Send the daily brief email.
-
-    Tries Graph API first (ai@ananas.mk), falls back to SES, then writes local file.
-    """
+    """Send the daily brief email via Microsoft Graph API."""
     if today is None:
         today = date.today()
 
@@ -161,33 +139,25 @@ def send_brief(title: str, body: str, today: date | None = None) -> dict:
     body = _clean(body)
     subject = f"{title} -- {today.strftime('%Y-%m-%d')}"
 
-    if not is_configured():
+    if not _is_configured():
         return _write_local(subject, body)
 
     from_addr = os.environ["EMAIL_FROM_ADDRESS"]
     to_addrs = [a.strip() for a in os.environ["EMAIL_TO_ADDRESS"].split(",") if a.strip()]
 
-    # Try Graph first
-    if _is_graph_configured():
-        try:
-            return _send_graph(subject, body, from_addr, to_addrs)
-        except Exception as e:
-            logger.warning("email: Graph failed (%s), trying SES fallback", e)
-
-    # SES fallback
     try:
-        return _send_ses(subject, body, from_addr, to_addrs)
+        return _send_graph(subject, body, from_addr, to_addrs)
     except Exception as e:
-        logger.error("email: SES also failed: %s", e)
+        logger.error("email: Graph send failed: %s", e)
         local = _write_local(subject, body)
         return {"status": "error", "error": str(e), "path": local.get("path")}
 
 
 def _write_local(subject: str, body: str) -> dict:
-    out_dir = Path(__file__).resolve().parents[2] / "examples" / "sample_outputs"
-    out_dir.mkdir(parents=True, exist_ok=True)
     from datetime import datetime, timezone
 
+    out_dir = Path(__file__).resolve().parents[2] / "examples" / "sample_outputs"
+    out_dir.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     path = out_dir / f"email_brief_{ts}.txt"
     path.write_text(f"Subject: {subject}\n\n{body}", encoding="utf-8")
