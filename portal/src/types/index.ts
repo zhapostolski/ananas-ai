@@ -12,6 +12,7 @@ export type MarketingModule =
   | "reputation"
   | "ops"
   | "influencers"
+  | "overview"
   | "brief";
 
 export type Role =
@@ -40,6 +41,26 @@ export interface UserProfile {
   role: Role;
   department: Department;
 }
+
+export interface UserPreferences {
+  theme: "light" | "dark" | "system";
+  density: "default" | "compact";
+}
+
+export const INTEREST_OPTIONS = [
+  { key: "performance", label: "Paid Performance" },
+  { key: "crm", label: "CRM & Lifecycle" },
+  { key: "seo", label: "SEO & Organic" },
+  { key: "reputation", label: "Brand Reputation" },
+  { key: "influencers", label: "Influencers" },
+  { key: "ops", label: "Marketing Ops" },
+  { key: "analytics", label: "Analytics" },
+  { key: "demand", label: "Demand Forecasting" },
+  { key: "competitors", label: "Competitor Intel" },
+  { key: "content", label: "Content & Social" },
+] as const;
+
+export type InterestKey = typeof INTEREST_OPTIONS[number]["key"];
 
 export interface AgentOutput {
   id: number;

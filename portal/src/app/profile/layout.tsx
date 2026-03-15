@@ -3,11 +3,10 @@ import { auth } from "@/lib/auth";
 import { Sidebar } from "@/components/nav/sidebar";
 import { Header } from "@/components/nav/header";
 import type { Role } from "@/types";
-import { canAccessDepartment } from "@/lib/roles";
 import { getPortalUser } from "@/lib/db-portal";
 import { PageTracker } from "@/components/page-tracker";
 
-export default async function MarketingLayout({
+export default async function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,14 +15,7 @@ export default async function MarketingLayout({
   if (!session?.user) redirect("/login");
 
   const role = ((session.user as { role?: Role }).role ?? "performance_marketer") as Role;
-
-  if (!canAccessDepartment(role, "marketing")) {
-    redirect("/executive");
-  }
-
-  const portalUser = session.user.email
-    ? getPortalUser(session.user.email)
-    : undefined;
+  const portalUser = session.user.email ? getPortalUser(session.user.email) : undefined;
   const avatarColor = portalUser?.avatar_color ?? "#FE5000";
 
   return (

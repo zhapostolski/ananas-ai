@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@import "tailwindcss";
 
 :root {
   --background: 0 0% 100%;
@@ -26,6 +26,28 @@
   /* Ananas brand extras */
   --ananas-orange: 19 100% 50%;     /* #FE5000 */
   --ananas-green: 78 100% 37%;      /* #84BD00 */
+}
+
+.dark {
+  --background: 222 20% 10%;
+  --foreground: 210 20% 94%;
+  --card: 222 18% 13%;
+  --card-foreground: 210 20% 94%;
+  --popover: 222 18% 13%;
+  --popover-foreground: 210 20% 94%;
+  --primary: 19 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 222 15% 18%;
+  --secondary-foreground: 210 20% 94%;
+  --muted: 222 15% 18%;
+  --muted-foreground: 220 10% 56%;
+  --accent: 222 15% 20%;
+  --accent-foreground: 210 20% 94%;
+  --destructive: 0 62.8% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 222 15% 20%;
+  --input: 222 15% 20%;
+  --ring: 19 100% 50%;
 }
 
 @theme inline {

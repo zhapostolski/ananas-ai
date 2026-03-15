@@ -1,45 +1,95 @@
 "use client";
 
-import { signOut } from "next-auth/react";
-import { LogOut, User } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ROLE_LABELS } from "@/lib/roles";
+import { usePathname } from "next/navigation";
+import { Bell, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { UserMenu } from "@/components/nav/user-menu";
 import type { Role } from "@/types";
+
+const BREADCRUMBS: Record<string, string> = {
+  "/marketing/overview": "Overview",
+  "/marketing/performance": "Performance & Paid Media",
+  "/marketing/crm": "CRM & Lifecycle",
+  "/marketing/reputation": "Reputation",
+  "/marketing/influencers": "Influencers",
+  "/marketing/ops": "Marketing Ops",
+  "/finance": "Finance",
+  "/logistics": "Logistics",
+  "/executive": "Executive",
+  "/customer-experience": "Customer Experience",
+  "/customer-experience/reputation": "Reputation & Reviews",
+  "/customer-experience/support": "Support Insights",
+  "/profile": "My Profile",
+  "/settings": "Settings",
+  "/admin/users": "User Management",
+  "/admin/users/invite": "Invite User",
+};
+
+function getPageTitle(pathname: string): string {
+  if (BREADCRUMBS[pathname]) return BREADCRUMBS[pathname];
+  for (const [prefix, label] of Object.entries(BREADCRUMBS)) {
+    if (pathname.startsWith(prefix + "/")) return label;
+  }
+  return "Ananas AI";
+}
 
 interface HeaderProps {
   name?: string | null;
   email?: string | null;
   role: Role;
+  avatarColor?: string;
 }
 
-export function Header({ name, email, role }: HeaderProps) {
+export function Header({ name, email, role, avatarColor = "#FE5000" }: HeaderProps) {
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const pageTitle = getPageTitle(pathname);
+  const isAdmin = role === "executive" || role === "marketing_head";
+
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-white px-6">
-      {/* Orange accent line at top */}
-      <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: "#FE5000" }} />
-      <div />
-      <div className="flex items-center gap-3">
-        <Badge
-          variant="outline"
-          className="text-xs font-medium"
-          style={{ borderColor: "#FE5000", color: "#FE5000" }}
+    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-6 gap-4">
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-sm font-semibold truncate">{pageTitle}</span>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Dark mode toggle */}
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+          title="Toggle theme"
+          aria-label="Toggle theme"
         >
-          {ROLE_LABELS[role]}
-        </Badge>
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-gray-400" />
-          <span className="text-sm text-gray-500">{name ?? email}</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          title="Sign out"
-          className="hover:text-orange-600"
+          {theme === "dark" ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
+        </button>
+
+        {/* Notification bell */}
+        <button
+          className="relative flex h-8 w-8 items-center justify-center rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+          title="Notifications"
+          aria-label="Notifications"
         >
-          <LogOut className="h-4 w-4" />
-        </Button>
+          <Bell className="h-4 w-4" />
+          <span
+            className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-card"
+            style={{ backgroundColor: "#FE5000" }}
+          />
+        </button>
+
+        {/* Divider */}
+        <div className="h-6 w-px bg-border mx-1" />
+
+        <UserMenu
+          name={name}
+          email={email}
+          role={role}
+          avatarColor={avatarColor}
+          isAdmin={isAdmin}
+        />
       </div>
     </header>
   );

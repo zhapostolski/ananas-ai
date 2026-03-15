@@ -1,45 +1,41 @@
 import NextAuth from "next-auth";
-import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
+import { authConfig } from "@/lib/auth.config";
 import type { Role } from "@/types";
 
-/**
- * Map Entra ID group membership or email to a platform role.
- * Extend this map once Azure group IDs are confirmed.
- */
-const EMAIL_ROLE_MAP: Record<string, Role> = {
-  "zharko.apostolski@ananas.mk": "marketing_head",
-};
-
-function resolveRole(email: string | undefined | null): Role {
-  if (!email) return "marketing_ops";
-  return EMAIL_ROLE_MAP[email.toLowerCase()] ?? "performance_marketer";
+async function resolveRoleFromDb(email: string): Promise<Role> {
+  try {
+    const { getPortalUser } = await import("@/lib/db-portal");
+    const user = getPortalUser(email);
+    if (user?.role) return user.role as Role;
+  } catch {
+    // DB unavailable -- fall through to authConfig default
+  }
+  return "performance_marketer";
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: true,
-  providers: [
-    MicrosoftEntraID({
-      clientId: process.env.AZURE_AD_CLIENT_ID!,
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-      issuer: `https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID!}/v2.0`,
-    }),
-  ],
+  ...authConfig,
   callbacks: {
+    ...authConfig.callbacks,
     async jwt({ token, profile }) {
-      if (profile) {
-        token.role = resolveRole(token.email);
+      if (profile && token.email) {
+        token.role = await resolveRoleFromDb(token.email);
       }
       return token;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as { role?: Role }).role = token.role as Role;
-      }
-      return session;
-    },
   },
-  pages: {
-    signIn: "/login",
-    error: "/login",
+  events: {
+    async signIn({ user }) {
+      if (!user.email) return;
+      try {
+        const { getOrCreatePortalUser, touchLastSeen } = await import(
+          "@/lib/db-portal"
+        );
+        getOrCreatePortalUser(user.email, user.name);
+        touchLastSeen(user.email);
+      } catch {
+        // Non-fatal
+      }
+    },
   },
 });
