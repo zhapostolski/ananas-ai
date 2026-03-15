@@ -112,13 +112,15 @@ resource "aws_secretsmanager_secret_version" "pinterest" {
 resource "aws_secretsmanager_secret_version" "microsoft" {
   secret_id     = aws_secretsmanager_secret.microsoft.id
   secret_string = jsonencode({
-    TEAMS_TENANT_ID      = "REPLACE_ME",
-    TEAMS_CLIENT_ID      = "REPLACE_ME",
-    TEAMS_CLIENT_SECRET  = "REPLACE_ME",
-    AZURE_AD_CLIENT_ID   = "REPLACE_ME",
+    TEAMS_TENANT_ID        = "REPLACE_ME",
+    TEAMS_CLIENT_ID        = "REPLACE_ME",
+    TEAMS_CLIENT_SECRET    = "REPLACE_ME",
+    AZURE_AD_CLIENT_ID     = "REPLACE_ME",
     AZURE_AD_CLIENT_SECRET = "REPLACE_ME",
-    AZURE_AD_TENANT_ID   = "REPLACE_ME",
-    AUTH_SECRET          = "REPLACE_ME",
+    AZURE_AD_TENANT_ID     = "REPLACE_ME",
+    AUTH_SECRET            = "REPLACE_ME",
+    BOT_APP_ID             = "REPLACE_ME",
+    BOT_APP_PASSWORD       = "REPLACE_ME",
   })
 
   lifecycle { ignore_changes = [secret_string] }

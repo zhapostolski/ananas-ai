@@ -4,7 +4,7 @@ import type { Role, Department } from "@/types";
  * Role -> Departments the user can access.
  */
 export const ROLE_DEPARTMENTS: Record<Role, Department[]> = {
-  executive: ["marketing", "commercial", "finance", "logistics"],
+  executive: ["marketing", "commercial", "finance", "logistics", "executive", "customer_experience"],
   marketing_head: ["marketing", "commercial"],
   performance_marketer: ["marketing"],
   crm_specialist: ["marketing"],
@@ -17,6 +17,8 @@ export const ROLE_DEPARTMENTS: Record<Role, Department[]> = {
   finance_team: ["finance"],
   logistics_head: ["logistics", "commercial"],
   logistics_team: ["logistics"],
+  cx_head: ["customer_experience", "marketing"],
+  cx_team: ["customer_experience"],
   hr: [],
 };
 
@@ -63,5 +65,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   finance_team: "Finance Team",
   logistics_head: "Logistics Head",
   logistics_team: "Logistics Team",
+  cx_head: "CX Head",
+  cx_team: "CX Team",
   hr: "HR",
 };

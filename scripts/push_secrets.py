@@ -60,6 +60,11 @@ SECRETS: dict[str, dict | str] = {
         "AZURE_AD_CLIENT_SECRET": "REPLACE_ME",  # same secret as TEAMS_CLIENT_SECRET
         "AZURE_AD_TENANT_ID": "c764ab62-ad43-4930-aa38-c9e23a990cb0",
         "AUTH_SECRET": "c6950886cf4bf002578d9e85616e05f901b686638688314a20ce82cc73145d46",
+        # Teams bot: register at portal.azure.com -> Azure Bot -> create new
+        # BOT_APP_ID  = Microsoft App ID from the bot registration
+        # BOT_APP_PASSWORD = client secret created under the bot's app registration
+        "BOT_APP_ID": "REPLACE_ME",
+        "BOT_APP_PASSWORD": "REPLACE_ME",
     },
     "database": {
         "ANANAS_DB_PATH": "/home/ubuntu/ananas-ai/ananas_ai.db",

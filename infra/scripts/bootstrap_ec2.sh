@@ -143,9 +143,24 @@ npm run build
 
 # Start with PM2
 pm2 start npm --name "ananas-portal" -- start
+echo "Portal built and started on port 3000"
+BASH
+
+# ── Teams bot (Python aiohttp, port 3978) ────────────────────────────────────
+sudo -u ubuntu bash << 'BASH'
+cd /home/ubuntu/ananas-ai
+source .venv/bin/activate
+set -a && source /etc/ananas-ai/env && set +a
+pm2 start "python -m ananas_ai.bot.app" --name "ananas-bot" --interpreter python
+echo "Teams bot started on port 3978"
+BASH
+
+# Save PM2 list and enable startup
+sudo -u ubuntu bash << 'BASH'
+export PATH="$HOME/.local/share/fnm:$PATH"
+eval "$(fnm env)"
 pm2 save
 pm2 startup systemd -u ubuntu --hp /home/ubuntu | tail -1 | bash || true
-echo "Portal built and started on port 3000"
 BASH
 
 # ── nginx reverse proxy for portal ───────────────────────────────────────────
@@ -154,6 +169,22 @@ server {
     listen 80;
     server_name ai.ananas.mk;
 
+    # Teams bot endpoint -- Bot Framework POSTs here
+    location /api/messages {
+        proxy_pass http://localhost:3978;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Bot health check
+    location /bot/health {
+        proxy_pass http://localhost:3978/health;
+    }
+
+    # Portal (Next.js)
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;

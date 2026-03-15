@@ -103,6 +103,22 @@ resource "aws_security_group" "runtime" {
     }
   }
 
+  ingress {
+    description = "HTTPS - portal and Teams bot endpoint"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTP - redirect to HTTPS / Let's Encrypt challenge"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Outbound: agents call external APIs, Teams, email, etc.
   egress {
     from_port   = 0

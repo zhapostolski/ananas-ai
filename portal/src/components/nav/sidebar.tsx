@@ -16,6 +16,8 @@ import {
   Megaphone,
   ChevronDown,
   ChevronRight,
+  Briefcase,
+  HeartHandshake,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -68,6 +70,22 @@ const NAV: NavGroup[] = [
     label: "Logistics",
     icon: <Truck className="h-4 w-4" />,
     href: "/logistics",
+  },
+  {
+    id: "executive",
+    label: "Executive",
+    icon: <Briefcase className="h-4 w-4" />,
+    href: "/executive",
+  },
+  {
+    id: "customer_experience",
+    label: "Customer Experience",
+    icon: <HeartHandshake className="h-4 w-4" />,
+    href: "/customer-experience",
+    children: [
+      { label: "Reputation & Reviews", href: "/customer-experience/reputation", icon: <Star className="h-3.5 w-3.5" /> },
+      { label: "Support Insights", href: "/customer-experience/support", icon: <Users className="h-3.5 w-3.5" /> },
+    ],
   },
 ];
 
