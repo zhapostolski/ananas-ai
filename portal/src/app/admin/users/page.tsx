@@ -19,6 +19,7 @@ interface UserRow {
   last_seen_at: string | null;
   created_at: string;
   most_visited: string | null;
+  chat_enabled: boolean;
 }
 
 const ALL_ROLES: Role[] = [
@@ -87,6 +88,8 @@ export default function AdminUsersPage() {
   const [pendingRoles, setPendingRoles] = useState<Record<number, string>>({});
   // Map of userId -> save state
   const [saveStates, setSaveStates] = useState<Record<number, SaveState>>({});
+  // Map of email -> chat toggle in-flight
+  const [chatToggling, setChatToggling] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetch("/api/admin/users")
@@ -151,6 +154,19 @@ export default function AdminUsersPage() {
       setSaveStates((prev) => ({ ...prev, [user.id]: "error" }));
     }
   }, [pendingRoles]);
+
+  async function toggleChat(email: string, enabled: boolean) {
+    setChatToggling((prev) => ({ ...prev, [email]: true }));
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(email)}/chat`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled }),
+    });
+    if (res.ok) {
+      setUsers((prev) => prev.map((u) => u.email === email ? { ...u, chat_enabled: enabled } : u));
+    }
+    setChatToggling((prev) => { const n = { ...prev }; delete n[email]; return n; });
+  }
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -239,6 +255,25 @@ export default function AdminUsersPage() {
                           {ROLE_LABELS[user.role as Role] ?? user.role}
                         </span>
                       )}
+
+                      {/* Chat toggle */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[10px] text-muted-foreground">Chat</span>
+                        <button
+                          disabled={!!chatToggling[user.email]}
+                          onClick={() => toggleChat(user.email, !user.chat_enabled)}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
+                            user.chat_enabled ? "" : "bg-gray-200 dark:bg-gray-700"
+                          }`}
+                          style={user.chat_enabled ? { backgroundColor: "#FE5000" } : {}}
+                        >
+                          <span
+                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                              user.chat_enabled ? "translate-x-4" : "translate-x-0.5"
+                            }`}
+                          />
+                        </button>
+                      </div>
 
                       {/* Save button — visible only when there's a pending change */}
                       <div className="w-16 flex items-center justify-center">

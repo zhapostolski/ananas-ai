@@ -45,6 +45,7 @@ function runMigrations(db: Database.Database): void {
   addIfMissing("birth_date", "TEXT");
   addIfMissing("hire_date", "TEXT");
   addIfMissing("berry_employee_id", "TEXT");
+  addIfMissing("chat_enabled", "INTEGER NOT NULL DEFAULT 0");
 }
 
 export interface PortalUser {
@@ -67,6 +68,7 @@ export interface PortalUser {
   preferences_json: string;
   favorite_agents_json: string;
   notifications_json: string;
+  chat_enabled: number; // 0 or 1
   last_seen_at: string | null;
   created_at: string;
   updated_at: string;
@@ -339,4 +341,82 @@ export function markAllReadForUser(email: string): void {
       stmt.run(JSON.stringify(map), row.id);
     }
   }
+}
+
+export function setChatEnabled(email: string, enabled: boolean): void {
+  getPortalDb()
+    .prepare("UPDATE portal_users SET chat_enabled = ?, updated_at = datetime('now') WHERE email = ?")
+    .run(enabled ? 1 : 0, email);
+}
+
+// ── Chat sessions & messages ───────────────────────────────────────────────
+
+export interface ChatSession {
+  id: string;
+  email: string;
+  title: string | null;
+  model: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  session_id: string;
+  role: "user" | "assistant";
+  content: string;
+  tokens_in: number | null;
+  tokens_out: number | null;
+  cost_usd: number | null;
+  created_at: string;
+}
+
+export function createChatSession(email: string, id: string, title?: string): ChatSession {
+  const db = getPortalDb();
+  db.prepare(
+    "INSERT INTO chat_sessions (id, email, title) VALUES (?, ?, ?)"
+  ).run(id, email, title ?? null);
+  return db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(id) as ChatSession;
+}
+
+export function getChatSessions(email: string, limit = 50): ChatSession[] {
+  return getPortalDb()
+    .prepare("SELECT * FROM chat_sessions WHERE email = ? ORDER BY updated_at DESC LIMIT ?")
+    .all(email, limit) as ChatSession[];
+}
+
+export function getChatSession(id: string, email: string): ChatSession | undefined {
+  return getPortalDb()
+    .prepare("SELECT * FROM chat_sessions WHERE id = ? AND email = ?")
+    .get(id, email) as ChatSession | undefined;
+}
+
+export function updateChatSessionTitle(id: string, title: string): void {
+  getPortalDb()
+    .prepare("UPDATE chat_sessions SET title = ?, updated_at = datetime('now') WHERE id = ?")
+    .run(title, id);
+}
+
+export function deleteChatSession(id: string, email: string): void {
+  getPortalDb()
+    .prepare("DELETE FROM chat_sessions WHERE id = ? AND email = ?")
+    .run(id, email);
+}
+
+export function addChatMessage(msg: Omit<ChatMessage, "created_at">): void {
+  getPortalDb()
+    .prepare(
+      `INSERT INTO chat_messages (id, session_id, role, content, tokens_in, tokens_out, cost_usd)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(msg.id, msg.session_id, msg.role, msg.content, msg.tokens_in ?? null, msg.tokens_out ?? null, msg.cost_usd ?? null);
+  getPortalDb()
+    .prepare("UPDATE chat_sessions SET updated_at = datetime('now') WHERE id = ?")
+    .run(msg.session_id);
+}
+
+export function getChatMessages(sessionId: string): ChatMessage[] {
+  return getPortalDb()
+    .prepare("SELECT * FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC")
+    .all(sessionId) as ChatMessage[];
 }

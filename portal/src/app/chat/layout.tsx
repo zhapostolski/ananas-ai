@@ -2,31 +2,23 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Sidebar } from "@/components/nav/sidebar";
 import { Header } from "@/components/nav/header";
-import type { Role } from "@/types";
-import { canAccessDepartment } from "@/lib/roles";
 import { getPortalUser } from "@/lib/db-portal";
-import { PageTracker } from "@/components/page-tracker";
-import { FloatingChatButton } from "@/components/nav/chat-button";
+import type { Role } from "@/types";
 
-export default async function MarketingLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function ChatLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const role = ((session.user as { role?: Role }).role ?? "performance_marketer") as Role;
+  const email = (session.user as { email?: string })?.email;
+  const portalUser = email ? getPortalUser(email) : undefined;
 
-  if (!canAccessDepartment(role, "marketing")) {
-    redirect("/executive");
+  if (!portalUser?.chat_enabled) {
+    redirect("/marketing/overview");
   }
 
-  const portalUser = session.user.email
-    ? getPortalUser(session.user.email)
-    : undefined;
-  const avatarColor = portalUser?.avatar_color ?? "#FE5000";
-  const avatarUrl = portalUser?.avatar_url ?? null;
+  const role = ((session.user as { role?: Role }).role ?? "performance_marketer") as Role;
+  const avatarColor = portalUser.avatar_color ?? "#FE5000";
+  const avatarUrl = portalUser.avatar_url ?? null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -46,10 +38,8 @@ export default async function MarketingLayout({
           avatarColor={avatarColor}
           avatarUrl={avatarUrl}
         />
-        <PageTracker />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        {children}
       </div>
-      <FloatingChatButton chatEnabled={!!(portalUser?.chat_enabled)} />
     </div>
   );
 }

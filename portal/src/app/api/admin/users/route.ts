@@ -27,6 +27,7 @@ export async function GET() {
       last_seen_at: u.last_seen_at,
       created_at: u.created_at,
       most_visited: topPages[0]?.page ?? null,
+      chat_enabled: u.chat_enabled === 1,
     };
   });
 

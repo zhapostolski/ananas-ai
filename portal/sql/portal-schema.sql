@@ -75,3 +75,31 @@ CREATE TABLE IF NOT EXISTS portal_notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notifications_created ON portal_notifications(created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON portal_notifications(recipient);
+
+-- ── Chat ──────────────────────────────────────────────────────────────────
+-- One session = one conversation thread per user
+CREATE TABLE IF NOT EXISTS chat_sessions (
+  id          TEXT    PRIMARY KEY,  -- UUID
+  email       TEXT    NOT NULL,
+  title       TEXT,                 -- auto-generated from first message
+  model       TEXT    NOT NULL DEFAULT 'claude-sonnet-4-6',
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_email ON chat_sessions(email);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated ON chat_sessions(updated_at);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id          TEXT    PRIMARY KEY,  -- UUID
+  session_id  TEXT    NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  role        TEXT    NOT NULL,     -- 'user' | 'assistant'
+  content     TEXT    NOT NULL,
+  tokens_in   INTEGER,
+  tokens_out  INTEGER,
+  cost_usd    REAL,
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_created ON chat_messages(created_at);
