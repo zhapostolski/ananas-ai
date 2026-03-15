@@ -21,6 +21,12 @@ resource "aws_secretsmanager_secret" "google" {
   recovery_window_in_days = 7
 }
 
+resource "aws_secretsmanager_secret" "google_sa_json" {
+  name                    = "ananas-ai/google-sa-json"
+  description             = "Google service account JSON key file (full JSON, not base64)"
+  recovery_window_in_days = 7
+}
+
 resource "aws_secretsmanager_secret" "meta" {
   name                    = "ananas-ai/meta"
   description             = "Meta Ads API credentials"
@@ -64,15 +70,21 @@ resource "aws_secretsmanager_secret_version" "openai" {
 resource "aws_secretsmanager_secret_version" "google" {
   secret_id     = aws_secretsmanager_secret.google.id
   secret_string = jsonencode({
-    GA4_PROPERTY_ID             = "REPLACE_ME",
-    GA4_CREDENTIALS             = "/home/ubuntu/ananas-ai/secrets/google-sa.json",
-    GOOGLE_ADS_DEVELOPER_TOKEN  = "REPLACE_ME",
-    GOOGLE_ADS_CLIENT_ID        = "REPLACE_ME",
-    GOOGLE_ADS_CLIENT_SECRET    = "REPLACE_ME",
-    GOOGLE_ADS_REFRESH_TOKEN    = "REPLACE_ME",
-    GOOGLE_ADS_CUSTOMER_ID      = "REPLACE_ME",
-    SEARCH_CONSOLE_SITE_URL     = "https://ananas.mk/",
+    GA4_PROPERTY_ID                  = "REPLACE_ME",
+    GA4_CREDENTIALS                  = "/home/ubuntu/ananas-ai/secrets/google-sa.json",
+    GOOGLE_ADS_DEVELOPER_TOKEN       = "REPLACE_ME",
+    GOOGLE_ADS_SERVICE_ACCOUNT_FILE  = "/home/ubuntu/ananas-ai/secrets/google-sa.json",
+    GOOGLE_ADS_LOGIN_CUSTOMER_ID     = "REPLACE_ME",
+    GOOGLE_ADS_CUSTOMER_IDS          = "REPLACE_ME",
+    SEARCH_CONSOLE_SITE_URL          = "https://ananas.mk/",
   })
+
+  lifecycle { ignore_changes = [secret_string] }
+}
+
+resource "aws_secretsmanager_secret_version" "google_sa_json" {
+  secret_id     = aws_secretsmanager_secret.google_sa_json.id
+  secret_string = "REPLACE_ME"
 
   lifecycle { ignore_changes = [secret_string] }
 }
@@ -100,9 +112,13 @@ resource "aws_secretsmanager_secret_version" "pinterest" {
 resource "aws_secretsmanager_secret_version" "microsoft" {
   secret_id     = aws_secretsmanager_secret.microsoft.id
   secret_string = jsonencode({
-    TEAMS_TENANT_ID     = "REPLACE_ME",
-    TEAMS_CLIENT_ID     = "REPLACE_ME",
-    TEAMS_CLIENT_SECRET = "REPLACE_ME",
+    TEAMS_TENANT_ID      = "REPLACE_ME",
+    TEAMS_CLIENT_ID      = "REPLACE_ME",
+    TEAMS_CLIENT_SECRET  = "REPLACE_ME",
+    AZURE_AD_CLIENT_ID   = "REPLACE_ME",
+    AZURE_AD_CLIENT_SECRET = "REPLACE_ME",
+    AZURE_AD_TENANT_ID   = "REPLACE_ME",
+    AUTH_SECRET          = "REPLACE_ME",
   })
 
   lifecycle { ignore_changes = [secret_string] }

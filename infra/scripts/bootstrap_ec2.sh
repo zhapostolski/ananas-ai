@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ananas AI — EC2 bootstrap script
 # Runs once on first boot via EC2 user data.
-# Installs all dependencies, clones the repo, sets up PostgreSQL, cron, and systemd services.
+# Installs all dependencies, clones the repo, sets up SQLite, Node.js, cron, and PM2.
 
 set -euo pipefail
 exec > >(tee /var/log/ananas-bootstrap.log | logger -t ananas-bootstrap) 2>&1
@@ -22,9 +22,8 @@ add-apt-repository ppa:deadsnakes/ppa -y
 apt-get update -y
 apt-get install -y \
     python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python3-pip \
-    postgresql postgresql-contrib \
     git curl jq unzip \
-    awscli
+    awscli nginx
 
 # CloudWatch agent — not in standard Ubuntu repos, install from AWS S3
 curl -sO https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
@@ -36,22 +35,23 @@ snap install amazon-ssm-agent --classic
 systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
 systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
 
-# ── PostgreSQL ────────────────────────────────────────────────────────────────
-systemctl enable postgresql
-systemctl start postgresql
+# ── Node.js (for Next.js portal) via fnm ─────────────────────────────────────
+sudo -u ubuntu bash << 'BASH'
+curl -fsSL https://fnm.vercel.app/install | bash
+export PATH="$HOME/.local/share/fnm:$PATH"
+eval "$(fnm env)"
+fnm install 20
+fnm use 20
+fnm default 20
+npm install -g pm2
+echo "Node.js $(node -v) + PM2 ready"
+BASH
 
-sudo -u postgres psql << SQL
-DO \$\$
-BEGIN
-  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${db_user}') THEN
-    CREATE ROLE ${db_user} WITH LOGIN PASSWORD '$(openssl rand -base64 32)';
-  END IF;
-END
-\$\$;
-CREATE DATABASE IF NOT EXISTS ${db_name} OWNER ${db_user};
-SQL
-
-echo "PostgreSQL ready: ${db_name}@localhost"
+# Symlink node/pm2 into system PATH for cron
+NODE_BIN=$(sudo -u ubuntu bash -c 'export PATH="$HOME/.local/share/fnm:$PATH"; eval "$(fnm env)"; which node')
+ln -sf "$NODE_BIN" /usr/local/bin/node
+ln -sf "$(dirname $NODE_BIN)/npm" /usr/local/bin/npm
+ln -sf "$(dirname $NODE_BIN)/pm2" /usr/local/bin/pm2
 
 # ── Clone repo ────────────────────────────────────────────────────────────────
 if [ ! -d "$APP_DIR" ]; then
@@ -120,6 +120,59 @@ python -m ananas_ai.cli bootstrap-db
 echo "Database schema applied"
 BASH
 
+# ── Build and start Next.js portal ───────────────────────────────────────────
+sudo -u ubuntu bash << 'BASH'
+export PATH="$HOME/.local/share/fnm:$PATH"
+eval "$(fnm env)"
+cd /home/ubuntu/ananas-ai/portal
+
+# Write portal .env.local from /etc/ananas-ai/env
+source /etc/ananas-ai/env 2>/dev/null || true
+cat > .env.local << ENVLOCAL
+AZURE_AD_CLIENT_ID=${AZURE_AD_CLIENT_ID}
+AZURE_AD_CLIENT_SECRET=${AZURE_AD_CLIENT_SECRET}
+AZURE_AD_TENANT_ID=${AZURE_AD_TENANT_ID}
+AUTH_SECRET=${AUTH_SECRET:-$(openssl rand -hex 32)}
+NEXTAUTH_URL=https://ai.ananas.mk
+DB_PATH=/home/ubuntu/ananas-ai/ananas_ai.db
+ENVLOCAL
+chmod 600 .env.local
+
+npm ci --silent
+npm run build
+
+# Start with PM2
+pm2 start npm --name "ananas-portal" -- start
+pm2 save
+pm2 startup systemd -u ubuntu --hp /home/ubuntu | tail -1 | bash || true
+echo "Portal built and started on port 3000"
+BASH
+
+# ── nginx reverse proxy for portal ───────────────────────────────────────────
+cat > /etc/nginx/sites-available/ananas-portal << 'NGINXEOF'
+server {
+    listen 80;
+    server_name ai.ananas.mk;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+NGINXEOF
+
+ln -sf /etc/nginx/sites-available/ananas-portal /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl enable nginx && systemctl restart nginx
+echo "nginx configured for ai.ananas.mk → localhost:3000"
+
 # ── Cron jobs ─────────────────────────────────────────────────────────────────
 # Runs agents on the Phase 1 schedule (times are UTC = MKD - 1h in summer)
 CRON_FILE="/etc/cron.d/ananas-ai"
@@ -140,6 +193,9 @@ ANANAS_ROOT=/home/ubuntu/ananas-ai
 
 # Refresh secrets from Secrets Manager — daily at 01:00 UTC
 0 1 * * * root python3 /home/ubuntu/ananas-ai/infra/scripts/refresh_secrets.py
+
+# Refresh Meta long-lived token — 1st of each month at 03:00 UTC
+0 3 1 * * ubuntu cd /home/ubuntu/ananas-ai && source .venv/bin/activate && set -a && source /etc/ananas-ai/env && set +a && python3 scripts/refresh_meta_token.py --env /etc/ananas-ai/env >> /var/log/ananas-agents.log 2>&1
 CRONEOF
 
 chmod 644 "$CRON_FILE"
