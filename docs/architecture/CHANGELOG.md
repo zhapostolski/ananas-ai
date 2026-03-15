@@ -1,5 +1,19 @@
 # Architecture Changelog
 
+## 2026-03-15 — v0.3.2 (Output guardrails)
+
+### New files
+- `scripts/guardrail_check.py` — output sanity checker; runs before every DB write or Teams/email post
+- `docs/decisions/adr-009-guardrails.md` — guardrail procedure: four layers, failure handling, how to extend for new agents
+- `.claude/rules/runtime/guardrails.md` — runtime rule enforcing guardrail discipline
+
+### What changed
+- All agent outputs must now pass guardrail_check before reaching downstream systems
+- Four check layers: structural fields, run_type labelling, per-agent KPI bounds, cross-agent coherence
+- Procedure documented for adding new agent bounds and handling sample-mode outputs
+
+---
+
 ## 2026-03-14 — v0.3.1 (QA gate + release process)
 
 ### Release process

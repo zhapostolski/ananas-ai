@@ -13,8 +13,8 @@ class GA4Integration(BaseIntegration):
     Google Analytics 4 via the Google Analytics Data API.
 
     Required env vars:
-      GA4_PROPERTY_ID   — numeric property ID, e.g. "properties/123456789"
-      GA4_CREDENTIALS   — path to service account JSON, OR use ADC (gcloud auth)
+      GA4_PROPERTY_ID   - numeric property ID, e.g. "properties/123456789"
+      GA4_CREDENTIALS   - path to service account JSON, OR use ADC (gcloud auth)
     """
 
     name = "ga4"

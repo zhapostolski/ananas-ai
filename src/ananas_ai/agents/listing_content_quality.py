@@ -1,4 +1,4 @@
-"""Listing Content Quality Agent — catalog quality scan across all surfaces.
+"""Listing Content Quality Agent - catalog quality scan across all surfaces.
 
 Phase 1: sample data with realistic quality scores per category.
 Phase 2: wires into Product Catalog API.

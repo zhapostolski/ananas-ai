@@ -17,8 +17,8 @@ class PinterestAdsIntegration(BaseIntegration):
     Pinterest Ads via Pinterest API v5.
 
     Required env vars:
-      PINTEREST_ACCESS_TOKEN  — OAuth2 access token
-      PINTEREST_AD_ACCOUNT_ID — ad account ID
+      PINTEREST_ACCESS_TOKEN  - OAuth2 access token
+      PINTEREST_AD_ACCOUNT_ID - ad account ID
     """
 
     name = "pinterest-ads"

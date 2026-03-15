@@ -152,6 +152,6 @@ class PerformanceAgent(BaseAgent):
             raw["estimated_cost"] = result["estimated_cost"]
         except Exception as e:
             logger.error("performance-agent: model call failed: %s", e)
-            raw["analysis"] = raw.get("headline", "Performance summary — model unavailable")
+            raw["analysis"] = raw.get("headline", "Performance summary - model unavailable")
 
         return raw

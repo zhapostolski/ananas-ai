@@ -13,8 +13,8 @@ class SearchConsoleIntegration(BaseIntegration):
     Google Search Console via the Webmasters API.
 
     Required env vars:
-      SEARCH_CONSOLE_SITE_URL  — verified property URL, e.g. https://ananas.mk/
-      GA4_CREDENTIALS          — shared service account JSON (same as GA4)
+      SEARCH_CONSOLE_SITE_URL  - verified property URL, e.g. https://ananas.mk/
+      GA4_CREDENTIALS          - shared service account JSON (same as GA4)
     """
 
     name = "search-console"

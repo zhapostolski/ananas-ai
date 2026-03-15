@@ -1,4 +1,4 @@
-"""Demand Forecasting Agent — demand spike detection and seasonal patterns.
+"""Demand Forecasting Agent - demand spike detection and seasonal patterns.
 
 Phase 1: sample data with realistic Ananas demand signals.
 Phase 2: wires into GA4 (already live), Search Console, and Categories API.
@@ -49,7 +49,7 @@ SAMPLE_DEMAND_SIGNALS: list[dict[str, Any]] = [
         "top_queries": ["serum za lice", "spf krema", "eye cream"],
         "wishlist_growth_pct": 19.7,
         "strength": "moderate",
-        "forecast_next_2w": "Spring skincare refresh — consistent 6-week rising trend",
+        "forecast_next_2w": "Spring skincare refresh - consistent 6-week rising trend",
         "action": "Feature skincare brands with high wishlist-to-cart potential in newsletter",
     },
     {

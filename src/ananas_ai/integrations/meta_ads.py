@@ -17,8 +17,8 @@ class MetaAdsIntegration(BaseIntegration):
     Meta Ads (Facebook + Instagram) via Meta Marketing API.
 
     Required env vars:
-      META_ACCESS_TOKEN   — system user or page access token
-      META_AD_ACCOUNT_ID  — ad account ID, e.g. act_123456789
+      META_ACCESS_TOKEN   - system user or page access token
+      META_AD_ACCOUNT_ID  - ad account ID, e.g. act_123456789
     """
 
     name = "meta-ads"

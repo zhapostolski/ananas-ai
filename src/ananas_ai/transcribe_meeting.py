@@ -4,12 +4,12 @@ Transcribes a meeting audio file via OpenAI speech-to-text, then generates a
 structured summary via Claude (with GPT-4.1 fallback).
 
 Supported transcription models (OpenAI):
-  - gpt-4o-transcribe        (default — best accuracy, released March 2025)
+  - gpt-4o-transcribe        (default - best accuracy, released March 2025)
   - gpt-4o-mini-transcribe   (cheaper, lower latency)
   - whisper-1                (original Whisper API model, still supported)
 
 Supported audio formats: .mp3 .m4a .mp4 .wav .webm .ogg .oga .flac
-Max file size: 25 MB (OpenAI API limit — use ffmpeg to split larger recordings)
+Max file size: 25 MB (OpenAI API limit - use ffmpeg to split larger recordings)
 """
 
 from __future__ import annotations
@@ -32,13 +32,13 @@ largest e-commerce marketplace with an 8-person marketing team.
 You receive a raw meeting transcript. Extract and structure the following:
 
 1. **Meeting summary** (2-3 sentences, what was this meeting about)
-2. **Key decisions** (bullet list — concrete decisions made)
-3. **Action items** (bullet list — what needs to be done, by whom if mentioned, with deadline if mentioned)
+2. **Key decisions** (bullet list - concrete decisions made)
+3. **Action items** (bullet list - what needs to be done, by whom if mentioned, with deadline if mentioned)
 4. **Topics discussed** (brief bullet list of main topics)
 5. **Blockers / risks** (anything flagged as a problem or risk, if any)
 6. **Next steps** (follow-ups or next meeting agenda items, if any)
 
-Format clearly with markdown headers. Be concise — this summary goes to the marketing team in Teams.
+Format clearly with markdown headers. Be concise - this summary goes to the marketing team in Teams.
 If the transcript is unclear or incomplete, note that briefly.
 Do NOT invent information not present in the transcript."""
 
@@ -56,7 +56,7 @@ def validate_file(path: Path) -> None:
     size_mb = path.stat().st_size / (1024 * 1024)
     if size_mb > MAX_FILE_SIZE_MB:
         print(
-            f"Error: file is {size_mb:.1f}MB — OpenAI limit is {MAX_FILE_SIZE_MB}MB.\n"
+            f"Error: file is {size_mb:.1f}MB - OpenAI limit is {MAX_FILE_SIZE_MB}MB.\n"
             "Tip: split the recording with: ffmpeg -i input.mp3 -t 00:30:00 part1.mp3",
             file=sys.stderr,
         )
@@ -83,7 +83,7 @@ def transcribe(audio_path: Path, model: str = DEFAULT_TRANSCRIPTION_MODEL) -> st
             response_format="text",
         )
     transcript = str(result)
-    print(f"Transcription complete — {len(transcript):,} characters.")
+    print(f"Transcription complete - {len(transcript):,} characters.")
     return transcript
 
 
@@ -113,7 +113,7 @@ def summarise(transcript: str, title: str, date_str: str) -> str:
     text_block = next((b for b in msg.content if b.type == "text"), None)
     summary = str(text_block.text) if text_block else ""  # type: ignore[union-attr]
     tokens_used = msg.usage.input_tokens + msg.usage.output_tokens
-    print(f"Summary generated — {len(summary):,} characters, {tokens_used:,} tokens.")
+    print(f"Summary generated - {len(summary):,} characters, {tokens_used:,} tokens.")
     return summary
 
 

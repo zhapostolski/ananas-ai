@@ -1,4 +1,4 @@
-"""Customer Segmentation Agent — RFM segmentation, LTV prediction, churn risk.
+"""Customer Segmentation Agent - RFM segmentation, LTV prediction, churn risk.
 
 Phase 1: sample data with realistic Ananas customer distribution.
 Phase 2: wires into Orders API + Sales Snap CRM for real RFM computation.

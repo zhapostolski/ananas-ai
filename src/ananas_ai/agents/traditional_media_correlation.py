@@ -1,4 +1,4 @@
-"""Traditional Media Correlation Agent — offline campaign lift attribution.
+"""Traditional Media Correlation Agent - offline campaign lift attribution.
 
 Phase 1: sample data. GA4 + Search Console are live so real branded
          search lift is measurable when campaign calendar is provided.

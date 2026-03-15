@@ -20,14 +20,14 @@ class MarketingOpsAgent(BaseAgent):
 
         # Tracking health: check if GA4 returned expected event volume
         tracking_ok = bool(ga4_data and ga4_data.get("sessions", 0) > 0)
-        tracking_status = "ok" if tracking_ok else "warning — no GA4 data received"
+        tracking_status = "ok" if tracking_ok else "warning - no GA4 data received"
 
         alerts = []
         if not tracking_ok:
-            alerts.append("GA4 returned no sessions — check tracking implementation.")
+            alerts.append("GA4 returned no sessions - check tracking implementation.")
         if ga4_data and ga4_data.get("conversion_rate_pct", 0) < 0.5:
             alerts.append(
-                f"Conversion rate is {ga4_data.get('conversion_rate_pct', 0):.2f}% — below 0.5% threshold."
+                f"Conversion rate is {ga4_data.get('conversion_rate_pct', 0):.2f}% - below 0.5% threshold."
             )
 
         # Search Console health
@@ -54,7 +54,7 @@ class MarketingOpsAgent(BaseAgent):
             },
             "alerts": alerts,
             "notes": [
-                "Coupon dependency ratio requires Orders API integration — configure when available.",
+                "Coupon dependency ratio requires Orders API integration - configure when available.",
                 "Campaign analysis coverage tracked manually until Jira integration is live.",
             ],
             "date_from": date_from,
@@ -73,7 +73,7 @@ class MarketingOpsAgent(BaseAgent):
     def sample_summary(self) -> dict:
         return {
             "headline": "Marketing ops summary (sample data)",
-            "tracking_health": {"status": "unknown — no GA4 credentials"},
+            "tracking_health": {"status": "unknown - no GA4 credentials"},
             "search_console": {},
             "alerts": [],
             "notes": [
@@ -96,7 +96,7 @@ class MarketingOpsAgent(BaseAgent):
         route = choose_model(self.name)
         system = (
             "You are the Ananas AI Marketing Ops Agent. Ananas is North Macedonia's largest "
-            "e-commerce marketplace. Your job is to ensure marketing operations health — "
+            "e-commerce marketplace. Your job is to ensure marketing operations health - "
             "tracking integrity, KPI sanity, campaign coverage, and operational issues. "
             "Known issues to watch: heavy coupon dependency masking real acquisition efficiency, "
             "no email lifecycle automations live (no cart recovery, no churn flows), "
@@ -119,6 +119,6 @@ class MarketingOpsAgent(BaseAgent):
             raw["estimated_cost"] = result["estimated_cost"]
         except Exception as e:
             logger.error("marketing-ops-agent: model call failed: %s", e)
-            raw["analysis"] = raw.get("headline", "Marketing ops summary — model unavailable")
+            raw["analysis"] = raw.get("headline", "Marketing ops summary - model unavailable")
 
         return raw

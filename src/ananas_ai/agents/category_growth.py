@@ -1,4 +1,4 @@
-"""Category Growth Agent — marketplace category intelligence.
+"""Category Growth Agent - marketplace category intelligence.
 
 Phase 1: sample data with realistic Ananas category performance.
 Phase 2: wires into Categories API, Margin API, Returns API + GA4.

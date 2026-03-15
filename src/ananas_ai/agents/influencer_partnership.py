@@ -1,4 +1,4 @@
-"""Influencer & Partnership Agent — creator ROI tracking and co-marketing.
+"""Influencer & Partnership Agent - creator ROI tracking and co-marketing.
 
 Phase 1: sample data with realistic Ananas influencer program state.
 Phase 2: wires into GA4 UTM attribution + CRM email platform.

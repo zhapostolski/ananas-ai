@@ -1,4 +1,4 @@
-"""CRM & Lifecycle Agent — Sales Snap + email automation health.
+"""CRM & Lifecycle Agent - Sales Snap + email automation health.
 
 Phase 1: runs on sample data with Claude analysis.
 Phase 2: wires directly into Sales Snap REST API when credentials are available.
@@ -16,12 +16,12 @@ logger = get_logger(__name__)
 
 # Known context about Ananas CRM state (from project brief)
 KNOWN_GAPS = [
-    "No cart recovery automation live — estimated 15-25% revenue recovery opportunity.",
-    "No churn prevention flow — at-risk customers not being re-engaged.",
+    "No cart recovery automation live - estimated 15-25% revenue recovery opportunity.",
+    "No churn prevention flow - at-risk customers not being re-engaged.",
     "No post-purchase lifecycle sequence (upsell, review request, loyalty).",
     "Birthday/anniversary journeys blocked on profile field capture.",
     "Welcome series not tested for conversion rate.",
-    "Heavy coupon dependency masks real email-driven revenue — segment needs isolation.",
+    "Heavy coupon dependency masks real email-driven revenue - segment needs isolation.",
 ]
 
 JOURNEYS = {
@@ -71,13 +71,13 @@ class CRMLifecycleAgent(BaseAgent):
 
     def sample_summary(self) -> dict:
         return {
-            "headline": "CRM & Lifecycle — no live data (Sales Snap not configured)",
+            "headline": "CRM & Lifecycle - no live data (Sales Snap not configured)",
             "journeys": JOURNEYS,
             "known_gaps": KNOWN_GAPS,
             "crm_platform": "Sales Snap",
             "automations_live": 0,
             "automations_total": len(JOURNEYS),
-            "priority_action": "Activate cart recovery automation immediately — highest revenue impact.",
+            "priority_action": "Activate cart recovery automation immediately - highest revenue impact.",
         }
 
     def run(self, date_from: str, date_to: str) -> dict:
@@ -119,6 +119,6 @@ class CRMLifecycleAgent(BaseAgent):
             raw["estimated_cost"] = result["estimated_cost"]
         except Exception as e:
             logger.error("crm-lifecycle-agent: model call failed: %s", e)
-            raw["analysis"] = raw.get("headline", "CRM summary — model unavailable")
+            raw["analysis"] = raw.get("headline", "CRM summary - model unavailable")
 
         return raw

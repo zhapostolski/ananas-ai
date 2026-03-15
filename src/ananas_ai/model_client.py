@@ -1,8 +1,8 @@
-"""Unified model client — Claude (primary) with OpenAI fallback.
+"""Unified model client - Claude (primary) with OpenAI fallback.
 
 Usage:
     from ananas_ai.model_client import call_model
-    result = call_model(model="claude-sonnet-4-5", system=SYSTEM, user=prompt)
+    result = call_model(model="claude-sonnet-4-6", system=SYSTEM, user=prompt)
 
 Returns:
     {
@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 
 # ── Token caps (per single call, input + output combined) ─────────────────────
 # Loaded from config/model-routing.json controls block.
-# Defaults are conservative — overridden by config when available.
+# Defaults are conservative - overridden by config when available.
 _PER_RUN_CAP_SONNET = 50_000
 _PER_RUN_CAP_OPUS = 30_000
 
@@ -132,7 +132,7 @@ def call_model(
 ) -> dict[str, Any]:
     """Call Claude with automatic OpenAI fallback.
 
-    Enforces per-run token cap (logs warning if exceeded — does not abort,
+    Enforces per-run token cap (logs warning if exceeded - does not abort,
     since we cannot know input size before the call).
 
     Returns:
@@ -154,7 +154,7 @@ def call_model(
             total = tokens_in + tokens_out
             cost = estimate_cost(model, tokens_in, tokens_out)
             logger.info(
-                "model_client: %s — %d in / %d out / $%.4f (cap %d)",
+                "model_client: %s - %d in / %d out / $%.4f (cap %d)",
                 model,
                 tokens_in,
                 tokens_out,
@@ -163,7 +163,7 @@ def call_model(
             )
             if total > cap:
                 logger.warning(
-                    "model_client: per-run token cap exceeded — %d tokens used, cap is %d",
+                    "model_client: per-run token cap exceeded - %d tokens used, cap is %d",
                     total,
                     cap,
                 )
@@ -185,7 +185,7 @@ def call_model(
             text, tokens_in, tokens_out = _call_openai(openai_model, system, user, max_tokens)
             cost = estimate_cost(openai_model, tokens_in, tokens_out)
             logger.info(
-                "model_client: %s (fallback) — %d in / %d out / $%.4f",
+                "model_client: %s (fallback) - %d in / %d out / $%.4f",
                 openai_model,
                 tokens_in,
                 tokens_out,
@@ -202,4 +202,4 @@ def call_model(
         except Exception as e:
             logger.error("model_client: OpenAI fallback also failed: %s", e)
 
-    raise RuntimeError("No model available — check ANTHROPIC_API_KEY and OPENAI_API_KEY")
+    raise RuntimeError("No model available - check ANTHROPIC_API_KEY and OPENAI_API_KEY")

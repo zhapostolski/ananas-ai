@@ -135,7 +135,7 @@ def _check_daily_cap(agent_name: str) -> bool:
     used = fetch_daily_tokens(agent_name)
     if used >= cap:
         logger.warning(
-            "%s: daily token cap reached (%d/%d tokens) — skipping run",
+            "%s: daily token cap reached (%d/%d tokens) - skipping run",
             agent_name,
             used,
             cap,
@@ -213,7 +213,7 @@ def run_agent(agent_name: str) -> int:
     upsert_health(
         agent_name,
         "ok",
-        f"{run_type.capitalize()} run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
+        f"{run_type.capitalize()} run - {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
     )
     logger.info("Completed %s (%d tokens, $%.4f)", agent_name, tokens_in + tokens_out, cost)
     return 0
@@ -353,7 +353,7 @@ def run_brief() -> int:
     upsert_health(
         "cross-channel-brief-agent",
         "ok",
-        f"Live run — {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
+        f"Live run - {tokens_in + tokens_out:,} tokens / ${cost:.4f}",
     )
     analysis = data.get("analysis", data.get("headline", "Brief ready."))
     post_message("#ai-marketing", "Daily Marketing Brief", analysis)

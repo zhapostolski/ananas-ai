@@ -1,4 +1,4 @@
-"""Search Merchandising Agent — internal site search quality monitoring.
+"""Search Merchandising Agent - internal site search quality monitoring.
 
 Phase 1: sample data with realistic Ananas internal search patterns.
 Phase 2: wires into internal Search API / GA4 site search events.

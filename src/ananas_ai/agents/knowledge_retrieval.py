@@ -1,4 +1,4 @@
-"""Knowledge Retrieval Agent — institutional memory search.
+"""Knowledge Retrieval Agent - institutional memory search.
 
 On-demand agent. Searches agent_outputs DB, meeting summaries, and
 (Phase 2) Confluence + Jira for answers to team questions.

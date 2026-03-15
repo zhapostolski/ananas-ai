@@ -12,7 +12,7 @@ class BaseIntegration(ABC):
     Common interface for all MCP / API integrations.
 
     Agents call fetch() and get either real data or an empty dict.
-    They never crash because of a missing integration — they log a warning
+    They never crash because of a missing integration - they log a warning
     and fall back to sample data.
     """
 
@@ -30,7 +30,7 @@ class BaseIntegration(ABC):
     def safe_fetch(self, date_from: str, date_to: str) -> dict:
         """Wrapper: returns empty dict on missing config or any error."""
         if not self.is_configured():
-            logger.warning("%s not configured — skipping", self.name)
+            logger.warning("%s not configured - skipping", self.name)
             return {}
         try:
             return self.fetch(date_from, date_to)

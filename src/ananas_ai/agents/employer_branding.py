@@ -1,4 +1,4 @@
-"""Employer Branding Agent — LinkedIn employer presence and talent pipeline.
+"""Employer Branding Agent - LinkedIn employer presence and talent pipeline.
 
 Phase 1: sample data. LinkedIn Ads is already in integrations.
 Phase 2: LinkedIn Company Pages API + Berry HR when available.

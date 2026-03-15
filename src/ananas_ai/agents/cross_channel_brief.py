@@ -1,4 +1,4 @@
-"""Cross-Channel Brief Agent — synthesises all specialist outputs into one executive brief."""
+"""Cross-Channel Brief Agent - synthesises all specialist outputs into one executive brief."""
 
 from __future__ import annotations
 
@@ -66,7 +66,7 @@ class CrossChannelBriefAgent(BaseAgent):
             )
         except Exception as e:
             logger.error("cross-channel-brief-agent: model call failed: %s", e)
-            analysis = "Cross-channel brief — model unavailable. Check agent logs."
+            analysis = "Cross-channel brief - model unavailable. Check agent logs."
 
         return {
             "headline": headline,

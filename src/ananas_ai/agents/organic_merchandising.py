@@ -1,4 +1,4 @@
-"""Organic & Merchandising Agent — SEO performance and catalog indexation.
+"""Organic & Merchandising Agent - SEO performance and catalog indexation.
 
 Phase 1: Search Console is live (already wired). Uses real SC data where available
          and fills gaps with sample data for category-level analysis.

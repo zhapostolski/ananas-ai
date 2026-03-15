@@ -28,6 +28,10 @@ def is_configured() -> bool:
     return bool(os.environ.get("EMAIL_FROM_ADDRESS") and os.environ.get("EMAIL_TO_ADDRESS"))
 
 
+def _clean(text: str) -> str:
+    return text.replace("\u2014", "-").replace("\u2013", "-")
+
+
 def send_brief(title: str, body: str, today: date | None = None) -> dict:
     """Send the daily brief email via SES.
 
@@ -36,6 +40,8 @@ def send_brief(title: str, body: str, today: date | None = None) -> dict:
     if today is None:
         today = date.today()
 
+    title = _clean(title)
+    body = _clean(body)
     subject = f"{title} -- {today.strftime('%Y-%m-%d')}"
 
     if not is_configured():
@@ -48,10 +54,14 @@ def send_brief(title: str, body: str, today: date | None = None) -> dict:
         import boto3  # noqa: PLC0415
 
         ses = boto3.client("ses", region_name=SES_REGION)
-        html_body = "<br>".join(body.splitlines())
+        html_body = (
+            "<pre style='font-family:sans-serif;white-space:pre-wrap'>"
+            + body.replace("&", "&amp;").replace("<", "&lt;")
+            + "</pre>"
+        )
 
         resp = ses.send_email(
-            Source=from_addr,
+            Source=f"Ananas AI <{from_addr}>",
             Destination={"ToAddresses": to_addrs},
             Message={
                 "Subject": {"Data": subject, "Charset": "UTF-8"},

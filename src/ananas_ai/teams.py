@@ -1,4 +1,4 @@
-"""Microsoft Teams output — writes formatted cards to file or posts via webhook."""
+"""Microsoft Teams output - writes formatted cards to file or posts via webhook."""
 
 from __future__ import annotations
 
@@ -12,8 +12,14 @@ from ananas_ai.logging_config import get_logger
 logger = get_logger(__name__)
 
 
+def _clean(text: str) -> str:
+    return text.replace("\u2014", "-").replace("\u2013", "-")
+
+
 def _build_card(title: str, body: str) -> dict:
     """Build a minimal Teams Adaptive Card payload."""
+    title = _clean(title)
+    body = _clean(body)
     lines = body.strip().split("\n")
     facts = []
     plain_lines = []

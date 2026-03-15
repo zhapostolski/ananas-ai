@@ -1,6 +1,6 @@
 {
   "version": "v2",
-  "last_updated": "2026-03-14",
+  "last_updated": "2026-03-15",
 
   "models": {
     "router": {
@@ -13,14 +13,14 @@
     },
     "default": {
       "provider": "anthropic",
-      "model": "claude-sonnet-4-5",
+      "model": "claude-sonnet-4-6",
       "purpose": "Standard production execution for all five Phase 1 agents",
       "approx_cost_per_mtok_input": 3.00,
       "approx_cost_per_mtok_output": 15.00
     },
     "escalation": {
       "provider": "anthropic",
-      "model": "claude-opus-4-5",
+      "model": "claude-opus-4-6",
       "purpose": "Complex cross-domain synthesis, high-stakes executive reasoning, architecture review",
       "approx_cost_per_mtok_input": 5.00,
       "approx_cost_per_mtok_output": 25.00,

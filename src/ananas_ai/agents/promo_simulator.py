@@ -1,4 +1,4 @@
-"""Promo Simulator Agent — pre-launch promotion impact estimator.
+"""Promo Simulator Agent - pre-launch promotion impact estimator.
 
 On-demand agent: given a proposed discount % and category, outputs expected
 GMV lift, margin impact, and break-even volume. No live API ever needed --

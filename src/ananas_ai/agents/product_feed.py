@@ -1,4 +1,4 @@
-"""Product Feed Agent — catalog quality scan + Google Shopping feed readiness.
+"""Product Feed Agent - catalog quality scan + Google Shopping feed readiness.
 
 Phase 1: sample data with realistic Ananas catalog patterns.
 Phase 2: wires into Product Catalog API and Google Shopping feed API.

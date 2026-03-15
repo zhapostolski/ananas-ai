@@ -1,4 +1,4 @@
-"""Competitor Intelligence Agent — lightweight competitor monitoring.
+"""Competitor Intelligence Agent - lightweight competitor monitoring.
 
 Uses free/existing sources only:
 - Meta Ad Library (free public API) -- competitor active ads + estimated spend

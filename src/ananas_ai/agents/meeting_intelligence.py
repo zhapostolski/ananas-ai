@@ -1,4 +1,4 @@
-"""Meeting Intelligence Agent — transcript processing, summaries, Jira tasks.
+"""Meeting Intelligence Agent - transcript processing, summaries, Jira tasks.
 
 On-demand agent triggered by file upload (audio or transcript).
 Uses OpenAI Whisper for audio transcription, then Claude for structured

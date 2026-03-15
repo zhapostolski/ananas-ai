@@ -1,4 +1,4 @@
-"""Supplier Intelligence Agent — co-marketing opportunities and supplier health.
+"""Supplier Intelligence Agent - co-marketing opportunities and supplier health.
 
 Phase 1: sample data with realistic Ananas supplier distribution.
 Phase 2: wires into Supplier API, Categories API, Orders API.
