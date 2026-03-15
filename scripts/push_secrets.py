@@ -55,10 +55,11 @@ SECRETS: dict[str, dict | str] = {
     "microsoft": {
         "TEAMS_TENANT_ID": "c764ab62-ad43-4930-aa38-c9e23a990cb0",
         "TEAMS_CLIENT_ID": "3d0a6854-b742-461d-b98a-420efd6fd8dd",
-        "TEAMS_CLIENT_SECRET": "REPLACE_ME",
+        "TEAMS_CLIENT_SECRET": "REPLACE_ME",  # Azure app client secret
         "AZURE_AD_CLIENT_ID": "3d0a6854-b742-461d-b98a-420efd6fd8dd",
-        "AZURE_AD_CLIENT_SECRET": "REPLACE_ME",
+        "AZURE_AD_CLIENT_SECRET": "REPLACE_ME",  # same secret as TEAMS_CLIENT_SECRET
         "AZURE_AD_TENANT_ID": "c764ab62-ad43-4930-aa38-c9e23a990cb0",
+        "AUTH_SECRET": "c6950886cf4bf002578d9e85616e05f901b686638688314a20ce82cc73145d46",
     },
     "database": {
         "ANANAS_DB_PATH": "/home/ubuntu/ananas-ai/ananas_ai.db",
