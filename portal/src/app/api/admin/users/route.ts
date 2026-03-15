@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getAllPortalUsers, getUserMostVisitedPages } from "@/lib/db-portal";
+import { isAdminRole } from "@/lib/roles";
 import type { Role } from "@/types";
-
-const ADMIN_ROLES: Role[] = ["executive", "marketing_head"];
 
 export async function GET() {
   const session = await auth();
   const role = (session?.user as { role?: Role } | undefined)?.role;
-  if (!role || !ADMIN_ROLES.includes(role)) {
+  if (!role || !isAdminRole(role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -21,6 +20,10 @@ export async function GET() {
       role: u.role,
       department: u.department,
       avatar_color: u.avatar_color,
+      avatar_url: u.avatar_url,
+      azure_job_title: u.azure_job_title,
+      azure_department: u.azure_department,
+      azure_phone: u.azure_phone,
       last_seen_at: u.last_seen_at,
       created_at: u.created_at,
       most_visited: topPages[0]?.page ?? null,

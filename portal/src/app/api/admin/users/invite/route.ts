@@ -7,26 +7,21 @@ import type { Role } from "@/types";
 async function getGraphAccessToken(): Promise<string | null> {
   const tenantId = process.env.GRAPH_TENANT_ID;
   const clientId = process.env.GRAPH_CLIENT_ID;
-  const refreshToken = process.env.GRAPH_REFRESH_TOKEN;
-
-  if (!tenantId || !clientId || !refreshToken) return null;
-
-  const params = new URLSearchParams({
-    grant_type: "refresh_token",
-    client_id: clientId,
-    refresh_token: refreshToken,
-    scope: "https://graph.microsoft.com/Mail.Send offline_access",
-  });
-
   const clientSecret = process.env.GRAPH_CLIENT_SECRET;
-  if (clientSecret) params.set("client_secret", clientSecret);
+
+  if (!tenantId || !clientId || !clientSecret) return null;
 
   const res = await fetch(
     `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret,
+        scope: "https://graph.microsoft.com/.default",
+      }).toString(),
     }
   );
 
