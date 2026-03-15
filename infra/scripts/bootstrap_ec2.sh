@@ -87,7 +87,7 @@ python3 << PYEOF
 import json, os
 
 secrets = {}
-for name in ["anthropic", "openai", "google", "meta", "pinterest", "microsoft", "database"]:
+for name in ["anthropic", "openai", "google", "meta", "pinterest", "microsoft", "database", "ananas-internal"]:
     try:
         import subprocess
         result = subprocess.run(

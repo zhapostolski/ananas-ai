@@ -69,6 +69,11 @@ SECRETS: dict[str, dict | str] = {
     "database": {
         "ANANAS_DB_PATH": "/home/ubuntu/ananas-ai/ananas_ai.db",
     },
+    "ananas-internal": {
+        "ANANAS_API_CLIENT_ID": "REPLACE_ME",
+        "ANANAS_API_CLIENT_SECRET": "REPLACE_ME",
+        "ANANAS_API_BASE_URL": "https://api.ananas.rs",
+    },
 }
 
 REGION = os.environ.get("AWS_REGION", "eu-central-1")

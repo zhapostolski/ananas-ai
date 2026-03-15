@@ -180,15 +180,21 @@
     },
 
     "business_data": {
-      "description": "Internal Ananas business APIs — read-only, requires backend team coordination",
+      "description": "Internal Ananas business APIs — read-only, CLIENT_CREDENTIALS via api.ananas.rs",
       "phase": "phase-1-partial",
+      "api_base": "https://api.ananas.rs",
+      "auth_endpoint": "/iam/api/v1/auth/token",
+      "auth_type": "CLIENT_CREDENTIALS",
+      "env_vars": ["ANANAS_API_CLIENT_ID", "ANANAS_API_CLIENT_SECRET"],
+      "implementation": "src/ananas_ai/integrations/ananas_api.py",
       "connectors": [
         {
           "name": "orders-api",
           "type": "internal-api",
-          "auth": "service-account",
+          "path": "/order/api/v1/orders",
+          "auth": "client-credentials",
           "access": "read-only",
-          "key_metrics": ["orders", "revenue", "aov"],
+          "key_metrics": ["orders", "revenue", "aov", "status_breakdown"],
           "phase": "phase-1"
         },
         {

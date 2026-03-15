@@ -51,6 +51,12 @@ resource "aws_secretsmanager_secret" "database" {
   recovery_window_in_days = 7
 }
 
+resource "aws_secretsmanager_secret" "ananas_internal" {
+  name                    = "ananas-ai/ananas-internal"
+  description             = "Ananas internal API credentials (api.ananas.rs CLIENT_CREDENTIALS)"
+  recovery_window_in_days = 7
+}
+
 # ── Secret value templates (initial placeholder — update after Terraform apply) ─
 
 resource "aws_secretsmanager_secret_version" "anthropic" {
@@ -131,6 +137,17 @@ resource "aws_secretsmanager_secret_version" "database" {
   secret_string = jsonencode({
     ANANAS_DB_PATH = "/home/ubuntu/ananas-ai/ananas_ai.db",
     DATABASE_URL   = "postgresql://ananas_ai:REPLACE_ME@localhost/ananas_ai",
+  })
+
+  lifecycle { ignore_changes = [secret_string] }
+}
+
+resource "aws_secretsmanager_secret_version" "ananas_internal" {
+  secret_id     = aws_secretsmanager_secret.ananas_internal.id
+  secret_string = jsonencode({
+    ANANAS_API_CLIENT_ID     = "REPLACE_ME",
+    ANANAS_API_CLIENT_SECRET = "REPLACE_ME",
+    ANANAS_API_BASE_URL      = "https://api.ananas.rs",
   })
 
   lifecycle { ignore_changes = [secret_string] }

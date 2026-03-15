@@ -1,3 +1,4 @@
+from ananas_ai.integrations.ananas_api import AnanasAPIIntegration as AnanasAPIIntegration
 from ananas_ai.integrations.ga4 import GA4Integration as GA4Integration
 from ananas_ai.integrations.google_ads import GoogleAdsIntegration as GoogleAdsIntegration
 from ananas_ai.integrations.google_business import (
