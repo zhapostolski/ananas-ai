@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   const role = ((session.user as { role?: Role }).role ?? "performance_marketer") as Role;
 
   if (!canAccessDepartment(role, "marketing")) {
-    redirect("/commercial");
+    redirect("/executive");
   }
 
   return (

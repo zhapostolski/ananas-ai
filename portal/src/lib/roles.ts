@@ -5,7 +5,7 @@ import type { Role, Department } from "@/types";
  */
 export const ROLE_DEPARTMENTS: Record<Role, Department[]> = {
   executive: ["marketing", "commercial", "finance", "logistics", "executive", "customer_experience"],
-  marketing_head: ["marketing", "commercial"],
+  marketing_head: ["marketing"],
   performance_marketer: ["marketing"],
   crm_specialist: ["marketing"],
   content_brand: ["marketing"],
@@ -29,10 +29,10 @@ export const ROLE_DEPARTMENTS: Record<Role, Department[]> = {
 export const MARKETING_MODULE_ACCESS: Partial<
   Record<Role, string[]>
 > = {
-  performance_marketer: ["performance", "brief"],
-  crm_specialist: ["crm", "brief"],
-  content_brand: ["influencers", "brief"],
-  marketing_ops: ["ops", "performance", "crm", "reputation", "brief"],
+  performance_marketer: ["performance", "overview"],
+  crm_specialist: ["crm", "overview"],
+  content_brand: ["influencers", "overview"],
+  marketing_ops: ["ops", "performance", "crm", "reputation", "overview"],
 };
 
 export function canAccessDepartment(role: Role, dept: Department): boolean {

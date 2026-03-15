@@ -2,7 +2,6 @@
 
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 
 export default function LoginPage() {
   return (
@@ -13,14 +12,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-2xl border bg-white p-8 shadow-sm">
         <div className="mb-8 text-center">
           <div className="mb-6 flex justify-center">
-            <Image
-              src="/ananas-logo.png"
-              alt="ānanas"
-              width={160}
-              height={60}
-              priority
-              className="object-contain"
-            />
+            <img src="/ananas-logo.png" alt="ananas" width={160} height={60} style={{ objectFit: "contain" }} />
           </div>
           <h1 className="text-lg font-semibold text-gray-900">AI Platform</h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -31,7 +23,7 @@ export default function LoginPage() {
         <Button
           className="w-full font-semibold"
           style={{ backgroundColor: "#FE5000", borderColor: "#FE5000" }}
-          onClick={() => signIn("microsoft-entra-id", { callbackUrl: "/marketing" })}
+          onClick={() => signIn("microsoft-entra-id", { callbackUrl: "/marketing/overview" })}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
             <rect x="1" y="1" width="9" height="9" fill="#f25022" />

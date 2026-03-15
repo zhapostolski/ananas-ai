@@ -39,3 +39,15 @@ export function timeAgo(iso: string): string {
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
 }
+
+/** Strip markdown formatting from agent output text before rendering in the UI. */
+export function stripMarkdown(text: string): string {
+  return text
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\*\*[\s\S]+?\*\*/g, (m) => m.slice(2, -2))
+    .replace(/\*[\s\S]+?\*/g, (m) => m.slice(1, -1))
+    .replace(/^-{3,}$/gm, "")
+    .replace(/^\s*[-*]\s+/gm, "  - ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
