@@ -393,4 +393,3 @@ Based on full GPT conversation audit:
 - **Berry HR** — noted as existing HR system (relevant for employer branding)
 - **Promo simulator metrics** — new metrics group
 - **App metrics** — Phase 2 metrics group added
-

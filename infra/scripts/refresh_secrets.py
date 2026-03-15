@@ -59,7 +59,10 @@ def deploy_google_credentials() -> None:
     """Write the Google service account JSON file to disk."""
     raw = fetch_secret_raw("google-sa-json")
     if not raw:
-        print("Warning: ananas-ai/google-sa-json not found, skipping credentials file", file=sys.stderr)
+        print(
+            "Warning: ananas-ai/google-sa-json not found, skipping credentials file",
+            file=sys.stderr,
+        )
         return
     os.makedirs(os.path.dirname(GA4_CREDENTIALS_PATH), exist_ok=True)
     with open(GA4_CREDENTIALS_PATH, "w") as f:

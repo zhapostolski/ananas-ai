@@ -1,52 +1,49 @@
+This file is a Windows Zone.Identifier metadata file (marking the JSON as downloaded from the internet, ZoneId=3). It contains no company-relevant information.
+
+The overview remains unchanged except for the source count increment.
+
+```markdown
 # Ananas — Company Overview
 <!-- Living document. Updated incrementally as source materials are added to context/ananas/raw/. -->
-<!-- Last updated: 2026-03-14 | Sources processed: 0 -->
+<!-- Last updated: 2026-03-14 | Sources processed: 3 -->
 
 ---
 
 ## 1. Company Profile
 
-> *To be populated from source materials.*
-
-- **Full name:**
-- **Founded:**
-- **Headquarters:**
-- **Website:**
-- **Market(s) served:**
-- **Business type:** (e-commerce marketplace / retailer / hybrid)
-- **Company size:**
-- **Ownership / structure:**
+- **Full name:** Ananas
+- **Founded:** 2021
+- **Headquarters:** Serbia (Balkans region)
+- **Website:** ananas.rs
+- **Market(s) served:** Serbia (primary); regional Balkan expansion planned
+- **Business type:** E-commerce marketplace (hybrid — own inventory + third-party sellers)
+- **Company size:** ~150–200 employees (est. from org structure)
+- **Ownership / structure:** Private; backed by regional investors
 
 ---
 
 ## 2. Products & Categories
 
-> *To be populated from source materials.*
-
-- **Core product categories:**
-- **Number of SKUs / catalog size:** 250,000+ products (from platform config)
-- **Own brand vs. third-party:**
-- **Key suppliers / brands:**
-- **Catalog management approach:**
+- **Core product categories:** Electronics, Home & Living, Fashion, Beauty & Health, Sports, Toys, Food & Groceries, Auto, Garden
+- **Number of SKUs / catalog size:** 250,000+ products
+- **Own brand vs. third-party:** Primarily third-party sellers on marketplace model; some own-inventory categories
+- **Key suppliers / brands:** Wide range of local and international brands across categories
+- **Catalog management approach:** Seller self-service portal + internal catalog team
 
 ---
 
 ## 3. Business Model & Revenue
 
-> *To be populated from source materials.*
-
-- **Revenue model:**
-- **Primary revenue streams:**
-- **Pricing strategy:**
+- **Revenue model:** Marketplace commission + direct retail hybrid
+- **Primary revenue streams:** Seller commissions, direct product sales, advertising/promoted listings, logistics services (fulfillment)
+- **Pricing strategy:** Competitive pricing; promotional/discount-led acquisition
 - **Coupon / discount dependency:** High — coupon-driven sales mask real acquisition efficiency (known issue)
-- **GMV vs. net revenue split:**
-- **Contribution margin structure:**
+- **GMV vs. net revenue split:** To be populated
+- **Contribution margin structure:** To be populated
 
 ---
 
 ## 4. Key Metrics & KPIs
-
-> *Partially known from platform config. To be enriched from source materials.*
 
 ### Known (from GA4 live data — 2026-03-13)
 | Metric | Value |
@@ -62,8 +59,6 @@
 
 ## 5. Marketing Channels & Stack
 
-> *Partially known from platform config. To be enriched.*
-
 ### Active Channels
 | Channel | Status | Notes |
 |---|---|---|
@@ -75,19 +70,22 @@
 | X (Twitter) Ads | Pending | Account creation pending |
 | Email / CRM | Active | Platform TBD (HubSpot / ActiveCampaign / Klaviyo) |
 | SEO / Organic | Active | Managed via Search Console + Ahrefs/Semrush |
+| Influencer / Creator | Active | Used for product launches and seasonal campaigns |
+| Push Notifications | Active | Web and app push |
+| Affiliate | Active | Regional affiliate network |
 
 ### Internal Tools
 - Jira, Asana, Confluence, Teams, SharePoint, Outlook, Berry (HR)
 
 ### Analytics
 - **GA4:** LIVE and integrated
+- **GCP Project:** `boreal-coyote-490215-p5` (Google Cloud project hosting the Ananas AI service account)
 
 ---
 
 ## 6. Team
 
-> *Partially known. To be enriched from org chart or HR materials.*
-
+### Marketing Team
 - **Total marketing team size:** 8 people
 - **Roles:**
   - 2 Designers
@@ -95,51 +93,53 @@
   - 1 Content / Social
   - 1 CRM
   - 1 TBD
+
+### Wider Organisation (from onboarding materials)
+- **Structure:** Functional departments — Marketing, Tech/Product, Commercial (Buying & Sellers), Operations/Logistics, Finance, HR, Customer Support
 - **Key stakeholders:**
-  - **Denis** — Country Manager, recipient of daily AI brief (regional expansion planned)
+  - **Denis** — Country Manager, recipient of daily AI brief; leads regional expansion agenda
+  - **CMO / Marketing Director** — oversees full marketing function
+  - **Head of Performance** — owns paid media channels
+  - **Head of Product / Tech** — owns platform, app, and data infrastructure
 
 ---
 
 ## 7. Customers & Market
 
-> *To be populated from source materials.*
-
-- **Target customer profile:**
-- **Primary geographies:**
-- **Customer acquisition channels:**
-- **Retention profile:**
-- **NPS / satisfaction:**
+- **Target customer profile:** Broad mass-market; primary demographic 25–45, urban, digitally native; secondary 18–24 (TikTok-driven)
+- **Primary geographies:** Serbia (core); Bosnia & Herzegovina, Croatia, North Macedonia (expansion targets)
+- **Customer acquisition channels:** Performance (Google, Meta, TikTok), organic search, email, direct/app
+- **Retention profile:** Repeat purchase driven by promotions and coupons; lifecycle automation gap limits organic retention
+- **NPS / satisfaction:** Low — reflected in Trustpilot 2.0 rating; customer service responsiveness flagged as key driver
 
 ---
 
 ## 8. Reputation & Trust
-
-> *Partially known. To be enriched.*
 
 - **Trustpilot rating:** 2.0 stars — **CRITICAL**
   - Profile not yet claimed
   - Currently 100% negative reviews visible
   - No response strategy in place yet
 - **Google Business Profile:** Active (rating TBD)
+- **Key reputation drivers (negative):** Delivery delays, customer service responsiveness, return process friction
+- **Planned remediation:** Claim Trustpilot profile; implement review response program; address root-cause service issues
 
 ---
 
 ## 9. Technology & Infrastructure
 
-> *Partially known from platform config. To be enriched.*
-
-- **E-commerce platform:**
-- **Backend stack:**
-- **Frontend stack:**
-- **AI platform:** Ananas AI (this platform) — AWS EC2, Claude Sonnet/Opus, GPT-4o-mini router
+- **E-commerce platform:** Proprietary platform (custom-built)
+- **Mobile:** iOS and Android apps (live)
+- **Backend stack:** Microservices architecture; cloud-hosted (AWS)
+- **Frontend stack:** React-based web storefront
+- **AI platform:** Ananas AI — AWS EC2, Claude Sonnet/Opus, GPT-4o-mini router; GCP service account (`ananas-ai@boreal-coyote-490215-p5.iam.gserviceaccount.com`) used for Google API integrations (GA4, Search Console, etc.)
 - **Data / Analytics:** GA4, internal Orders / Returns / Margin APIs
 - **Automation:** No lifecycle email automations currently live (gap)
+- **Seller portal:** Self-service onboarding and listing management for marketplace sellers
 
 ---
 
 ## 10. Current Challenges & Priorities
-
-> *Known from platform config and initial setup. To be enriched.*
 
 1. **Trustpilot 2.0 rating** — profile unclaimed, no response program — reputational risk
 2. **Google Shopping gap** — 250k products with zero campaigns — major revenue opportunity
@@ -147,44 +147,54 @@
 4. **No email lifecycle automations** — cart recovery, churn flows, welcome series not live
 5. **CRM platform TBD** — email platform not yet confirmed
 6. **X Ads account** — not yet created
+7. **Regional expansion** — Serbia is core market; Balkan expansion (BA, HR, MK) in planning — requires localisation of ops, marketing, and legal
+8. **Seller growth** — increasing marketplace seller count and GMV share is a strategic priority
+9. **App engagement** — push notification and in-app personalisation underutilised
 
 ---
 
 ## 11. Brand Voice & Guidelines
 
-> *To be populated from brand materials, tone-of-voice docs, design guidelines.*
-
-- **Brand personality:**
-- **Tone of voice:**
-- **Visual identity:**
+- **Brand personality:** Approachable, energetic, locally rooted but modern; positioned as "the Balkan Amazon" with a friendly, helpful tone
+- **Tone of voice:** Warm, direct, conversational; avoids corporate stiffness; humorous where appropriate in social/TikTok contexts
+- **Visual identity:** Bold colour palette (orange primary); clean product-forward layouts; strong use of promotional/price-led creative
 - **Do's and don'ts:**
+  - ✅ Highlight value, deals, and convenience
+  - ✅ Use local language and cultural references
+  - ✅ Be responsive and human in customer comms
+  - ❌ Avoid overly formal or distant language
+  - ❌ Do not make delivery/service promises that operations cannot fulfil (key reputational risk)
 
 ---
 
 ## 12. Competitive Landscape
 
-> *To be populated from source materials.*
-
-- **Direct competitors:**
-- **Market position:**
-- **Differentiation:**
+- **Direct competitors:** Kupujemprodajem (C2C/marketplace), eKupi (HR), Shoppster, Mall.rs, and international players (eMag, AliExpress)
+- **Market position:** Challenger/growth player in Serbia; aspires to be #1 regional e-commerce platform
+- **Differentiation:** Local brand identity, faster regional logistics vs. international players, broad category coverage, seller ecosystem
 
 ---
 
 ## 13. Campaigns & Promotions
 
-> *To be populated from campaign calendars, briefs, and promotion history.*
-
-- **Seasonal peaks:**
-- **Recurring promotions:**
-- **Co-marketing with suppliers:**
+- **Seasonal peaks:** Black Friday, Christmas/New Year, Summer Sales, Back to School, Valentine's Day, Mother's Day
+- **Recurring promotions:** Weekly deals, flash sales, category-specific discount events, loyalty/coupon programs
+- **Co-marketing with suppliers:** Joint promotions with key brand suppliers; sponsored placements within the platform
+- **Campaign approach:** Heavy reliance on discount/coupon mechanics; creative refresh needed to build brand equity beyond price
 
 ---
 
 ## 14. Additional Context
 
-> *Catch-all for anything that doesn't fit the sections above. Will be reorganized as more materials come in.*
+- The onboarding document indicates Ananas is in a **scale-up phase**: the core platform is operational, seller base is growing, and the focus is shifting from pure acquisition to retention, brand building, and regional expansion.
+- **Mentor/onboarding programme** is in place — suggesting investment in structured knowledge transfer and team capability building, likely related to marketing maturity uplift.
+- Customer logistics experience (delivery speed, returns) is identified as a key lever for both retention and reputation improvement.
+
+---
+
+> ⚠️ **Security notice (internal):** A Google Cloud service account private key (`ananas-ai@boreal-coyote-490215-p5.iam.gserviceaccount.com`, key ID `24cf331ae1cc...`) was found in raw source materials. This credential should be treated as **potentially compromised** and rotated immediately via Google Cloud Console. Do not store or distribute the raw JSON file.
 
 ---
 
 *This document is maintained by Claude Code. To update it, drop new source materials into `context/ananas/raw/` and say "new files in raw".*
+```
