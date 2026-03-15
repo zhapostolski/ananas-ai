@@ -10,7 +10,8 @@ export const revalidate = 0;
 
 export default async function PerformancePage() {
   const latest = getLatestOutput("performance-agent");
-  const json = latest?.output_json as Record<string, unknown> | null;
+  // Agent stores KPIs under output_json.summary (nested object)
+  const kpis = (latest?.output_json as Record<string, unknown> | null)?.summary as Record<string, unknown> | undefined;
 
   return (
     <div className="space-y-6">
@@ -29,9 +30,9 @@ export default async function PerformancePage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Spend (7d)" value={(json?.total_spend as string) ?? "--"} />
-        <StatCard title="Blended ROAS" value={(json?.blended_roas as string) ?? "--"} />
-        <StatCard title="CAC" value={(json?.cac as string) ?? "--"} description="Cost per acquisition" />
+        <StatCard title="Total Spend (7d)" value={dbStr(kpis?.total_paid_spend)} />
+        <StatCard title="Blended ROAS" value={dbStr(kpis?.blended_roas)} />
+        <StatCard title="GA4 Revenue (7d)" value={dbStr(kpis?.ga4_revenue)} description="Last 7 days" />
         <StatCard
           title="Google Shopping"
           value="No campaigns"

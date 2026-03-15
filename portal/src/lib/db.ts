@@ -50,11 +50,16 @@ export function getLatestOutput(agentName: string) {
     // leave empty
   }
 
+  // Extract text summary — only accept string values, never objects.
+  // Agent schema: performance/crm/reputation/ops use `headline`, brief uses `analysis`.
+  const candidates = [parsed.summary_text, parsed.analysis, parsed.brief_text, parsed.headline];
+  const summary_text = candidates.find((v) => typeof v === "string") ?? null;
+
   return {
     ...row,
     output_json: parsed,
     run_at: row.created_at,
-    summary_text: (parsed.summary_text ?? parsed.summary ?? null) as string | null,
+    summary_text,
     status: "ok",
   };
 }
