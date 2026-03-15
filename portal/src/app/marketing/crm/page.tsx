@@ -1,10 +1,11 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { KpiCard, KpiAlertBanner } from "@/components/dashboard/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getLatestOutput } from "@/lib/db";
+import { DateRangeFilter, type DateRange, resolveDateRange } from "@/components/dashboard/date-range-filter";
 import { formatDate } from "@/lib/utils";
-
-export const dynamic = "force-dynamic";
 
 function pctStatus(val: number | null | undefined, green: number, yellow: number, higherIsBetter = true) {
   if (val == null) return "neutral" as const;
@@ -15,9 +16,32 @@ function pctStatus(val: number | null | undefined, green: number, yellow: number
   }
 }
 
-export default async function CrmPage() {
-  const latest = getLatestOutput("crm-lifecycle-agent");
-  const json = latest?.output_json as Record<string, unknown> | null;
+interface AgentOutput {
+  run_at: string;
+  output_json: Record<string, unknown>;
+  summary_text: string | null;
+}
+
+export default function CrmPage() {
+  const [dateRange, setDateRange] = useState<DateRange>({ preset: "last_7d" });
+  const [latest, setLatest] = useState<AgentOutput | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    const { from, to } = resolveDateRange(dateRange);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const params = new URLSearchParams({ agent: "crm-lifecycle-agent" });
+    params.set("from", fmt(from));
+    params.set("to", fmt(to));
+
+    fetch("/api/marketing/agent-output?" + params)
+      .then((r) => r.json())
+      .then((d) => { setLatest(d.latest ?? null); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [dateRange]);
+
+  const json = latest?.output_json as Record<string, unknown> | null ?? null;
   const email = json?.email as Record<string, unknown> | undefined;
   const lifecycle = json?.lifecycle as Record<string, unknown> | undefined;
 
@@ -38,9 +62,12 @@ export default async function CrmPage() {
             Retention, email revenue, cart recovery, and churn signals
           </p>
         </div>
-        {!!latest?.run_at && (
-          <Badge variant="outline">{formatDate(latest.run_at as string)}</Badge>
-        )}
+        <div className="flex items-center gap-3">
+          {!!latest?.run_at && (
+            <Badge variant="outline">{formatDate(latest.run_at)}</Badge>
+          )}
+          <DateRangeFilter value={dateRange} onChange={setDateRange} />
+        </div>
       </div>
 
       {/* Critical gaps */}
@@ -127,7 +154,7 @@ export default async function CrmPage() {
             title="LTV:CAC Ratio"
             value={lifecycle?.ltv_cac_ratio != null ? (lifecycle.ltv_cac_ratio as number).toFixed(1) + ":1" : "--"}
             status={lifecycle?.ltv_cac_ratio != null ? pctStatus(lifecycle.ltv_cac_ratio as number, 3.0, 2.0) : "neutral"}
-            description="Target: ≥3.0:1"
+            description="Target: 3.0:1"
           />
           <KpiCard
             title="New vs Returning Split"
@@ -144,13 +171,15 @@ export default async function CrmPage() {
           <CardTitle className="text-sm font-medium">CRM Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          {latest?.summary_text ? (
+          {loading ? (
+            <p className="text-sm text-muted-foreground italic">Loading...</p>
+          ) : latest?.summary_text ? (
             <div className="whitespace-pre-wrap text-sm leading-relaxed">
-              {latest.summary_text as string}
+              {latest.summary_text}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground italic">
-              No data yet. CRM agent runs at 06:30 daily.
+              No data for this period. CRM agent runs at 06:30 daily.
             </p>
           )}
         </CardContent>

@@ -1,14 +1,38 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getLatestOutput } from "@/lib/db";
+import { DateRangeFilter, type DateRange, resolveDateRange } from "@/components/dashboard/date-range-filter";
 import { formatDate, dbStr } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+interface AgentOutput {
+  run_at: string;
+  output_json: Record<string, unknown>;
+  summary_text: string | null;
+}
 
-export default async function OpsPage() {
-  const latest = getLatestOutput("marketing-ops-agent");
-  const json = latest?.output_json as Record<string, unknown> | null;
+export default function OpsPage() {
+  const [dateRange, setDateRange] = useState<DateRange>({ preset: "last_7d" });
+  const [latest, setLatest] = useState<AgentOutput | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    const { from, to } = resolveDateRange(dateRange);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const params = new URLSearchParams({ agent: "marketing-ops-agent" });
+    params.set("from", fmt(from));
+    params.set("to", fmt(to));
+
+    fetch("/api/marketing/agent-output?" + params)
+      .then((r) => r.json())
+      .then((d) => { setLatest(d.latest ?? null); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [dateRange]);
+
+  const json = latest?.output_json as Record<string, unknown> | null ?? null;
   const tracking = json?.tracking_health as Record<string, unknown> | undefined;
   const sc = json?.search_console as Record<string, unknown> | undefined;
   const alerts = Array.isArray(json?.alerts) ? (json.alerts as string[]) : [];
@@ -19,16 +43,19 @@ export default async function OpsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Marketing Ops</h1>
           <p className="text-sm text-muted-foreground">
             Tracking health, KPI integrity, and campaign quality
           </p>
         </div>
-        {!!latest?.run_at && (
-          <Badge variant="outline">{formatDate(latest.run_at as string)}</Badge>
-        )}
+        <div className="flex items-center gap-3">
+          {!!latest?.run_at && (
+            <Badge variant="outline">{formatDate(latest.run_at)}</Badge>
+          )}
+          <DateRangeFilter value={dateRange} onChange={setDateRange} />
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -97,12 +124,14 @@ export default async function OpsPage() {
             <CardTitle className="text-sm font-medium">Full Report</CardTitle>
           </CardHeader>
           <CardContent>
-            {latest?.summary_text ? (
+            {loading ? (
+              <p className="text-sm text-muted-foreground italic">Loading...</p>
+            ) : latest?.summary_text ? (
               <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-                {latest.summary_text as string}
+                {latest.summary_text}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground italic">No data yet.</p>
+              <p className="text-sm text-muted-foreground italic">No data for this period.</p>
             )}
           </CardContent>
         </Card>

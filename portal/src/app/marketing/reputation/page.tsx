@@ -1,19 +1,43 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { KpiCard, KpiAlertBanner } from "@/components/dashboard/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getLatestOutput } from "@/lib/db";
+import { DateRangeFilter, type DateRange, resolveDateRange } from "@/components/dashboard/date-range-filter";
 import { formatDate } from "@/lib/utils";
-
-export const dynamic = "force-dynamic";
 
 function ratingStatus(val: number | undefined) {
   if (val == null) return "neutral" as const;
   return val >= 4.0 ? "green" : val >= 3.5 ? "yellow" : "red";
 }
 
-export default async function ReputationPage() {
-  const latest = getLatestOutput("reputation-agent");
-  const json = latest?.output_json as Record<string, unknown> | null;
+interface AgentOutput {
+  run_at: string;
+  output_json: Record<string, unknown>;
+  summary_text: string | null;
+}
+
+export default function ReputationPage() {
+  const [dateRange, setDateRange] = useState<DateRange>({ preset: "last_7d" });
+  const [latest, setLatest] = useState<AgentOutput | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    const { from, to } = resolveDateRange(dateRange);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const params = new URLSearchParams({ agent: "reputation-agent" });
+    params.set("from", fmt(from));
+    params.set("to", fmt(to));
+
+    fetch("/api/marketing/agent-output?" + params)
+      .then((r) => r.json())
+      .then((d) => { setLatest(d.latest ?? null); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [dateRange]);
+
+  const json = latest?.output_json as Record<string, unknown> | null ?? null;
   const tp = json?.trustpilot as Record<string, unknown> | undefined;
   const gb = json?.google_business as Record<string, unknown> | undefined;
 
@@ -35,9 +59,12 @@ export default async function ReputationPage() {
             Trustpilot, Google Business, sentiment, and response tracking
           </p>
         </div>
-        {!!latest?.run_at && (
-          <Badge variant="outline">{formatDate(latest.run_at as string)}</Badge>
-        )}
+        <div className="flex items-center gap-3">
+          {!!latest?.run_at && (
+            <Badge variant="outline">{formatDate(latest.run_at)}</Badge>
+          )}
+          <DateRangeFilter value={dateRange} onChange={setDateRange} />
+        </div>
       </div>
 
       {/* Critical reputation alerts */}
@@ -162,13 +189,15 @@ export default async function ReputationPage() {
           <CardTitle className="text-sm font-medium">Reputation Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          {latest?.summary_text ? (
+          {loading ? (
+            <p className="text-sm text-muted-foreground italic">Loading...</p>
+          ) : latest?.summary_text ? (
             <div className="whitespace-pre-wrap text-sm leading-relaxed">
-              {latest.summary_text as string}
+              {latest.summary_text}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground italic">
-              No data yet. Reputation agent runs at 07:00 daily.
+              No data for this period. Reputation agent runs at 07:00 daily.
             </p>
           )}
         </CardContent>
