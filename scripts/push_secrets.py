@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Push all confirmed credentials to AWS Secrets Manager.
+Push all credentials to AWS Secrets Manager.
 
 Run this once from your dev machine (with AWS credentials that have
 secretsmanager:PutSecretValue on ananas-ai/*).
@@ -15,8 +15,11 @@ Usage:
     # Push specific secret group
     python scripts/push_secrets.py --only google meta
 
-Secrets are structured to match what refresh_secrets.py expects.
-The service account JSON is pushed separately as a raw file (not JSON-encoded).
+    # Push Google service account JSON
+    python scripts/push_secrets.py --sa-json /path/to/google-sa.json
+
+Secrets are loaded from environment variables or a local .secrets.env file
+(gitignored). Copy .secrets.env.example to .secrets.env and fill in values.
 """
 
 from __future__ import annotations
@@ -26,61 +29,76 @@ import json
 import os
 import sys
 
-# ── Fill in values before running ────────────────────────────────────────────
-# Values with REPLACE_ME are not yet known. Do not run until all are filled.
 
-SECRETS: dict[str, dict | str] = {
-    "anthropic": {
-        "ANTHROPIC_API_KEY": "REPLACE_ME",
-    },
-    "openai": {
-        "OPENAI_API_KEY": "REPLACE_ME",
-    },
-    "google": {
-        "GA4_PROPERTY_ID": "374249510",
-        "GA4_CREDENTIALS": "/home/ubuntu/ananas-ai/secrets/google-sa.json",
-        "GOOGLE_ADS_DEVELOPER_TOKEN": "eXEYMMzTsTSxcJZUrXIiUA",
-        "GOOGLE_ADS_SERVICE_ACCOUNT_FILE": "/home/ubuntu/ananas-ai/secrets/google-sa.json",
-        "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "2135950127",
-        # Search MK, Display MK, Display MK alt, YouTube MK
-        "GOOGLE_ADS_CUSTOMER_IDS": "5832113533,9993867198,8508967046,4783821547",
-        "SEARCH_CONSOLE_SITE_URL": "https://ananas.mk/",
-    },
-    # google-sa-json: set via --sa-json flag pointing to the key file
-    "meta": {
-        "META_ACCESS_TOKEN": "REPLACE_ME",  # long-lived token from token exchange
-        "META_AD_ACCOUNT_ID": "act_174735152216843",
-        "META_APP_SECRET": "fca40d216af2067c34f8829aedb884b0",
-    },
-    "microsoft": {
-        "TEAMS_TENANT_ID": "c764ab62-ad43-4930-aa38-c9e23a990cb0",
-        "TEAMS_CLIENT_ID": "3d0a6854-b742-461d-b98a-420efd6fd8dd",
-        "TEAMS_CLIENT_SECRET": "REPLACE_ME",  # Azure app client secret
-        "AZURE_AD_CLIENT_ID": "3d0a6854-b742-461d-b98a-420efd6fd8dd",
-        "AZURE_AD_CLIENT_SECRET": "REPLACE_ME",  # same secret as TEAMS_CLIENT_SECRET
-        "AZURE_AD_TENANT_ID": "c764ab62-ad43-4930-aa38-c9e23a990cb0",
-        "AUTH_SECRET": "c6950886cf4bf002578d9e85616e05f901b686638688314a20ce82cc73145d46",
-        # Teams bot: register at portal.azure.com -> Azure Bot -> create new
-        # BOT_APP_ID  = Microsoft App ID from the bot registration
-        # BOT_APP_PASSWORD = client secret created under the bot's app registration
-        "BOT_APP_ID": "REPLACE_ME",
-        "BOT_APP_PASSWORD": "REPLACE_ME",
-    },
-    "database": {
-        "ANANAS_DB_PATH": "/home/ubuntu/ananas-ai/ananas_ai.db",
-    },
-    "ananas-internal": {
-        "ANANAS_API_CLIENT_ID": "REPLACE_ME",
-        "ANANAS_API_CLIENT_SECRET": "REPLACE_ME",
-        "ANANAS_API_BASE_URL": "https://api.ananas.rs",
-    },
-}
+def _e(key: str) -> str:
+    """Get env var or return REPLACE_ME placeholder."""
+    return os.environ.get(key, "REPLACE_ME")
+
+
+def _build_secrets() -> dict[str, dict | str]:
+    return {
+        "anthropic": {
+            "ANTHROPIC_API_KEY": _e("ANTHROPIC_API_KEY"),
+        },
+        "openai": {
+            "OPENAI_API_KEY": _e("OPENAI_API_KEY"),
+        },
+        "google": {
+            "GA4_PROPERTY_ID": "374249510",
+            "GA4_CREDENTIALS": "/home/ubuntu/ananas-ai/secrets/google-sa.json",
+            "GOOGLE_ADS_DEVELOPER_TOKEN": "eXEYMMzTsTSxcJZUrXIiUA",
+            "GOOGLE_ADS_SERVICE_ACCOUNT_FILE": "/home/ubuntu/ananas-ai/secrets/google-sa.json",
+            "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "2135950127",
+            "GOOGLE_ADS_CUSTOMER_IDS": "5832113533,9993867198,8508967046,4783821547",
+            "SEARCH_CONSOLE_SITE_URL": "https://ananas.mk/",
+        },
+        "meta": {
+            "META_ACCESS_TOKEN": _e("META_ACCESS_TOKEN"),
+            "META_AD_ACCOUNT_ID": "act_174735152216843",
+            "META_APP_SECRET": _e("META_APP_SECRET"),
+        },
+        "microsoft": {
+            "TEAMS_TENANT_ID": "c764ab62-ad43-4930-aa38-c9e23a990cb0",
+            "TEAMS_CLIENT_ID": "3d0a6854-b742-461d-b98a-420efd6fd8dd",
+            "TEAMS_CLIENT_SECRET": _e("TEAMS_CLIENT_SECRET"),
+            "AZURE_AD_CLIENT_ID": "3d0a6854-b742-461d-b98a-420efd6fd8dd",
+            "AZURE_AD_CLIENT_SECRET": _e("AZURE_AD_CLIENT_SECRET"),
+            "AZURE_AD_TENANT_ID": "c764ab62-ad43-4930-aa38-c9e23a990cb0",
+            "AUTH_SECRET": _e("AUTH_SECRET"),
+            "BOT_APP_ID": "1621ef5a-6a9d-44e3-b17e-33c74dda4acc",
+            "BOT_APP_PASSWORD": _e("BOT_APP_PASSWORD"),
+        },
+        "database": {
+            "ANANAS_DB_PATH": "/home/ubuntu/ananas-ai/ananas_ai.db",
+        },
+        "ananas-internal": {
+            "ANANAS_API_CLIENT_ID": _e("ANANAS_API_CLIENT_ID"),
+            "ANANAS_API_CLIENT_SECRET": _e("ANANAS_API_CLIENT_SECRET"),
+            "ANANAS_API_BASE_URL": "https://api.ananas.rs",
+        },
+    }
+
 
 REGION = os.environ.get("AWS_REGION", "eu-central-1")
 
 
+def _load_env_file(path: str) -> None:
+    """Load key=value pairs from a .env file into os.environ."""
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                k, _, v = line.partition("=")
+                v = v.strip().strip('"').strip("'")
+                os.environ.setdefault(k.strip(), v)
+
+
 def _put(client, secret_id: str, value: str, dry_run: bool) -> None:
-    print(f"  → {secret_id}")
+    print(f"  -> {secret_id}")
     if dry_run:
         preview = value[:80] + "..." if len(value) > 80 else value
         print(f"    (dry run) value: {preview}")
@@ -89,6 +107,9 @@ def _put(client, secret_id: str, value: str, dry_run: bool) -> None:
 
 
 def main() -> None:
+    _load_env_file(os.path.join(os.path.dirname(__file__), "..", ".secrets.env"))
+    SECRETS = _build_secrets()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--only", nargs="+", metavar="GROUP", help="Only push these groups")
@@ -99,7 +120,6 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Validate no REPLACE_ME in pushed groups
     groups_to_push = args.only or list(SECRETS.keys())
     for group in groups_to_push:
         if group not in SECRETS:
@@ -116,7 +136,6 @@ def main() -> None:
     import boto3  # noqa: PLC0415
 
     client = boto3.client("secretsmanager", region_name=REGION)
-
     print(f"Pushing to AWS Secrets Manager ({REGION})...")
 
     for group in groups_to_push:
@@ -131,7 +150,7 @@ def main() -> None:
                 sa_content = f.read()
             _put(client, "ananas-ai/google-sa-json", sa_content, args.dry_run)
         elif not args.only:
-            print("  → ananas-ai/google-sa-json (SKIPPED -- use --sa-json /path/to/key.json)")
+            print("  -> ananas-ai/google-sa-json (SKIPPED -- use --sa-json /path/to/key.json)")
 
     print("Done.")
 

@@ -22,7 +22,7 @@ import sys
 import requests
 
 GRAPH_BASE = "https://graph.facebook.com/v19.0"
-APP_ID = "1282302996494665"
+APP_ID = "925959596694676"
 
 
 def refresh_token(current_token: str, app_secret: str) -> str:
