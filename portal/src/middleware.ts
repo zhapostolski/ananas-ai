@@ -6,7 +6,7 @@ import type { Role } from "@/types";
 
 const { auth } = NextAuth(authConfig);
 
-const PUBLIC_PATHS = ["/login", "/api/auth"];
+const PUBLIC_PATHS = ["/login", "/api/auth"]; // /api/auth covers /api/auth/clear too
 
 const PROTECTED_ROUTES: Array<{
   pattern: RegExp;
