@@ -96,6 +96,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (existing) {
             auditRoleChange(user.email, existing.role, pendingInvite.role, "system", "Applied from invite");
           }
+          updatePortalUser(user.email, { role: pendingInvite.role });
           markInviteUsed(user.email);
         }
 
