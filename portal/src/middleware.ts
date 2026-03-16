@@ -11,14 +11,16 @@ const PUBLIC_PATHS = ["/login", "/api/auth"]; // /api/auth covers /api/auth/clea
 const PROTECTED_ROUTES: Array<{
   pattern: RegExp;
   requiredRoles: Role[];
+  fallback?: string;
 }> = [
   {
     pattern: /^\/admin/,
-    requiredRoles: ["executive", "marketing_head"],
+    requiredRoles: ["super_admin", "executive", "marketing_head"],
   },
   {
     pattern: /^\/finance/,
     requiredRoles: [
+      "super_admin",
       "executive",
       "finance_head",
       "finance_team",
@@ -28,6 +30,7 @@ const PROTECTED_ROUTES: Array<{
   {
     pattern: /^\/logistics/,
     requiredRoles: [
+      "super_admin",
       "executive",
       "logistics_head",
       "logistics_team",
@@ -37,6 +40,7 @@ const PROTECTED_ROUTES: Array<{
   {
     pattern: /^\/commercial/,
     requiredRoles: [
+      "super_admin",
       "executive",
       "commercial_head",
       "commercial_3p",
@@ -48,6 +52,7 @@ const PROTECTED_ROUTES: Array<{
   {
     pattern: /^\/executive/,
     requiredRoles: [
+      "super_admin",
       "executive",
       "marketing_head",
       "finance_head",
@@ -57,6 +62,7 @@ const PROTECTED_ROUTES: Array<{
   {
     pattern: /^\/marketing/,
     requiredRoles: [
+      "super_admin",
       "executive",
       "marketing_head",
       "performance_marketer",
@@ -70,7 +76,11 @@ const PROTECTED_ROUTES: Array<{
   },
   {
     pattern: /^\/customer-experience/,
-    requiredRoles: ["executive", "cx_head", "cx_team", "marketing_head"],
+    requiredRoles: ["super_admin", "executive", "cx_head", "cx_team", "marketing_head"],
+  },
+  {
+    pattern: /^\/hr/,
+    requiredRoles: ["super_admin", "executive", "hr_head", "hr"],
   },
 ];
 
@@ -125,7 +135,7 @@ export default auth((req: NextRequest & { auth: unknown }) => {
   for (const route of PROTECTED_ROUTES) {
     if (route.pattern.test(pathname)) {
       if (!route.requiredRoles.includes(role)) {
-        return NextResponse.redirect(new URL("/marketing/overview", req.url));
+        return NextResponse.redirect(new URL("/login", req.url));
       }
       break;
     }
