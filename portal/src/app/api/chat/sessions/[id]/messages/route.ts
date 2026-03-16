@@ -8,6 +8,7 @@ import {
   updateChatSessionModel,
   truncateChatMessagesFrom,
 } from "@/lib/db-portal";
+import { getLatestOutput } from "@/lib/db";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import { randomUUID } from "crypto";
@@ -23,24 +24,103 @@ const CLAUDE_MODELS = ["claude-sonnet-4-6", "claude-opus-4-6", "claude-haiku-4-5
 const GPT_MODELS = ["gpt-4o", "gpt-4o-mini"] as const;
 type SupportedModel = (typeof CLAUDE_MODELS)[number] | (typeof GPT_MODELS)[number];
 
-const SYSTEM_PROMPT = `You are the Ananas AI assistant — an internal intelligence tool for Ananas, a Macedonian e-commerce marketplace.
+function fmt(v: unknown, suffix = ""): string {
+  if (v == null) return "n/a";
+  return String(v) + suffix;
+}
 
-You have deep context about the Ananas marketing team:
-- Team: 8 people (2 designers, 3 performance marketers, 1 content/social, 1 CRM specialist, 1 TBD)
-- Key metrics tracked: GA4 sessions, revenue (GMV), ROAS, POAS, cart abandonment rate, Trustpilot rating (currently 2.0 — critical issue), repeat purchase rate
+function buildSystemPrompt(): string {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Load latest outputs from all 5 agents
+  const perf = getLatestOutput("performance-agent");
+  const crm = getLatestOutput("crm-lifecycle-agent");
+  const rep = getLatestOutput("reputation-agent");
+  const ops = getLatestOutput("marketing-ops-agent");
+  const brief = getLatestOutput("cross-channel-brief-agent");
+
+  const perfJson = (perf?.output_json ?? {}) as Record<string, unknown>;
+  const crmJson = (crm?.output_json ?? {}) as Record<string, unknown>;
+  const repJson = (rep?.output_json ?? {}) as Record<string, unknown>;
+  const opsJson = (ops?.output_json ?? {}) as Record<string, unknown>;
+  const briefJson = (brief?.output_json ?? {}) as Record<string, unknown>;
+
+  const perfSummary = (perfJson.summary ?? {}) as Record<string, unknown>;
+  const ga4 = (perfJson.ga4 ?? {}) as Record<string, unknown>;
+  const googleAds = (perfJson.google_ads ?? {}) as Record<string, unknown>;
+  const metaAds = (perfJson.meta_ads ?? {}) as Record<string, unknown>;
+  const emailKpi = ((crmJson.email ?? {}) as Record<string, unknown>);
+  const lifecycle = ((crmJson.lifecycle ?? {}) as Record<string, unknown>);
+  const tp = ((repJson.trustpilot ?? {}) as Record<string, unknown>);
+  const gb = ((repJson.google_business ?? {}) as Record<string, unknown>);
+  const tracking = ((opsJson.tracking_health ?? {}) as Record<string, unknown>);
+
+  const perfRunAt = perf?.run_at ? String(perf.run_at).slice(0, 16) : "no data";
+  const crmRunAt = crm?.run_at ? String(crm.run_at).slice(0, 16) : "no data";
+  const repRunAt = rep?.run_at ? String(rep.run_at).slice(0, 16) : "no data";
+
+  return `You are the Ananas AI assistant — an internal intelligence tool for Ananas, a Macedonian e-commerce marketplace.
+
+Today's date: ${today}
+
+## Team & Stack
+- Marketing team: 8 people (2 designers, 3 performance marketers, 1 content/social, 1 CRM specialist, 1 TBD)
 - Ad platforms: Google Ads (4 accounts, 14 campaigns), Meta Ads (20 campaigns across Facebook/Instagram)
-- Other integrations: Trustpilot, Google Business Reviews, email CRM
-- Business context: 250k+ active products, coupon-dependent sales (coupons drive a large portion of revenue — masks true acquisition efficiency), no email lifecycle automations currently live (no cart recovery, no churn flows), Trustpilot profile not yet claimed
 - Internal tools: Jira, Asana, Confluence, Microsoft Teams, SharePoint, Outlook, Berry (HR)
-- GA4 (live): ~464k sessions/month, ~215k users/month, ~€13.4M revenue/month
+- Business context: 250k+ active products, coupon-dependent sales (coupons mask true acquisition efficiency), no email lifecycle automations live (no cart recovery, no churn flows), Trustpilot profile not yet claimed
 
-When answering questions about marketing performance, campaigns, or metrics:
-- Be specific, data-driven, and actionable
-- When date ranges are requested (e.g. "last week", "yesterday", "March"), acknowledge the range clearly and answer based on what you know or explain what data would be needed
-- Relate advice to Ananas's specific situation (coupon dependency, reputation issues, missing Google Shopping, no lifecycle automations)
-- Keep answers concise and direct — avoid filler
+## Live Agent Data
 
-Today's date context: use it for relative date calculations when users mention "yesterday", "last week", "this month", etc.`;
+### Performance (last run: ${perfRunAt})
+- GA4 Revenue: ${fmt(ga4.revenue ?? perfSummary.ga4_revenue, " €")}
+- GA4 Sessions: ${fmt(ga4.sessions ?? perfSummary.ga4_sessions)}
+- GA4 Users: ${fmt(ga4.users)}
+- Conversion Rate: ${fmt(ga4.conversion_rate_pct ?? perfSummary.ga4_conversion_rate_pct, "%")}
+- Total Paid Spend: ${fmt(perfSummary.total_paid_spend, " €")}
+- Blended ROAS: ${fmt(perfSummary.blended_roas, "x")}
+- Google Ads Spend: ${fmt(googleAds.total_spend, " €")} | Impressions: ${fmt(googleAds.total_impressions)} | Clicks: ${fmt(googleAds.total_clicks)} | CPC: ${fmt(googleAds.avg_cpc, " €")}
+- Meta Ads Spend: ${fmt(metaAds.total_spend, " €")} | Impressions: ${fmt(metaAds.total_impressions)} | Clicks: ${fmt(metaAds.total_clicks)} | CPC: ${fmt(metaAds.avg_cpc, " €")} | CPM: ${fmt(metaAds.avg_cpm, " €")}
+- Meta ROAS: ${fmt(metaAds.roas, "x")} | Google ROAS: ${fmt(googleAds.roas, "x")}
+${perf?.summary_text ? `\nPerformance summary: ${perf.summary_text}` : ""}
+
+### CRM & Lifecycle (last run: ${crmRunAt})
+- Cart Abandonment Rate: ${fmt(emailKpi.cart_abandonment_rate, "%")}
+- Cart Recovery Rate: ${fmt(emailKpi.cart_recovery_rate, "%")} (0% — no automation live)
+- Email Open Rate: ${fmt(emailKpi.open_rate, "%")}
+- Revenue per Send: ${fmt(emailKpi.revenue_per_send, " €")}
+- Active Subscribers (90d): ${fmt(emailKpi.active_subscribers)}
+- Repeat Purchase Rate: ${fmt(lifecycle.repeat_purchase_rate, "%")}
+- Churn Rate (30d): ${fmt(lifecycle.churn_rate_30d, "%")}
+- LTV:CAC Ratio: ${fmt(lifecycle.ltv_cac_ratio, ":1")}
+- AOV: ${fmt(lifecycle.aov, " €")}
+${crm?.summary_text ? `\nCRM summary: ${crm.summary_text}` : ""}
+
+### Reputation (last run: ${repRunAt})
+- Trustpilot Rating: ${fmt(tp.average_rating, " / 5.0")} (CRITICAL — target >4.0)
+- Trustpilot Reviews: ${fmt(tp.review_count)} | Response Rate: ${fmt(tp.response_rate, "%")} | Profile Claimed: ${tp.claimed ? "Yes" : "No — action required"}
+- Google Business Rating: ${fmt(gb.average_rating, " / 5.0")} | Reviews: ${fmt(gb.total_reviews)} | Unanswered: ${fmt(gb.unanswered_reviews)}
+${rep?.summary_text ? `\nReputation summary: ${rep.summary_text}` : ""}
+
+### Marketing Ops
+- Tracking Status: ${fmt(tracking.status)}
+- GA4 Sessions (today): ${fmt(tracking.ga4_sessions)}
+${ops?.summary_text ? `\nOps summary: ${ops.summary_text}` : ""}
+
+### Cross-Channel Brief
+${brief?.summary_text ?? briefJson.analysis ?? "No brief available yet."}
+
+## Instructions
+- Answer based on the live data above — do not say you lack access to Meta Ads, GA4, or other data shown here
+- Be specific and data-driven; cite actual numbers from the data above
+- If a metric shows "n/a", say the agent hasn't run yet or data wasn't collected in the last run
+- Relate insights to Ananas's specific challenges: coupon dependency, Trustpilot 2.0 rating, no Google Shopping, no lifecycle automations
+- Keep answers concise and direct
+- Do not use markdown formatting (no **, ##, *, or backticks). Write in plain text with natural line breaks. Use short paragraphs. For lists, use plain dashes or numbers.`;
+}
+
+function isValidModel(m: string): m is SupportedModel {
+  return ([...CLAUDE_MODELS, ...GPT_MODELS] as string[]).includes(m);
+}
 
 function isValidModel(m: string): m is SupportedModel {
   return ([...CLAUDE_MODELS, ...GPT_MODELS] as string[]).includes(m);
@@ -115,6 +195,7 @@ export async function POST(
       let inputTokens = 0;
       let outputTokens = 0;
 
+      const systemPrompt = buildSystemPrompt();
       const isGpt = (GPT_MODELS as readonly string[]).includes(requestedModel);
 
       if (isGpt) {
@@ -127,7 +208,7 @@ export async function POST(
           model: requestedModel,
           stream: true,
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: systemPrompt },
             ...gptMessages,
           ],
         });
@@ -162,7 +243,7 @@ export async function POST(
         const claudeStream = getAnthropic().messages.stream({
           model: requestedModel,
           max_tokens: 4096,
-          system: SYSTEM_PROMPT,
+          system: systemPrompt,
           messages: anthropicMessages,
         });
 
