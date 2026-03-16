@@ -3,6 +3,19 @@ import { auth } from "@/lib/auth";
 import { getLatestOutput, getPerformanceHistory } from "@/lib/db";
 
 function daysForPreset(preset: string | null): number {
+  if (!preset) return 7;
+
+  // Custom range: "YYYY-MM-DD,YYYY-MM-DD"
+  if (preset.includes(",")) {
+    const [from, to] = preset.split(",");
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
+      return Math.max(1, Math.ceil((toDate.getTime() - fromDate.getTime()) / 86400000) + 1);
+    }
+    return 7;
+  }
+
   switch (preset) {
     case "today":
     case "yesterday":
@@ -15,7 +28,7 @@ function daysForPreset(preset: string | null): number {
       return 30;
     case "mtd": {
       const now = new Date();
-      return now.getDate(); // day of month = days since start of month
+      return now.getDate();
     }
     case "last_month":
       return 30;

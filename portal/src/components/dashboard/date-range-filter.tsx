@@ -41,7 +41,7 @@ function presetLabel(range: DateRange): string {
   return PRESETS.find((p) => p.value === range.preset)?.label ?? range.preset;
 }
 
-const QUICK_PRESETS: DatePreset[] = ["today", "yesterday", "last_7d", "last_week", "mtd", "last_month"];
+const QUICK_PRESETS: DatePreset[] = ["last_7d", "last_week", "mtd", "last_month"];
 
 interface DateRangeFilterProps {
   value: DateRange;

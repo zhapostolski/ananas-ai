@@ -82,7 +82,7 @@ export default function PerformancePage() {
       : dateRange.preset;
 
     Promise.all([
-      fetch("/api/marketing/performance?range=" + dateRange.preset).then((r) => r.json()),
+      fetch("/api/marketing/performance?range=" + rangeParam).then((r) => r.json()),
       fetch("/api/marketing/ga4?range=" + rangeParam).then((r) => r.json()),
     ]).then(([perf, ga4data]) => {
       setData(perf);
