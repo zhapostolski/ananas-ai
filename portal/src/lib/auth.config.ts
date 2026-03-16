@@ -12,6 +12,7 @@ const EMAIL_ROLE_MAP: Record<string, Role> = {
 
 export const authConfig: NextAuthConfig = {
   trustHost: true,
+  useSecureCookies: false, // self-signed cert on IP — remove when ai.ananas.mk + Let's Encrypt is live
   providers: [
     MicrosoftEntraID({
       clientId: process.env.AZURE_AD_CLIENT_ID!,
