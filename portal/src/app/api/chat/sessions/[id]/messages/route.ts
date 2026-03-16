@@ -122,10 +122,6 @@ function isValidModel(m: string): m is SupportedModel {
   return ([...CLAUDE_MODELS, ...GPT_MODELS] as string[]).includes(m);
 }
 
-function isValidModel(m: string): m is SupportedModel {
-  return ([...CLAUDE_MODELS, ...GPT_MODELS] as string[]).includes(m);
-}
-
 // Truncate messages from a given message ID (for edit/branch)
 export async function DELETE(
   request: Request,
