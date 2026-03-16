@@ -74,10 +74,42 @@ const PROTECTED_ROUTES: Array<{
   },
 ];
 
+// All cookie names NextAuth may use across config changes
+const AUTH_COOKIE_NAMES = [
+  "authjs.session-token",
+  "__Secure-authjs.session-token",
+  "authjs.callback-url",
+  "__Secure-authjs.callback-url",
+  "authjs.csrf-token",
+  "__Host-authjs.csrf-token",
+  "next-auth.session-token",
+  "next-auth.csrf-token",
+  "next-auth.callback-url",
+];
+
 export default auth((req: NextRequest & { auth: unknown }) => {
   const pathname = req.nextUrl.pathname;
 
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+
+  // If a session cookie exists but auth() returned null it means the JWT is
+  // corrupt / from a previous secret. Clear every auth cookie and send the
+  // user to /login with a clean slate — this breaks the redirect loop.
+  const hasSessionCookie =
+    req.cookies.has("authjs.session-token") ||
+    req.cookies.has("__Secure-authjs.session-token") ||
+    req.cookies.has("next-auth.session-token");
+
+  if (!req.auth && hasSessionCookie) {
+    const res = NextResponse.redirect(new URL("/login", req.url));
+    for (const name of AUTH_COOKIE_NAMES) {
+      res.cookies.delete(name);
+      // Also delete with path/domain variants
+      res.cookies.set({ name, value: "", maxAge: 0, path: "/" });
+    }
+    return res;
+  }
+
   if (!req.auth && !isPublic) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
