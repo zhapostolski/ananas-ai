@@ -12,7 +12,35 @@ const EMAIL_ROLE_MAP: Record<string, Role> = {
 
 export const authConfig: NextAuthConfig = {
   trustHost: true,
-  useSecureCookies: false, // self-signed cert on IP — remove when ai.ananas.mk + Let's Encrypt is live
+  // Explicit cookie config: use __Secure- prefix (works on HTTPS incl. self-signed IP certs).
+  // Avoids next-auth beta HKDF salt mismatch that occurs with useSecureCookies:false.
+  // Switch to __Host- prefix (remove this override) when running on ai.ananas.mk with real cert.
+  cookies: {
+    sessionToken: {
+      name: "__Secure-authjs.session-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: true },
+    },
+    callbackUrl: {
+      name: "__Secure-authjs.callback-url",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: true },
+    },
+    csrfToken: {
+      name: "authjs.csrf-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/" },
+    },
+    pkceCodeVerifier: {
+      name: "__Secure-authjs.pkce.code_verifier",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: true },
+    },
+    state: {
+      name: "__Secure-authjs.state",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: true },
+    },
+    nonce: {
+      name: "__Secure-authjs.nonce",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: true },
+    },
+  },
   providers: [
     MicrosoftEntraID({
       clientId: process.env.AZURE_AD_CLIENT_ID!,

@@ -84,22 +84,31 @@ export default auth((req: NextRequest & { auth: unknown }) => {
   // The cookie names and Secure attributes must match exactly so the browser
   // actually deletes them.
   const hasSessionCookie =
-    req.cookies.has("authjs.session-token") ||
     req.cookies.has("__Secure-authjs.session-token") ||
+    req.cookies.has("authjs.session-token") ||
     req.cookies.has("next-auth.session-token");
 
   if (!req.auth && hasSessionCookie && !isPublic) {
     const res = NextResponse.redirect(new URL("/login", req.url));
-    // Plain cookies (no Secure flag)
-    for (const name of ["authjs.session-token", "authjs.callback-url", "authjs.csrf-token", "next-auth.session-token", "next-auth.csrf-token", "next-auth.callback-url"]) {
-      res.cookies.set({ name, value: "", maxAge: 0, path: "/", httpOnly: true, sameSite: "lax" });
-    }
-    // Secure-prefixed cookies
-    for (const name of ["__Secure-authjs.session-token", "__Secure-authjs.callback-url"]) {
+    // __Secure- prefixed cookies (current config)
+    for (const name of [
+      "__Secure-authjs.session-token",
+      "__Secure-authjs.callback-url",
+      "__Secure-authjs.pkce.code_verifier",
+      "__Secure-authjs.state",
+      "__Secure-authjs.nonce",
+    ]) {
       res.cookies.set({ name, value: "", maxAge: 0, path: "/", httpOnly: true, secure: true, sameSite: "lax" });
     }
-    // __Host-prefixed cookie (must have secure, httpOnly, path=/, no domain)
+    // Plain cookies (current config: csrf is unprefixed)
+    for (const name of ["authjs.csrf-token", "authjs.session-token", "authjs.callback-url"]) {
+      res.cookies.set({ name, value: "", maxAge: 0, path: "/", httpOnly: true, sameSite: "lax" });
+    }
+    // Legacy prefixed cookies (clean up any lingering old-format cookies)
     res.cookies.set({ name: "__Host-authjs.csrf-token", value: "", maxAge: 0, path: "/", httpOnly: true, secure: true, sameSite: "lax" });
+    for (const name of ["next-auth.session-token", "next-auth.csrf-token", "next-auth.callback-url"]) {
+      res.cookies.set({ name, value: "", maxAge: 0, path: "/", httpOnly: true, sameSite: "lax" });
+    }
     return res;
   }
 

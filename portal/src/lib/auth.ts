@@ -24,29 +24,38 @@ interface GraphProfile {
 }
 
 async function fetchGraphProfile(accessToken: string): Promise<GraphProfile | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
     const res = await fetch(
       "https://graph.microsoft.com/v1.0/me?$select=displayName,jobTitle,department,mobilePhone,officeLocation,birthday",
-      { headers: { Authorization: `Bearer ${accessToken}` } }
+      { headers: { Authorization: `Bearer ${accessToken}` }, signal: controller.signal }
     );
+    clearTimeout(timeout);
     if (!res.ok) return null;
     return await res.json() as GraphProfile;
   } catch {
+    clearTimeout(timeout);
     return null;
   }
 }
 
 async function fetchUserPhoto(accessToken: string): Promise<string | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
     const res = await fetch("https://graph.microsoft.com/v1.0/me/photo/$value", {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     if (!res.ok) return null;
     const buffer = await res.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
     const contentType = res.headers.get("content-type") ?? "image/jpeg";
     return `data:${contentType};base64,${base64}`;
   } catch {
+    clearTimeout(timeout);
     return null;
   }
 }
