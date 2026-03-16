@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS portal_users (
   preferences_json      TEXT    NOT NULL DEFAULT '{"theme":"system","density":"default"}',
   favorite_agents_json  TEXT    NOT NULL DEFAULT '[]',
   notifications_json    TEXT    NOT NULL DEFAULT '{}',
+  chat_enabled          INTEGER NOT NULL DEFAULT 1,
   last_seen_at          TEXT,
   created_at            TEXT    NOT NULL DEFAULT (datetime('now')),
   updated_at            TEXT    NOT NULL DEFAULT (datetime('now'))

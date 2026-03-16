@@ -33,6 +33,7 @@ export default async function AdminLayout({
         userEmail={session.user.email}
         avatarColor={avatarColor}
         avatarUrl={avatarUrl}
+        chatEnabled={!!(portalUser?.chat_enabled)}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header

@@ -45,7 +45,7 @@ function runMigrations(db: Database.Database): void {
   addIfMissing("birth_date", "TEXT");
   addIfMissing("hire_date", "TEXT");
   addIfMissing("berry_employee_id", "TEXT");
-  addIfMissing("chat_enabled", "INTEGER NOT NULL DEFAULT 0");
+  addIfMissing("chat_enabled", "INTEGER NOT NULL DEFAULT 1");
 }
 
 export interface PortalUser {
@@ -395,6 +395,20 @@ export function updateChatSessionTitle(id: string, title: string): void {
   getPortalDb()
     .prepare("UPDATE chat_sessions SET title = ?, updated_at = datetime('now') WHERE id = ?")
     .run(title, id);
+}
+
+export function updateChatSessionModel(id: string, model: string): void {
+  getPortalDb()
+    .prepare("UPDATE chat_sessions SET model = ? WHERE id = ?")
+    .run(model, id);
+}
+
+// Deletes all messages in a session at or after the given message's created_at timestamp
+export function truncateChatMessagesFrom(sessionId: string, fromMessageId: string): void {
+  const db = getPortalDb();
+  const msg = db.prepare("SELECT created_at FROM chat_messages WHERE id = ?").get(fromMessageId) as { created_at: string } | undefined;
+  if (!msg) return;
+  db.prepare("DELETE FROM chat_messages WHERE session_id = ? AND created_at >= ?").run(sessionId, msg.created_at);
 }
 
 export function deleteChatSession(id: string, email: string): void {

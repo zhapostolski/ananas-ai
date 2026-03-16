@@ -19,6 +19,7 @@ import {
   Shield,
   UserCircle,
   CalendarDays,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -103,9 +104,10 @@ interface SidebarProps {
   userEmail?: string | null;
   avatarColor?: string;
   avatarUrl?: string | null;
+  chatEnabled?: boolean;
 }
 
-export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", avatarUrl }: SidebarProps) {
+export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", avatarUrl, chatEnabled }: SidebarProps) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     marketing: pathname.startsWith("/marketing"),
@@ -272,6 +274,22 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
               </div>
             )}
           </div>
+        )}
+
+        {chatEnabled && (
+          <Link
+            href="/chat"
+            className={cn(
+              "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+              pathname.startsWith("/chat")
+                ? "text-white"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            )}
+            style={pathname.startsWith("/chat") ? { backgroundColor: "#FE5000" } : {}}
+          >
+            <MessageSquare className="h-4 w-4" />
+            AI Chat
+          </Link>
         )}
 
         <Link

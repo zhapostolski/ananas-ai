@@ -37,7 +37,6 @@ async function sendInviteEmail(
   toEmail: string,
   role: Role,
   invitedBy: string,
-  userAccessToken?: string
 ): Promise<{ sent: boolean; from: string }> {
   const roleLabel = ROLE_LABELS[role] ?? role;
   const portalUrl = process.env.PORTAL_URL ?? "https://ai.ananas.mk";
@@ -72,14 +71,6 @@ async function sendInviteEmail(
     }
   } catch { /* fall through */ }
 
-  // Try 2: delegated token from the inviting user's session
-  if (userAccessToken) {
-    try {
-      const ok = await sendViaGraph(userAccessToken, invitedBy, toEmail, subject, html);
-      if (ok) return { sent: true, from: invitedBy };
-    } catch { /* fall through */ }
-  }
-
   return { sent: false, from: "" };
 }
 
@@ -100,12 +91,10 @@ export async function POST(request: Request) {
 
   createRoleInvite(email, role, session.user.email);
 
-  const userAccessToken = (session.user as { accessToken?: string }).accessToken;
   const { sent, from } = await sendInviteEmail(
     email,
     role,
     session.user.email,
-    userAccessToken
   ).catch(() => ({ sent: false, from: "" }));
 
   return NextResponse.json({ ok: true, emailSent: sent, emailFrom: from });

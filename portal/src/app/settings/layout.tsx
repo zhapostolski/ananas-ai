@@ -25,6 +25,7 @@ export default async function SettingsLayout({
         userName={session.user.name}
         userEmail={session.user.email}
         avatarColor={avatarColor}
+        chatEnabled={!!(portalUser?.chat_enabled)}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header

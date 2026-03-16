@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getChatSession, deleteChatSession, getChatMessages } from "@/lib/db-portal";
+import { getChatSession, deleteChatSession, getChatMessages, updateChatSessionModel } from "@/lib/db-portal";
 
 export async function GET(
   _request: Request,
@@ -16,6 +16,23 @@ export async function GET(
 
   const messages = getChatMessages(id);
   return NextResponse.json({ session: chatSession, messages });
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  const email = (session?.user as { email?: string } | undefined)?.email;
+  if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+  const chatSession = getChatSession(id, email);
+  if (!chatSession) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const body = await request.json().catch(() => ({})) as { model?: string };
+  if (body.model) updateChatSessionModel(id, body.model);
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
