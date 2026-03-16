@@ -4,8 +4,17 @@ import type { Role } from "@/types";
 
 async function resolveRoleFromDb(email: string): Promise<Role> {
   try {
-    const { getPortalUser } = await import("@/lib/db-portal");
-    const user = getPortalUser(email);
+    const { getOrCreatePortalUser, getPendingInvite, updatePortalUser, markInviteUsed, auditRoleChange } = await import("@/lib/db-portal");
+    // Ensure the user row exists so invites and role reads always have a target
+    const user = getOrCreatePortalUser(email);
+    // Apply a pending invite immediately so the role is correct in this JWT
+    const pendingInvite = getPendingInvite(email);
+    if (pendingInvite) {
+      auditRoleChange(email, user.role, pendingInvite.role, "system", "Applied from invite");
+      updatePortalUser(email, { role: pendingInvite.role as Role });
+      markInviteUsed(email);
+      return pendingInvite.role as Role;
+    }
     if (user?.role) return user.role as Role;
   } catch {
     // DB unavailable -- fall through to authConfig default
@@ -83,22 +92,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account }) {
       if (!user.email) return;
       try {
-        const { getOrCreatePortalUser, touchLastSeen, updatePortalUser, getPendingInvite, markInviteUsed, auditRoleChange, getPortalUser } = await import(
+        const { touchLastSeen, updatePortalUser } = await import(
           "@/lib/db-portal"
         );
-        getOrCreatePortalUser(user.email, user.name);
+        // User row and invite are already handled in the jwt callback (resolveRoleFromDb).
+        // Here we just update last_seen and sync the display name from Azure AD.
         touchLastSeen(user.email);
-
-        // Apply pending invite role if present
-        const pendingInvite = getPendingInvite(user.email);
-        if (pendingInvite) {
-          const existing = getPortalUser(user.email);
-          if (existing) {
-            auditRoleChange(user.email, existing.role, pendingInvite.role, "system", "Applied from invite");
-          }
-          updatePortalUser(user.email, { role: pendingInvite.role });
-          markInviteUsed(user.email);
-        }
 
         // Fetch and cache user data from Microsoft Graph
         if (account?.access_token) {

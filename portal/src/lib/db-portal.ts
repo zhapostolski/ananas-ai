@@ -209,11 +209,14 @@ export function createRoleInvite(
   role: string,
   invitedBy: string
 ): void {
-  getPortalDb()
-    .prepare(
-      "INSERT INTO portal_role_invites (email, role, invited_by) VALUES (?, ?, ?)"
-    )
-    .run(email, role, invitedBy);
+  const db = getPortalDb();
+  // Cancel any existing pending invite for this email before creating a new one
+  db.prepare(
+    "UPDATE portal_role_invites SET used_at = datetime('now') WHERE email = ? AND used_at IS NULL"
+  ).run(email);
+  db.prepare(
+    "INSERT INTO portal_role_invites (email, role, invited_by) VALUES (?, ?, ?)"
+  ).run(email, role, invitedBy);
 }
 
 export function getPendingInvite(
