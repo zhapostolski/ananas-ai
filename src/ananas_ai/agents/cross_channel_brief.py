@@ -68,9 +68,23 @@ class CrossChannelBriefAgent(BaseAgent):
             logger.error("cross-channel-brief-agent: model call failed: %s", e)
             analysis = "Cross-channel brief - model unavailable. Check agent logs."
 
+        # Translate to Macedonian and Serbian for multilingual output
+        analysis_mk: str = ""
+        analysis_sr: str = ""
+        try:
+            from ananas_ai.translation import translate_report
+
+            analysis_mk = translate_report(analysis, "mk")
+            analysis_sr = translate_report(analysis, "sr")
+            logger.info("cross-channel-brief-agent: translations complete (MK, SR)")
+        except Exception as e:
+            logger.warning("cross-channel-brief-agent: translation failed: %s", e)
+
         return {
             "headline": headline,
             "analysis": analysis,
+            "analysis_mk": analysis_mk,
+            "analysis_sr": analysis_sr,
             "source_agents": [o.get("agent_name") for o in specialist_outputs],
             "sources_with_live_data": [
                 o.get("agent_name")

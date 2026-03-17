@@ -93,6 +93,35 @@
     }
   ],
 
+  "utility_agents": [
+    {
+      "name": "translation-agent",
+      "module": "translation",
+      "description": "On-demand translation specialist. Translates agent outputs, reports, Teams messages, email briefs, and user queries between English, Serbian (SR), and Macedonian (MK). Includes automatic language detection. Used by cross-channel-brief-agent for multilingual output and by the chat interface to respond in the user's language.",
+      "default_model": "none",
+      "engine": "deep-translator/google-translate-free",
+      "languages": ["en", "sr", "mk"],
+      "trigger": "on-demand",
+      "sources": ["agent-outputs-db", "chat-messages"],
+      "outputs": [
+        "portal:translate-api",
+        "teams:multilingual-posts",
+        "email:localized-brief"
+      ],
+      "capabilities": [
+        "language-detection",
+        "en-to-sr",
+        "en-to-mk",
+        "sr-to-en",
+        "mk-to-en",
+        "sr-to-mk",
+        "mk-to-sr",
+        "bilingual-report",
+        "report-translation"
+      ]
+    }
+  ],
+
   "phase_2_agents": [
     {
       "name": "customer-segmentation-agent",
