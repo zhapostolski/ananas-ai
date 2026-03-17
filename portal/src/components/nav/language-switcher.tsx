@@ -32,7 +32,7 @@ export function LanguageSwitcher() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-50 mt-1 w-36 rounded-xl border bg-popover shadow-xl py-1">
+          <div className="absolute right-0 top-full z-50 mt-1 w-36 rounded-xl border bg-white dark:bg-gray-900 shadow-xl py-1">
             {OPTIONS.map((opt) => (
               <button
                 key={opt.code}
