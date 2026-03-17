@@ -26,9 +26,10 @@ import { useState } from "react";
 import type { Role } from "@/types";
 import { canAccessDepartment, canAccessMarketingModule, isAdminRole, canInvite, canSendNotifications } from "@/lib/roles";
 import { UserAvatar } from "@/components/nav/user-menu";
+import { useT } from "@/lib/i18n";
 
 interface NavChild {
-  label: string;
+  labelKey: string;
   href: string;
   icon: React.ReactNode;
   module?: string;
@@ -36,7 +37,7 @@ interface NavChild {
 
 interface NavGroup {
   id: string;
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
   href: string;
   requiredDept?: string;
@@ -46,54 +47,54 @@ interface NavGroup {
 const NAV: NavGroup[] = [
   {
     id: "marketing",
-    label: "Marketing",
+    labelKey: "nav_marketing",
     icon: <Megaphone className="h-4 w-4" />,
     href: "/marketing/overview",
     children: [
-      { label: "Overview", href: "/marketing/overview", icon: <LayoutDashboard className="h-3.5 w-3.5" />, module: "overview" },
-      { label: "Performance", href: "/marketing/performance", icon: <BarChart2 className="h-3.5 w-3.5" />, module: "performance" },
-      { label: "CRM & Lifecycle", href: "/marketing/crm", icon: <Mail className="h-3.5 w-3.5" />, module: "crm" },
-      { label: "Reputation", href: "/marketing/reputation", icon: <Star className="h-3.5 w-3.5" />, module: "reputation" },
-      { label: "Influencers", href: "/marketing/influencers", icon: <Users className="h-3.5 w-3.5" />, module: "influencers" },
-      { label: "Marketing Ops", href: "/marketing/ops", icon: <Settings className="h-3.5 w-3.5" />, module: "ops" },
+      { labelKey: "nav_overview", href: "/marketing/overview", icon: <LayoutDashboard className="h-3.5 w-3.5" />, module: "overview" },
+      { labelKey: "nav_performance", href: "/marketing/performance", icon: <BarChart2 className="h-3.5 w-3.5" />, module: "performance" },
+      { labelKey: "nav_crm", href: "/marketing/crm", icon: <Mail className="h-3.5 w-3.5" />, module: "crm" },
+      { labelKey: "nav_reputation", href: "/marketing/reputation", icon: <Star className="h-3.5 w-3.5" />, module: "reputation" },
+      { labelKey: "nav_influencers", href: "/marketing/influencers", icon: <Users className="h-3.5 w-3.5" />, module: "influencers" },
+      { labelKey: "nav_marketing_ops", href: "/marketing/ops", icon: <Settings className="h-3.5 w-3.5" />, module: "ops" },
     ],
   },
   {
     id: "finance",
-    label: "Finance",
+    labelKey: "nav_finance",
     icon: <DollarSign className="h-4 w-4" />,
     href: "/finance",
   },
   {
     id: "logistics",
-    label: "Logistics",
+    labelKey: "nav_logistics",
     icon: <Truck className="h-4 w-4" />,
     href: "/logistics",
   },
   {
     id: "executive",
-    label: "Executive",
+    labelKey: "nav_executive",
     icon: <Briefcase className="h-4 w-4" />,
     href: "/executive",
   },
   {
     id: "customer_experience",
-    label: "Customer Experience",
+    labelKey: "nav_customer_experience",
     icon: <HeartHandshake className="h-4 w-4" />,
     href: "/customer-experience",
     children: [
-      { label: "Reputation & Reviews", href: "/customer-experience/reputation", icon: <Star className="h-3.5 w-3.5" /> },
-      { label: "Support Insights", href: "/customer-experience/support", icon: <Users className="h-3.5 w-3.5" /> },
+      { labelKey: "nav_reputation_reviews", href: "/customer-experience/reputation", icon: <Star className="h-3.5 w-3.5" /> },
+      { labelKey: "nav_support_insights", href: "/customer-experience/support", icon: <Users className="h-3.5 w-3.5" /> },
     ],
   },
   {
     id: "hr",
-    label: "HR",
+    labelKey: "nav_hr",
     icon: <UserCircle className="h-4 w-4" />,
     href: "/hr",
     children: [
-      { label: "Team", href: "/hr/team", icon: <Users className="h-3.5 w-3.5" /> },
-      { label: "Attendance", href: "/hr/attendance", icon: <CalendarDays className="h-3.5 w-3.5" /> },
+      { labelKey: "nav_team", href: "/hr/team", icon: <Users className="h-3.5 w-3.5" /> },
+      { labelKey: "nav_attendance", href: "/hr/attendance", icon: <CalendarDays className="h-3.5 w-3.5" /> },
     ],
   },
 ];
@@ -109,6 +110,7 @@ interface SidebarProps {
 
 export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", avatarUrl, chatEnabled }: SidebarProps) {
   const pathname = usePathname();
+  const t = useT();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     marketing: pathname.startsWith("/marketing"),
     customer_experience: pathname.startsWith("/customer-experience"),
@@ -173,7 +175,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
                 style={isActive && !group.children ? { backgroundColor: "#FE5000" } : {}}
               >
                 {group.icon}
-                <span className="flex-1 text-left">{group.label}</span>
+                <span className="flex-1 text-left">{t[group.labelKey as keyof typeof t] ?? group.labelKey}</span>
                 {children.length > 0 &&
                   (isExpanded ? (
                     <ChevronDown className="h-3.5 w-3.5" />
@@ -204,7 +206,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
                         }
                       >
                         {child.icon}
-                        {child.label}
+                        {t[child.labelKey as keyof typeof t] ?? child.labelKey}
                       </Link>
                     );
                   })}
@@ -230,7 +232,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
               style={pathname.startsWith("/admin") ? { backgroundColor: "#FE5000" } : {}}
             >
               <Shield className="h-4 w-4" />
-              Admin
+              {t.nav_admin}
             </Link>
             {pathname.startsWith("/admin") && (
               <div className="ml-3 mt-0.5 space-y-0.5 border-l pl-3" style={{ borderColor: "#1f2937" }}>
@@ -243,7 +245,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
                       : "text-gray-400 hover:text-white hover:bg-white/5"
                   )}
                 >
-                  Users
+                  {t.nav_users}
                 </Link>
                 {showInvite && (
                   <Link
@@ -255,7 +257,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
                         : "text-gray-400 hover:text-white hover:bg-white/5"
                     )}
                   >
-                    Invite User
+                    {t.nav_invite_user}
                   </Link>
                 )}
                 {showSendNotif && (
@@ -268,7 +270,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
                         : "text-gray-400 hover:text-white hover:bg-white/5"
                     )}
                   >
-                    Send Notification
+                    {t.nav_send_notification}
                   </Link>
                 )}
               </div>
@@ -288,7 +290,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
             style={pathname.startsWith("/chat") ? { backgroundColor: "#FE5000" } : {}}
           >
             <MessageSquare className="h-4 w-4" />
-            AI Chat
+            {t.nav_ai_chat}
           </Link>
         )}
 
@@ -303,7 +305,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
           style={pathname === "/settings" ? { backgroundColor: "#FE5000" } : {}}
         >
           <Settings className="h-4 w-4" />
-          Settings
+          {t.nav_settings}
         </Link>
 
         {/* User avatar at bottom */}
@@ -318,7 +320,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
             avatarUrl={avatarUrl}
             size="sm"
           />
-          <span className="truncate">{userName ?? userEmail ?? "Profile"}</span>
+          <span className="truncate">{userName ?? userEmail ?? t.nav_profile}</span>
         </Link>
       </div>
     </aside>

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { DateRangeFilter, type DateRange } from "@/components/dashboard/date-range-filter";
 import { RevenueAreaChart, SessionsLineChart } from "@/components/dashboard/overview-charts";
+import { useT } from "@/lib/i18n";
+import { useTranslateContent } from "@/lib/i18n/use-translate-content";
 
 interface PerfData {
   run_at: string | null;
@@ -70,6 +72,7 @@ function channelIcon(channel: string): string {
 }
 
 export default function PerformancePage() {
+  const t = useT();
   const [dateRange, setDateRange] = useState<DateRange>({ preset: "last_7d" });
   const [data, setData] = useState<PerfData | null>(null);
   const [ga4, setGa4] = useState<Ga4Data | null>(null);
@@ -116,16 +119,14 @@ export default function PerformancePage() {
   const sessionsData = history.map((d) => ({ label: d.date.slice(5), value: d.sessions }));
 
   const channels = ga4?.channels ?? [];
+  const { translated: translatedSummary, translating } = useTranslateContent(data?.summary_text);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Performance & Paid Media</h1>
-          <p className="text-sm text-muted-foreground">
-            Paid channel performance - Google, Meta, and more
-          </p>
+          <h1 className="text-2xl font-bold">{t.page_performance}</h1>
+          <p className="text-sm text-muted-foreground">{t.performance_subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
           {data?.run_at && (
@@ -137,64 +138,26 @@ export default function PerformancePage() {
         </div>
       </div>
 
-      {/* GA4 KPIs */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-          GA4 Performance
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">{t.performance_ga4_section}</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard
-            title="Revenue"
-            value={fmtEur(revenue)}
-            status="neutral"
-            description="All sessions, all channels"
-          />
-          <KpiCard
-            title="Sessions"
-            value={fmtNum(sessions)}
-            status="neutral"
-          />
-          <KpiCard
-            title="Users"
-            value={fmtNum(users)}
-            status="neutral"
-          />
-          <KpiCard
-            title="Conversion Rate"
-            value={fmtPct(convRate)}
-            status={cvrStatus}
-            badge={cvrStatus === "green" ? "Good" : cvrStatus === "red" ? "Below target" : undefined}
-            description="Target: >2.5%"
-          />
+          <KpiCard title={t.performance_revenue} value={fmtEur(revenue)} status="neutral" description={t.performance_all_channels} />
+          <KpiCard title={t.performance_sessions} value={fmtNum(sessions)} status="neutral" />
+          <KpiCard title={t.performance_users} value={fmtNum(users)} status="neutral" />
+          <KpiCard title={t.performance_conversion_rate} value={fmtPct(convRate)} status={cvrStatus}
+            badge={cvrStatus === "green" ? t.good : cvrStatus === "red" ? t.below_target : undefined}
+            description={t.target + ": >2.5%"} />
         </div>
       </div>
 
-      {/* Paid KPIs */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-          Paid Channels
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">{t.performance_paid_section}</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard
-            title="Total Ad Spend"
-            value={fmtEur(kpis.total_paid_spend)}
-            status="neutral"
-            description="All paid channels"
-          />
-          <KpiCard
-            title="Blended ROAS"
-            value={fmtX(kpis.blended_roas)}
-            status={roasStatus}
-            badge={roasStatus === "green" ? "On target" : roasStatus === "red" ? "Below target" : undefined}
-            description="Target: >5.0x"
-          />
-          <KpiCard
-            title="POAS (Blended)"
-            value="--"
-            status="neutral"
-            description="Needs margin data (Phase 2)"
-            badge="Phase 2"
-          />
+          <KpiCard title={t.performance_total_spend} value={fmtEur(kpis.total_paid_spend)} status="neutral" description={t.performance_all_paid} />
+          <KpiCard title={t.performance_blended_roas} value={fmtX(kpis.blended_roas)} status={roasStatus}
+            badge={roasStatus === "green" ? t.on_target : roasStatus === "red" ? t.below_target : undefined}
+            description={t.target + ": >5.0x"} />
+          <KpiCard title={t.performance_poas} value="--" status="neutral" description={t.performance_poas_desc} badge={t.phase_2} />
         </div>
       </div>
 
@@ -209,10 +172,10 @@ export default function PerformancePage() {
       {/* Channel breakdown - live from GA4 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-medium">Channel Breakdown</CardTitle>
+          <CardTitle className="text-sm font-medium">{t.channel_breakdown}</CardTitle>
           {ga4 && !ga4.error && (
             <span className="text-xs text-muted-foreground">
-              {ga4.startDate} to {ga4.endDate} - live GA4
+              {ga4.startDate} to {ga4.endDate} - {t.live_ga4}
             </span>
           )}
         </CardHeader>
@@ -230,7 +193,7 @@ export default function PerformancePage() {
                       <span className="font-medium truncate">{ch.channel}</span>
                     </div>
                     <div className="flex items-center gap-6 shrink-0 text-xs text-muted-foreground">
-                      <span className="w-24 text-right">{fmtNum(ch.sessions)} sessions</span>
+                      <span className="w-24 text-right">{fmtNum(ch.sessions)} {t.performance_sessions.toLowerCase()}</span>
                       <span className="w-20 text-right">{fmtEur(ch.revenue)}</span>
                       <span className="w-12 text-right text-foreground font-medium">{sharePct}%</span>
                     </div>
@@ -239,29 +202,28 @@ export default function PerformancePage() {
               })}
             </div>
           ) : loading ? (
-            <p className="text-sm text-muted-foreground italic">Loading channel data...</p>
+            <p className="text-sm text-muted-foreground italic">{t.performance_loading_channels}</p>
           ) : (
-            <p className="text-sm text-muted-foreground italic">No channel data available for this date range.</p>
+            <p className="text-sm text-muted-foreground italic">{t.performance_no_channel_data}</p>
           )}
         </CardContent>
       </Card>
 
-      {/* Agent analysis */}
       {data?.summary_text && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Agent Analysis</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.agent_analysis}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="whitespace-pre-wrap text-sm leading-relaxed">
-              {data.summary_text}
+              {translating ? <span className="text-muted-foreground italic">{t.translating}</span> : translatedSummary}
             </div>
           </CardContent>
         </Card>
       )}
 
       {loading && (
-        <p className="text-sm text-muted-foreground italic">Loading performance data...</p>
+        <p className="text-sm text-muted-foreground italic">{t.loading}</p>
       )}
     </div>
   );

@@ -11,6 +11,8 @@ interface AgentStatusProps {
     status?: "ok" | "error" | "skipped";
     summary?: string;
   }[];
+  title?: string;
+  lastRunLabel?: string;
 }
 
 const STATUS_ICON = {
@@ -19,11 +21,11 @@ const STATUS_ICON = {
   skipped: <Clock className="h-4 w-4 text-yellow-500" />,
 };
 
-export function AgentStatus({ agents }: AgentStatusProps) {
+export function AgentStatus({ agents, title = "Agent Status", lastRunLabel }: AgentStatusProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">Agent Status</CardTitle>
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {agents.map((a) => (
