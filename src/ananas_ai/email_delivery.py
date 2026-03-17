@@ -81,7 +81,8 @@ def _html(body: str) -> str:
                 if not in_ol:
                     out.append("<ol>")
                     in_ol = True
-                out.append(f"<li>{re.sub(r'^\d+\. ', '', line)}</li>")
+                item = re.sub(r"^\d+\. ", "", line)
+                out.append(f"<li>{item}</li>")
             else:
                 if in_ul:
                     out.append("</ul>")
