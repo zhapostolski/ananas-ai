@@ -2,7 +2,7 @@ import { AgentStatus } from "@/components/dashboard/agent-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { getLatestOutput } from "@/lib/db";
-import { dbStr } from "@/lib/utils";
+import { dbStr, stripMarkdown } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -57,8 +57,8 @@ export default async function CXReputationPage() {
             </CardHeader>
             <CardContent>
               {latest?.summary_text ? (
-                <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {dbStr(latest.summary_text)}
+                <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                  {stripMarkdown(dbStr(latest.summary_text))}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground italic">

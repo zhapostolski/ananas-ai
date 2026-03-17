@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getLatestOutput } from "@/lib/db";
-import { formatDate, dbStr } from "@/lib/utils";
+import { formatDate, dbStr, stripMarkdown } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,8 +30,8 @@ export default async function CommercialPage() {
           </CardHeader>
           <CardContent>
             {categoryLatest?.summary_text ? (
-              <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                {categoryLatest.summary_text as string}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {stripMarkdown(categoryLatest.summary_text as string)}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground italic">No data yet.</p>
@@ -50,8 +50,8 @@ export default async function CommercialPage() {
           </CardHeader>
           <CardContent>
             {supplierLatest?.summary_text ? (
-              <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                {supplierLatest.summary_text as string}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {stripMarkdown(supplierLatest.summary_text as string)}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground italic">No data yet.</p>

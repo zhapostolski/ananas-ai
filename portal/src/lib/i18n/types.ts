@@ -124,6 +124,20 @@ export interface Translations {
   crm_repeat_target: string;
 
   // Reputation page
+  ops_subtitle: string;
+  ops_tracking_status: string;
+  ops_ga4_sessions: string;
+  ops_sc_clicks: string;
+  ops_sc_impressions: string;
+  ops_ga4_pipeline: string;
+  ops_live_signal: string;
+  ops_last_7d: string;
+  ops_active_alerts: string;
+  ops_notes: string;
+  ops_full_report: string;
+  ops_ok: string;
+  ops_warning: string;
+
   rep_subtitle: string;
   rep_critical_trustpilot: string;
   rep_critical_unclaimed: string;

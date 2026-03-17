@@ -111,7 +111,7 @@ export function KpiCard({
           <span
             className={cn(
               "text-xs font-medium",
-              deltaPositive ? "text-green-600" : deltaNegative ? "text-red-600" : "text-muted-foreground"
+              deltaPositive ? "text-green-600 dark:text-green-400" : deltaNegative ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
             )}
           >
             {delta > 0 ? "+" : ""}{delta.toFixed(1)}% {deltaLabel ?? "WoW"}

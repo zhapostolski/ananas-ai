@@ -3,7 +3,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { AgentStatus } from "@/components/dashboard/agent-status";
 import { Badge } from "@/components/ui/badge";
 import { getLatestOutput } from "@/lib/db";
-import { formatDate, dbStr } from "@/lib/utils";
+import { formatDate, dbStr, stripMarkdown } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -84,8 +84,8 @@ export default async function ExecutivePage() {
             </CardHeader>
             <CardContent>
               {briefOutput?.summary_text ? (
-                <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {dbStr(briefOutput.summary_text)}
+                <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                  {stripMarkdown(dbStr(briefOutput.summary_text))}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground italic">

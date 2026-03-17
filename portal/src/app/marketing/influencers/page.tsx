@@ -2,7 +2,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getLatestOutput } from "@/lib/db";
-import { formatDate, dbStr } from "@/lib/utils";
+import { formatDate, dbStr, stripMarkdown } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +81,7 @@ export default async function InfluencersPage() {
                           variant="outline"
                           className={
                             c.status === "active"
-                              ? "border-green-300 text-green-700"
+                              ? "border-green-300 text-green-700 dark:text-green-400"
                               : "text-muted-foreground"
                           }
                         >
@@ -104,8 +104,8 @@ export default async function InfluencersPage() {
           </CardHeader>
           <CardContent>
             {latest?.summary_text ? (
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-                {latest.summary_text as string}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {stripMarkdown(latest.summary_text as string)}
               </div>
             ) : (
               <div className="space-y-3">

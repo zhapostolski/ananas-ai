@@ -42,8 +42,8 @@ export function StatCard({
     <Card
       className={cn(
         "transition-shadow hover:shadow-md",
-        status === "critical" && "border-red-200 bg-red-50/50",
-        status === "warning" && "border-yellow-200 bg-yellow-50/50"
+        status === "critical" && "border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/30",
+        status === "warning" && "border-yellow-200 dark:border-yellow-900 bg-yellow-50/50 dark:bg-yellow-950/30"
       )}
     >
       <CardHeader className="pb-2">

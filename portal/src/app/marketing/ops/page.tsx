@@ -5,7 +5,9 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DateRangeFilter, type DateRange, resolveDateRange } from "@/components/dashboard/date-range-filter";
-import { formatDate, dbStr } from "@/lib/utils";
+import { formatDate, dbStr, stripMarkdown } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { useTranslateContent } from "@/lib/i18n/use-translate-content";
 
 interface AgentOutput {
   run_at: string;
@@ -14,6 +16,7 @@ interface AgentOutput {
 }
 
 export default function OpsPage() {
+  const t = useT();
   const [dateRange, setDateRange] = useState<DateRange>({ preset: "last_7d" });
   const [latest, setLatest] = useState<AgentOutput | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,14 +44,16 @@ export default function OpsPage() {
   const trackingStatus = dbStr(tracking?.status, "Unknown");
   const isTrackingBad = trackingStatus.toLowerCase().includes("warn") || trackingStatus.toLowerCase().includes("error");
 
+  const { translated: translatedSummary, translating } = useTranslateContent(
+    latest?.summary_text ? stripMarkdown(latest.summary_text) : null
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Marketing Ops</h1>
-          <p className="text-sm text-muted-foreground">
-            Tracking health, KPI integrity, and campaign quality
-          </p>
+          <h1 className="text-2xl font-bold">{t.page_marketing_ops}</h1>
+          <p className="text-sm text-muted-foreground">{t.ops_subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
           {!!latest?.run_at && (
@@ -60,25 +65,25 @@ export default function OpsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Tracking Status"
-          value={isTrackingBad ? "Warning" : trackingStatus === "Unknown" ? "--" : "OK"}
+          title={t.ops_tracking_status}
+          value={isTrackingBad ? t.ops_warning : trackingStatus === "Unknown" ? "--" : t.ops_ok}
           status={isTrackingBad ? "warning" : "ok"}
-          description="GA4 data pipeline"
+          description={t.ops_ga4_pipeline}
         />
         <StatCard
-          title="GA4 Sessions (today)"
+          title={t.ops_ga4_sessions}
           value={dbStr(tracking?.ga4_sessions)}
-          description="Live tracking signal"
+          description={t.ops_live_signal}
         />
         <StatCard
-          title="Search Console Clicks"
+          title={t.ops_sc_clicks}
           value={dbStr(sc?.total_clicks)}
-          description="Last 7 days"
+          description={t.ops_last_7d}
         />
         <StatCard
-          title="Search Impressions"
+          title={t.ops_sc_impressions}
           value={dbStr(sc?.total_impressions)}
-          description="Last 7 days"
+          description={t.ops_last_7d}
         />
       </div>
 
@@ -86,12 +91,12 @@ export default function OpsPage() {
         {alerts.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
+              <CardTitle className="text-sm font-medium">{t.ops_active_alerts}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-1.5">
                 {alerts.map((alert, i) => (
-                  <li key={i} className="text-sm text-red-600 flex items-start gap-2">
+                  <li key={i} className="text-sm text-red-600 dark:text-red-400 flex items-start gap-2">
                     <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
                     {alert}
                   </li>
@@ -104,13 +109,13 @@ export default function OpsPage() {
         {notes.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Ops Notes</CardTitle>
+              <CardTitle className="text-sm font-medium">{t.ops_notes}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-1.5">
                 {notes.map((note, i) => (
-                  <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                    <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-gray-400 shrink-0" />
+                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-muted-foreground shrink-0" />
                     {note}
                   </li>
                 ))}
@@ -121,17 +126,17 @@ export default function OpsPage() {
 
         <Card className={alerts.length > 0 && notes.length > 0 ? "lg:col-span-2" : ""}>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Full Report</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.ops_full_report}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-sm text-muted-foreground italic">Loading...</p>
+              <p className="text-sm text-muted-foreground italic">{t.loading}</p>
             ) : latest?.summary_text ? (
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-                {latest.summary_text}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {translating ? <span className="text-muted-foreground italic">{t.translating}</span> : translatedSummary}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground italic">No data for this period.</p>
+              <p className="text-sm text-muted-foreground italic">{t.no_data}</p>
             )}
           </CardContent>
         </Card>

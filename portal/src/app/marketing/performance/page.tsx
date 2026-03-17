@@ -8,6 +8,7 @@ import { DateRangeFilter, type DateRange } from "@/components/dashboard/date-ran
 import { RevenueAreaChart, SessionsLineChart } from "@/components/dashboard/overview-charts";
 import { useT } from "@/lib/i18n";
 import { useTranslateContent } from "@/lib/i18n/use-translate-content";
+import { stripMarkdown } from "@/lib/utils";
 
 interface PerfData {
   run_at: string | null;
@@ -119,7 +120,7 @@ export default function PerformancePage() {
   const sessionsData = history.map((d) => ({ label: d.date.slice(5), value: d.sessions }));
 
   const channels = ga4?.channels ?? [];
-  const { translated: translatedSummary, translating } = useTranslateContent(data?.summary_text);
+  const { translated: translatedSummary, translating } = useTranslateContent(data?.summary_text ? stripMarkdown(data.summary_text) : null);
 
   return (
     <div className="space-y-6">

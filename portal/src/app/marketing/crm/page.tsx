@@ -8,6 +8,7 @@ import { DateRangeFilter, type DateRange, resolveDateRange } from "@/components/
 import { formatDate } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { useTranslateContent } from "@/lib/i18n/use-translate-content";
+import { stripMarkdown } from "@/lib/utils";
 
 function pctStatus(val: number | null | undefined, green: number, yellow: number, higherIsBetter = true) {
   if (val == null) return "neutral" as const;
@@ -55,7 +56,7 @@ export default function CrmPage() {
   const emailOpenRate = email?.open_rate as number | undefined;
   const emailRevPerSend = email?.revenue_per_send as number | undefined;
   const churnRate30d = lifecycle?.churn_rate_30d as number | undefined;
-  const { translated: translatedSummary, translating } = useTranslateContent(latest?.summary_text);
+  const { translated: translatedSummary, translating } = useTranslateContent(latest?.summary_text ? stripMarkdown(latest.summary_text) : null);
 
   return (
     <div className="space-y-6">

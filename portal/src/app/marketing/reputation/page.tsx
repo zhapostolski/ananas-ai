@@ -8,6 +8,7 @@ import { DateRangeFilter, type DateRange, resolveDateRange } from "@/components/
 import { formatDate } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { useTranslateContent } from "@/lib/i18n/use-translate-content";
+import { stripMarkdown } from "@/lib/utils";
 
 function ratingStatus(val: number | undefined) {
   if (val == null) return "neutral" as const;
@@ -53,7 +54,7 @@ export default function ReputationPage() {
   const gbTotal = gb?.total_reviews as number | undefined;
   const gbUnanswered = gb?.unanswered_reviews as number | undefined;
 
-  const { translated: translatedSummary, translating } = useTranslateContent(latest?.summary_text);
+  const { translated: translatedSummary, translating } = useTranslateContent(latest?.summary_text ? stripMarkdown(latest.summary_text) : null);
 
   type Priority = "CRITICAL" | "HIGH" | "MEDIUM";
   const actionItems: { done: boolean; label: string; priority: Priority }[] = [
