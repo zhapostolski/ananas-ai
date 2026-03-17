@@ -1,22 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { KpiCard, KpiAlertBanner } from "@/components/dashboard/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DateRangeFilter, type DateRange, resolveDateRange } from "@/components/dashboard/date-range-filter";
-import { formatDate } from "@/lib/utils";
+import { formatDate, stripMarkdown } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { useTranslateContent } from "@/lib/i18n/use-translate-content";
-import { stripMarkdown } from "@/lib/utils";
 
-function pctStatus(val: number | null | undefined, green: number, yellow: number, higherIsBetter = true) {
-  if (val == null) return "neutral" as const;
-  if (higherIsBetter) {
-    return val >= green ? "green" : val >= yellow ? "yellow" : "red";
-  } else {
-    return val <= green ? "green" : val <= yellow ? "yellow" : "red";
-  }
+interface Journey {
+  status: string;
+  priority: string;
+  est_impact?: string;
 }
 
 interface AgentOutput {
@@ -24,6 +19,27 @@ interface AgentOutput {
   output_json: Record<string, unknown>;
   summary_text: string | null;
 }
+
+function journeyStatusColor(status: string) {
+  if (status === "live") return "text-green-600 dark:text-green-400";
+  if (status === "partial") return "text-yellow-600 dark:text-yellow-400";
+  return "text-red-600 dark:text-red-400";
+}
+
+function priorityBadge(priority: string) {
+  if (priority === "critical") return "border-red-300 text-red-700 dark:text-red-400";
+  if (priority === "high") return "border-yellow-300 text-yellow-700 dark:text-yellow-400";
+  return "text-muted-foreground";
+}
+
+const JOURNEY_LABELS: Record<string, string> = {
+  "cart-recovery": "Cart Recovery",
+  "welcome-series": "Welcome Series",
+  "churn-prevention": "Churn Prevention",
+  "winback": "Win-back",
+  "post-purchase": "Post Purchase",
+  "browse-abandonment": "Browse Abandonment",
+};
 
 export default function CrmPage() {
   const t = useT();
@@ -45,18 +61,17 @@ export default function CrmPage() {
       .catch(() => setLoading(false));
   }, [dateRange]);
 
-  const json = latest?.output_json as Record<string, unknown> | null ?? null;
-  const email = json?.email as Record<string, unknown> | undefined;
-  const lifecycle = json?.lifecycle as Record<string, unknown> | undefined;
+  const json = latest?.output_json ?? null;
+  const journeys = (json?.journeys as Record<string, Journey> | undefined) ?? {};
+  const journeyEntries = Object.entries(journeys);
+  const automationsLive = json?.automations_live as number | undefined;
+  const automationsTotal = json?.automations_total as number | undefined;
+  const priorityAction = json?.priority_action as string | undefined;
+  const crmPlatform = json?.crm_platform as string | undefined;
 
-  const cartAbandonmentRate = email?.cart_abandonment_rate as number | undefined;
-  const cartRecoveryRate = email?.cart_recovery_rate as number | undefined;
-  const repeatPurchaseRate = lifecycle?.repeat_purchase_rate as number | undefined;
-  const activeSubscribers = email?.active_subscribers as number | undefined;
-  const emailOpenRate = email?.open_rate as number | undefined;
-  const emailRevPerSend = email?.revenue_per_send as number | undefined;
-  const churnRate30d = lifecycle?.churn_rate_30d as number | undefined;
-  const { translated: translatedSummary, translating } = useTranslateContent(latest?.summary_text ? stripMarkdown(latest.summary_text) : null);
+  const { translated: translatedSummary, translating } = useTranslateContent(
+    latest?.summary_text ? stripMarkdown(latest.summary_text) : null
+  );
 
   return (
     <div className="space-y-6">
@@ -73,73 +88,85 @@ export default function CrmPage() {
         </div>
       </div>
 
-      <KpiAlertBanner
-        title={t.crm_alert_no_automations}
-        message={t.crm_alert_no_automations_detail}
-        status="critical"
-      />
-
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">{t.crm_cart_section}</p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <KpiCard title={t.crm_cart_abandonment}
-            value={cartAbandonmentRate != null ? cartAbandonmentRate.toFixed(1) + "%" : "--"}
-            status={cartAbandonmentRate != null ? pctStatus(cartAbandonmentRate, 65, 75, false) : "neutral"}
-            description={t.crm_target_35} />
-          <KpiCard title={t.crm_cart_recovery}
-            value={cartRecoveryRate != null ? cartRecoveryRate.toFixed(1) + "%" : "0%"}
-            status={cartRecoveryRate == null || cartRecoveryRate === 0 ? "critical" : pctStatus(cartRecoveryRate, 20, 10)}
-            description={cartRecoveryRate === 0 || cartRecoveryRate == null ? t.crm_no_recovery : t.crm_target_15}
-            badge={cartRecoveryRate === 0 || cartRecoveryRate == null ? t.crm_no_automation_badge : undefined} />
-          <KpiCard title={t.crm_aov}
-            value={lifecycle?.aov != null ? "€" + (lifecycle.aov as number).toFixed(2) : "--"}
-            status={lifecycle?.aov != null ? pctStatus(lifecycle.aov as number, 45, 30) : "neutral"}
-            description={t.target + ": >€45"} />
+      {/* Automation summary */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Automations Live</p>
+          <p className="text-3xl font-bold">
+            {automationsLive != null ? automationsLive : "--"}
+            {automationsTotal != null && (
+              <span className="text-base font-normal text-muted-foreground"> / {automationsTotal}</span>
+            )}
+          </p>
+          {automationsLive === 0 && (
+            <p className="text-xs text-red-600 dark:text-red-400 mt-1">No active automations</p>
+          )}
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">CRM Platform</p>
+          <p className="text-lg font-semibold">{crmPlatform ?? "--"}</p>
+          <p className="text-xs text-muted-foreground mt-1">Current integration</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Journey Coverage</p>
+          <p className="text-3xl font-bold">
+            {journeyEntries.filter(([, j]) => j.status === "live").length}
+            <span className="text-base font-normal text-muted-foreground"> / {journeyEntries.length}</span>
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">Journeys active</p>
         </div>
       </div>
 
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">{t.crm_email_section}</p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard title={t.crm_email_open_rate}
-            value={emailOpenRate != null ? emailOpenRate.toFixed(1) + "%" : "--"}
-            status={pctStatus(emailOpenRate, 22, 15)} />
-          <KpiCard title={t.crm_revenue_per_send}
-            value={emailRevPerSend != null ? "€" + emailRevPerSend.toFixed(3) : "--"}
-            status={pctStatus(emailRevPerSend, 0.40, 0.20)} />
-          <KpiCard title={t.crm_active_subscribers}
-            value={activeSubscribers != null ? activeSubscribers.toLocaleString() : "--"}
-            status="neutral" description={t.crm_subscribers_desc} />
-          <KpiCard title={t.crm_churn_rate}
-            value={churnRate30d != null ? churnRate30d.toFixed(1) + "%" : "--"}
-            status={churnRate30d != null ? pctStatus(churnRate30d, 15, 25, false) : "neutral"}
-            description={t.crm_retention_target} />
-        </div>
-      </div>
+      {/* Journey status table */}
+      {journeyEntries.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Lifecycle Journeys</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="divide-y text-sm">
+              {journeyEntries.map(([key, journey]) => (
+                <div key={key} className="flex items-center justify-between py-2.5 gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className={`font-medium ${journeyStatusColor(journey.status)}`}>
+                      {journey.status === "live" ? "●" : "○"}
+                    </span>
+                    <span className="font-medium">{JOURNEY_LABELS[key] ?? key}</span>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    {journey.est_impact && (
+                      <span className="text-xs text-muted-foreground">Impact: {journey.est_impact}</span>
+                    )}
+                    <Badge variant="outline" className={`text-xs ${priorityBadge(journey.priority)}`}>
+                      {journey.priority}
+                    </Badge>
+                    <span className={`text-xs font-medium ${journeyStatusColor(journey.status)}`}>
+                      {journey.status.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">{t.crm_retention_section}</p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <KpiCard title={t.crm_repeat_purchase}
-            value={repeatPurchaseRate != null ? repeatPurchaseRate.toFixed(1) + "%" : "--"}
-            status={pctStatus(repeatPurchaseRate, 35, 20)} description={t.crm_repeat_target} />
-          <KpiCard title={t.crm_ltv_cac}
-            value={lifecycle?.ltv_cac_ratio != null ? (lifecycle.ltv_cac_ratio as number).toFixed(1) + ":1" : "--"}
-            status={lifecycle?.ltv_cac_ratio != null ? pctStatus(lifecycle.ltv_cac_ratio as number, 3.0, 2.0) : "neutral"}
-            description={t.target + ": 3.0:1"} />
-          <KpiCard title={t.crm_new_vs_returning}
-            value={lifecycle?.returning_pct != null ? (lifecycle.returning_pct as number).toFixed(0) + "% returning" : "--"}
-            status={pctStatus(lifecycle?.returning_pct as number | undefined, 40, 25)} />
+      {/* Priority action */}
+      {priorityAction && (
+        <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/30 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-400 mb-1">Priority Action</p>
+          <p className="text-sm text-foreground">{priorityAction}</p>
         </div>
-      </div>
+      )}
 
+      {/* Agent analysis */}
       <Card>
         <CardHeader><CardTitle className="text-sm font-medium">{t.agent_analysis}</CardTitle></CardHeader>
         <CardContent>
           {loading ? (
             <p className="text-sm text-muted-foreground italic">{t.loading}</p>
           ) : latest?.summary_text ? (
-            <div className="whitespace-pre-wrap text-sm leading-relaxed">
+            <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
               {translating ? <span className="text-muted-foreground italic">{t.translating}</span> : translatedSummary}
             </div>
           ) : (

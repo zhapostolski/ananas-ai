@@ -29,9 +29,9 @@ export default async function ExecutivePage() {
   });
 
   const briefOutput = getLatestOutput("cross-channel-brief-agent");
-  const briefJson = briefOutput?.output_json as Record<string, unknown> | null;
   const perfOutput = getLatestOutput("performance-agent");
   const perfJson = perfOutput?.output_json as Record<string, unknown> | null;
+  const perfSummary = perfJson?.summary as Record<string, unknown> | null;
 
   return (
     <div className="space-y-6">
@@ -52,25 +52,23 @@ export default async function ExecutivePage() {
       {/* KPI row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Revenue (7d)"
-          value={dbStr(briefJson?.gmv_7d)}
-          delta={briefJson?.gmv_delta as number | undefined}
-          deltaLabel="WoW"
+          title="Revenue (today)"
+          value={perfSummary?.ga4_revenue != null ? "€" + Number(perfSummary.ga4_revenue).toLocaleString("en-US", { maximumFractionDigits: 0 }) : "—"}
+          description="GA4 total revenue"
         />
         <StatCard
-          title="Sessions (7d)"
-          value={dbStr(briefJson?.sessions_7d)}
-          delta={briefJson?.sessions_delta as number | undefined}
-          deltaLabel="WoW"
+          title="Sessions (today)"
+          value={dbStr(perfSummary?.ga4_sessions)}
+          description="GA4 sessions"
         />
         <StatCard
           title="Blended ROAS"
-          value={dbStr(briefJson?.roas)}
+          value={perfSummary?.blended_roas != null ? Number(perfSummary.blended_roas).toFixed(1) + "x" : "—"}
           description="All paid channels"
         />
         <StatCard
-          title="Paid Spend (7d)"
-          value={dbStr(perfJson?.summary ? (perfJson.summary as Record<string, unknown>)?.total_paid_spend : undefined)}
+          title="Paid Spend (today)"
+          value={perfSummary?.total_paid_spend != null ? "€" + Number(perfSummary.total_paid_spend).toLocaleString("en-US", { maximumFractionDigits: 0 }) : "—"}
           description="Google + Meta"
         />
       </div>
