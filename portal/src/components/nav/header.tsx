@@ -66,9 +66,6 @@ export function Header({ name, email, role, avatarColor = "#FE5000", avatarUrl, 
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        {/* Language switcher */}
-        <LanguageSwitcher />
-
         {/* Dark mode toggle */}
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -85,6 +82,9 @@ export function Header({ name, email, role, avatarColor = "#FE5000", avatarUrl, 
 
         {/* Notification bell */}
         <NotificationBell userEmail={userEmail ?? email ?? ""} />
+
+        {/* Language switcher */}
+        <LanguageSwitcher />
 
         {/* Divider */}
         <div className="h-6 w-px bg-border mx-1" />
