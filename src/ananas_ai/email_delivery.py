@@ -55,10 +55,68 @@ def _clean(text: str) -> str:
 
 
 def _html(body: str) -> str:
-    escaped = body.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    return (
-        f"<pre style='font-family:sans-serif;white-space:pre-wrap;font-size:14px'>{escaped}</pre>"
-    )
+    try:
+        import markdown as md
+
+        html_body = md.markdown(body, extensions=["extra"])
+    except Exception:
+        # Fallback: basic conversion without library
+        import re
+
+        text = body.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        # Bold
+        text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+        # Bullet points
+        lines = text.split("\n")
+        out = []
+        in_ul = False
+        in_ol = False
+        for line in lines:
+            if re.match(r"^- ", line):
+                if not in_ul:
+                    out.append("<ul>")
+                    in_ul = True
+                out.append(f"<li>{line[2:]}</li>")
+            elif re.match(r"^\d+\. ", line):
+                if not in_ol:
+                    out.append("<ol>")
+                    in_ol = True
+                out.append(f"<li>{re.sub(r'^\d+\. ', '', line)}</li>")
+            else:
+                if in_ul:
+                    out.append("</ul>")
+                    in_ul = False
+                if in_ol:
+                    out.append("</ol>")
+                    in_ol = False
+                out.append(f"<p>{line}</p>" if line.strip() else "")
+        if in_ul:
+            out.append("</ul>")
+        if in_ol:
+            out.append("</ol>")
+        html_body = "\n".join(out)
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body {{ font-family: Calibri, Arial, sans-serif; font-size: 14px; color: #222; max-width: 700px; margin: 0 auto; padding: 24px; }}
+  h1 {{ color: #FE5000; font-size: 20px; border-bottom: 2px solid #FE5000; padding-bottom: 6px; margin-top: 0; }}
+  h2 {{ color: #FE5000; font-size: 15px; margin-top: 24px; margin-bottom: 6px; }}
+  h3 {{ color: #333; font-size: 14px; margin-top: 16px; margin-bottom: 4px; }}
+  strong {{ color: #111; }}
+  ul, ol {{ padding-left: 20px; margin: 6px 0; }}
+  li {{ margin-bottom: 4px; line-height: 1.5; }}
+  p {{ margin: 6px 0; line-height: 1.6; }}
+  em {{ color: #555; }}
+  hr {{ border: none; border-top: 1px solid #ddd; margin: 16px 0; }}
+</style>
+</head>
+<body>
+{html_body}
+</body>
+</html>"""
 
 
 def _get_access_token() -> tuple[str, str | None]:
