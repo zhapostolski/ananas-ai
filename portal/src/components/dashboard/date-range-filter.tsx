@@ -69,7 +69,7 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
 
   return (
     <div className="relative flex items-center gap-1.5">
-      {/* Quick preset chips */}
+      {/* Quick preset chips — hidden on mobile to save space */}
       {QUICK_PRESETS.map((p) => {
         const label = PRESETS.find((x) => x.value === p)?.label ?? p;
         const active = value.preset === p;
@@ -77,7 +77,7 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
           <button
             key={p}
             onClick={() => selectPreset(p)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors border ${
+            className={`hidden sm:inline-flex rounded-full px-3 py-1 text-xs font-medium transition-colors border ${
               active
                 ? "border-transparent text-white"
                 : "border-border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/30"
@@ -108,7 +108,7 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
         {open && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-            <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border bg-white dark:bg-gray-900 shadow-xl">
+            <div className="absolute right-0 top-full z-50 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-xl border bg-white dark:bg-gray-900 shadow-xl">
               <div className="py-1">
                 {PRESETS.filter((p) => !QUICK_PRESETS.includes(p.value) && p.value !== "custom").map((p) => (
                   <button

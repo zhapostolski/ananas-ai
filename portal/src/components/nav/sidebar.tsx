@@ -20,9 +20,10 @@ import {
   UserCircle,
   CalendarDays,
   MessageSquare,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Role } from "@/types";
 import { canAccessDepartment, canAccessMarketingModule, isAdminRole, canInvite, canSendNotifications } from "@/lib/roles";
 import { UserAvatar } from "@/components/nav/user-menu";
@@ -106,15 +107,33 @@ interface SidebarProps {
   avatarColor?: string;
   avatarUrl?: string | null;
   chatEnabled?: boolean;
+  // Mobile overlay control
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", avatarUrl, chatEnabled }: SidebarProps) {
+export function Sidebar({
+  role,
+  userName,
+  userEmail,
+  avatarColor = "#FE5000",
+  avatarUrl,
+  chatEnabled,
+  isOpen = false,
+  onClose,
+}: SidebarProps) {
   const pathname = usePathname();
   const t = useT();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     marketing: pathname.startsWith("/marketing"),
     customer_experience: pathname.startsWith("/customer-experience"),
   });
+
+  // Close sidebar on navigation (mobile)
+  useEffect(() => {
+    onClose?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const isAdmin = isAdminRole(role);
   const showInvite = canInvite(role);
@@ -133,9 +152,20 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
   }
 
   return (
-    <aside className="flex h-full w-60 flex-col" style={{ backgroundColor: "#111827" }}>
-      {/* Logo */}
-      <div className="flex h-14 items-center border-b px-4" style={{ borderBottomColor: "#1f2937" }}>
+    <aside
+      className={cn(
+        // Base styles
+        "flex h-full flex-col",
+        // Desktop: always visible, static in flow
+        "lg:relative lg:w-60 lg:translate-x-0 lg:flex",
+        // Mobile/tablet: fixed overlay, controlled by isOpen
+        "fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}
+      style={{ backgroundColor: "#111827" }}
+    >
+      {/* Logo row with close button on mobile */}
+      <div className="flex h-14 items-center justify-between border-b px-4 shrink-0" style={{ borderBottomColor: "#1f2937" }}>
         <Link href="/marketing/overview" className="flex items-center gap-2">
           <img
             src="/ananas-logo.png"
@@ -148,6 +178,14 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
             AI
           </span>
         </Link>
+        {/* Close button — only visible on mobile when open */}
+        <button
+          onClick={onClose}
+          className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+          aria-label="Close navigation"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Nav */}
@@ -218,7 +256,7 @@ export function Sidebar({ role, userName, userEmail, avatarColor = "#FE5000", av
       </nav>
 
       {/* Bottom: Admin + User */}
-      <div className="border-t px-2 py-3 space-y-0.5" style={{ borderColor: "#1f2937" }}>
+      <div className="border-t px-2 py-3 space-y-0.5 shrink-0" style={{ borderColor: "#1f2937" }}>
         {isAdmin && (
           <div>
             <Link

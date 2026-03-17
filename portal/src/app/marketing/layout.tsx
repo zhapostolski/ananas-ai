@@ -1,12 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { Sidebar } from "@/components/nav/sidebar";
-import { Header } from "@/components/nav/header";
+import { LayoutShell } from "@/components/nav/layout-shell";
 import type { Role } from "@/types";
 import { canAccessDepartment } from "@/lib/roles";
 import { getPortalUser } from "@/lib/db-portal";
-import { PageTracker } from "@/components/page-tracker";
-import { FloatingChatButton } from "@/components/nav/chat-button";
 
 export default async function MarketingLayout({
   children,
@@ -22,35 +19,20 @@ export default async function MarketingLayout({
     redirect("/executive");
   }
 
-  const portalUser = session.user.email
-    ? getPortalUser(session.user.email)
-    : undefined;
+  const portalUser = session.user.email ? getPortalUser(session.user.email) : undefined;
   const avatarColor = portalUser?.avatar_color ?? "#FE5000";
   const avatarUrl = portalUser?.avatar_url ?? null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar
-        role={role}
-        userName={session.user.name}
-        userEmail={session.user.email}
-        avatarColor={avatarColor}
-        avatarUrl={avatarUrl}
-        chatEnabled={!!(portalUser?.chat_enabled)}
-      />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header
-          name={session.user.name}
-          email={session.user.email}
-          userEmail={session.user.email ?? undefined}
-          role={role}
-          avatarColor={avatarColor}
-          avatarUrl={avatarUrl}
-        />
-        <PageTracker />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-      <FloatingChatButton chatEnabled={!!(portalUser?.chat_enabled)} />
-    </div>
+    <LayoutShell
+      role={role}
+      userName={session.user.name}
+      userEmail={session.user.email}
+      avatarColor={avatarColor}
+      avatarUrl={avatarUrl}
+      chatEnabled={!!(portalUser?.chat_enabled)}
+    >
+      {children}
+    </LayoutShell>
   );
 }

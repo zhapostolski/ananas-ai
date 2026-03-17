@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Menu } from "lucide-react";
 import { useTheme } from "next-themes";
 import { UserMenu } from "@/components/nav/user-menu";
 import { NotificationBell } from "@/components/nav/notification-bell";
@@ -47,9 +47,10 @@ interface HeaderProps {
   avatarColor?: string;
   avatarUrl?: string | null;
   userEmail?: string;
+  onMenuToggle?: () => void;
 }
 
-export function Header({ name, email, role, avatarColor = "#FE5000", avatarUrl, userEmail }: HeaderProps) {
+export function Header({ name, email, role, avatarColor = "#FE5000", avatarUrl, userEmail, onMenuToggle }: HeaderProps) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const t = useT();
@@ -60,12 +61,22 @@ export function Header({ name, email, role, avatarColor = "#FE5000", avatarUrl, 
   const isAdmin = ["super_admin", "executive", "marketing_head", "finance_head", "logistics_head", "cx_head", "commercial_head", "hr_head"].includes(role);
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-6 gap-4">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-4 md:px-6 gap-3">
       <div className="flex items-center gap-2 min-w-0">
+        {/* Hamburger — visible only on mobile/tablet */}
+        {onMenuToggle && (
+          <button
+            onClick={onMenuToggle}
+            className="lg:hidden flex h-8 w-8 shrink-0 items-center justify-center rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Open navigation"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
+        )}
         <span className="text-sm font-semibold truncate">{pageTitle}</span>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         {/* Dark mode toggle */}
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -87,7 +98,7 @@ export function Header({ name, email, role, avatarColor = "#FE5000", avatarUrl, 
         <LanguageSwitcher />
 
         {/* Divider */}
-        <div className="h-6 w-px bg-border mx-1" />
+        <div className="h-6 w-px bg-border mx-0.5" />
 
         <UserMenu
           name={name}

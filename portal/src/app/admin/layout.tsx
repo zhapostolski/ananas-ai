@@ -1,11 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { Sidebar } from "@/components/nav/sidebar";
-import { Header } from "@/components/nav/header";
+import { LayoutShell } from "@/components/nav/layout-shell";
 import type { Role } from "@/types";
 import { isAdminRole } from "@/lib/roles";
 import { getPortalUser } from "@/lib/db-portal";
-import { PageTracker } from "@/components/page-tracker";
 
 export default async function AdminLayout({
   children,
@@ -26,27 +24,16 @@ export default async function AdminLayout({
   const avatarUrl = portalUser?.avatar_url ?? null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar
-        role={role}
-        userName={session.user.name}
-        userEmail={session.user.email}
-        avatarColor={avatarColor}
-        avatarUrl={avatarUrl}
-        chatEnabled={!!(portalUser?.chat_enabled)}
-      />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header
-          name={session.user.name}
-          email={session.user.email}
-          userEmail={session.user.email ?? undefined}
-          role={role}
-          avatarColor={avatarColor}
-          avatarUrl={avatarUrl}
-        />
-        <PageTracker />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <LayoutShell
+      role={role}
+      userName={session.user.name}
+      userEmail={session.user.email}
+      avatarColor={avatarColor}
+      avatarUrl={avatarUrl}
+      chatEnabled={!!(portalUser?.chat_enabled)}
+      showFloatingChat={false}
+    >
+      {children}
+    </LayoutShell>
   );
 }

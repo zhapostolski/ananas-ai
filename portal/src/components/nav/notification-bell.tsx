@@ -123,7 +123,7 @@ export function NotificationBell({ userEmail }: { userEmail: string }) {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           {/* Dropdown */}
-          <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border bg-white dark:bg-gray-900 shadow-xl">
+          <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border bg-white dark:bg-gray-900 shadow-xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b px-4 py-3">
               <span className="text-sm font-semibold">Notifications</span>

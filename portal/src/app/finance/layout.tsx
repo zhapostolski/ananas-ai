@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { LayoutShell } from "@/components/nav/layout-shell";
 import { getPortalUser } from "@/lib/db-portal";
-import { Sidebar } from "@/components/nav/sidebar";
-import { Header } from "@/components/nav/header";
 import type { Role } from "@/types";
 import { canAccessDepartment } from "@/lib/roles";
 
@@ -21,14 +20,19 @@ export default async function FinanceLayout({
   }
 
   const portalUser = session.user.email ? getPortalUser(session.user.email) : undefined;
+  const avatarColor = portalUser?.avatar_color ?? "#FE5000";
+  const avatarUrl = portalUser?.avatar_url ?? null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar role={role} chatEnabled={!!(portalUser?.chat_enabled)} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header name={session.user.name} email={session.user.email} role={role} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <LayoutShell
+      role={role}
+      userName={session.user.name}
+      userEmail={session.user.email}
+      avatarColor={avatarColor}
+      avatarUrl={avatarUrl}
+      chatEnabled={!!(portalUser?.chat_enabled)}
+    >
+      {children}
+    </LayoutShell>
   );
 }

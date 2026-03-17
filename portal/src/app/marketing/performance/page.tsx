@@ -184,23 +184,25 @@ export default function PerformancePage() {
           {ga4?.error ? (
             <p className="text-sm text-muted-foreground italic">{ga4.error}</p>
           ) : channels.length > 0 ? (
-            <div className="divide-y text-sm">
-              {channels.map((ch) => {
-                const sharePct = sessions ? ((ch.sessions / sessions) * 100).toFixed(1) : "0";
-                return (
-                  <div key={ch.channel} className="flex items-center justify-between py-2.5 gap-4">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-base leading-none">{channelIcon(ch.channel)}</span>
-                      <span className="font-medium truncate">{ch.channel}</span>
+            <div className="overflow-x-auto -mx-1">
+              <div className="divide-y text-sm min-w-[320px]">
+                {channels.map((ch) => {
+                  const sharePct = sessions ? ((ch.sessions / sessions) * 100).toFixed(1) : "0";
+                  return (
+                    <div key={ch.channel} className="flex items-center justify-between py-2.5 gap-4 px-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-base leading-none shrink-0">{channelIcon(ch.channel)}</span>
+                        <span className="font-medium truncate">{ch.channel}</span>
+                      </div>
+                      <div className="flex items-center gap-3 md:gap-6 shrink-0 text-xs text-muted-foreground">
+                        <span className="hidden sm:inline w-24 text-right">{fmtNum(ch.sessions)} {t.performance_sessions.toLowerCase()}</span>
+                        <span className="w-16 md:w-20 text-right">{fmtEur(ch.revenue)}</span>
+                        <span className="w-10 md:w-12 text-right text-foreground font-medium">{sharePct}%</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-6 shrink-0 text-xs text-muted-foreground">
-                      <span className="w-24 text-right">{fmtNum(ch.sessions)} {t.performance_sessions.toLowerCase()}</span>
-                      <span className="w-20 text-right">{fmtEur(ch.revenue)}</span>
-                      <span className="w-12 text-right text-foreground font-medium">{sharePct}%</span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           ) : loading ? (
             <p className="text-sm text-muted-foreground italic">{t.performance_loading_channels}</p>

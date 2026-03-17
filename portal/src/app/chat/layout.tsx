@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { Sidebar } from "@/components/nav/sidebar";
-import { Header } from "@/components/nav/header";
+import { LayoutShell } from "@/components/nav/layout-shell";
 import { getPortalUser } from "@/lib/db-portal";
 import type { Role } from "@/types";
 
@@ -21,26 +20,18 @@ export default async function ChatLayout({ children }: { children: React.ReactNo
   const avatarUrl = portalUser.avatar_url ?? null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar
-        role={role}
-        userName={session.user.name}
-        userEmail={session.user.email}
-        avatarColor={avatarColor}
-        avatarUrl={avatarUrl}
-        chatEnabled={!!(portalUser?.chat_enabled)}
-      />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header
-          name={session.user.name}
-          email={session.user.email}
-          userEmail={session.user.email ?? undefined}
-          role={role}
-          avatarColor={avatarColor}
-          avatarUrl={avatarUrl}
-        />
-        {children}
-      </div>
-    </div>
+    <LayoutShell
+      role={role}
+      userName={session.user.name}
+      userEmail={session.user.email}
+      avatarColor={avatarColor}
+      avatarUrl={avatarUrl}
+      chatEnabled={true}
+      showPageTracker={false}
+      showFloatingChat={false}
+      mainClassName="flex flex-1 overflow-hidden"
+    >
+      {children}
+    </LayoutShell>
   );
 }
