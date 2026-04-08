@@ -1,0 +1,5 @@
+wing: ananas-ai
+rooms:
+- name: general
+  description: All project files
+  keywords: []

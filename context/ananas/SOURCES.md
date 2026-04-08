@@ -8,6 +8,10 @@ Tracks all materials processed into `ananas-overview.md`.
 
 | File | Processed At | Notes |
 |---|---|---|
+| ananas-logo-icon.e438d94d.svg:Zone.Identifier | 2026-03-17 20:22 | overview updated |
+| ananas-logo-icon.e438d94d.svg | 2026-03-17 20:19 | overview updated |
+| Ananas-AI-Platform-Master.docx | 2026-03-16 20:21 | overview updated |
+| Ananas AI Platform Master Document.docx | 2026-03-16 20:16 | overview updated |
 | 20260313_103428.jpg:Zone.Identifier | 2026-03-15 21:42 | overview updated |
 | 20260313_103428.jpg | 2026-03-15 21:41 | overview updated |
 | boreal-coyote-490215-p5-24cf331ae1cc.json:Zone.Identifier | 2026-03-15 16:19 | overview updated |
